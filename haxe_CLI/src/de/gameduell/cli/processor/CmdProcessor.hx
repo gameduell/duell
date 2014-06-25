@@ -1,5 +1,6 @@
 package de.gameduell.cli.processor;
 
+import haxe.Json;
 import haxe.io.Error;
 import sys.io.File;
 import de.gameduell.cli.program.NekoEval;
@@ -35,6 +36,24 @@ class CmdProcessor
 
     /** controls temp program text */
     private var program :Program;
+    /** Just dummy file to generate when ask for**/
+    private var dummyJSON:Dynamic = Json.parse('{
+                                                  "dev_libs":[
+                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
+                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
+                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
+                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
+                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
+                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
+                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
+                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
+                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
+                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
+                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"}
+                                                  ]
+                                              }
+                                                ');
+
 
     public function new()
     {
@@ -43,6 +62,7 @@ class CmdProcessor
         commands.set("hello", sayHello);
         commands.set("help", printHelp);
         commands.set("install", installLibs);
+        commands.set("dummy", createDuymmyFile);
         commands.set("exit", function() std.Sys.exit(0));
         commands.set("quit", function() std.Sys.exit(0));
 
@@ -102,6 +122,7 @@ class CmdProcessor
             return "vars: (none)";
         return wordWrap("vars: "+ vars.join(", "));
     }
+
     private function wordWrap(str :String) :String
     {
         if( str.length<=80 )
@@ -129,44 +150,84 @@ class CmdProcessor
 
         return sb.toString();
     }
+
     public function sayHello():String
     {
         return "hello there";
     }
 
+    //================================================================================
+    // command install [filename]
+    //================================================================================
     public function installLibs():String
     {
         var fileName = cmdStr.split(" ")[1];
-        if( fileName==null || fileName.length==0 )
+
+        if( fileName==null || fileName.length==0 )//file name specified
             return "syntax error you should specifiy the file name example c:/developer/config.json";
+
+        if( !FileSystem.exists(fileName) )// File does not existe
+            return "file with path '"+fileName +"' not found";
 
         return doInstallLibs(fileName);
     }
 
     public function doInstallLibs( fileName:String ) :String
     {
-        if( !FileSystem.exists(fileName) )
-            return "file with path '"+fileName +"' not found";
         var content:String;
-
+        var startTime:Float = Date.now().getTime();
+        var parsedContent : {version:String,dev_libs:Array<Dynamic>};
         try
         {
+            Sys.println("Parsing config file Start....");
             content = File.getContent(fileName);
+            parsedContent = Json.parse(content);
+            Sys.println("Parsing config file Done ! took ["+( Date.now().getTime() - startTime)+" sec]");
         }
         catch(e:Error)
         {
-            content = "Cannot Parse the file";
+            return "Cannot Parse the file";
         }
 
-        return content;
+        if(parsedContent != null && parsedContent.version != GDCommadLine.VERSION)
+        {
+            return "the version in the file is different then the current Version of GDShell";
+        }
+
+        for (lib in parsedContent.dev_libs) {
+            Sys.println(" Creating directory : ----------------"+ lib.destination);
+            Sys.command("mkdir", [lib.destination]);
+        }
+
+        return "Installing done";
     }
-    // print the help
+
+    //================================================================================
+    // command dummy [filename]
+    //================================================================================
+    public function createDuymmyFile():String
+    {
+        var fileName = cmdStr.split(" ")[1];
+
+        if( fileName==null || fileName.length==0 )//check if the lazy ass didn't provide file name we set a default file name
+            fileName =  "dummy_gdshell_"+GDCommadLine.VERSION+".json";
+
+        dummyJSON.version = GDCommadLine.VERSION;
+        File.saveContent(fileName,Json.stringify(dummyJSON));
+
+        return "dummy JSON was created to path \""+fileName+"\" you lazy ass";
+    }
+
+    //================================================================================
+    // command help
+    //================================================================================
     public static function printHelp() :String
     {
         return "Help:\n"
         + "  hello                    Just Saying Hello\n"
         + "  exit                     exit the console \n"
         + "  quit                     quit the shell   \n"
-        + "  install [filename]       install libs based on the sepcified filename \n";
+        + "  install [filename]       install libs based on the sepcified filename \n"
+        + "  dummy   [filename]       generqte dummy config file to filename destiination \n";
     }
 }

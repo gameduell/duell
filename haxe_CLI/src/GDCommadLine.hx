@@ -1,4 +1,5 @@
 package ;
+
 import haxe.io.Error;
 import de.gameduell.cli.ConsoleReader;
 import de.gameduell.cli.ConsoleReader;
@@ -13,10 +14,11 @@ import sys.FileSystem;
  * @company Gamduell GmbH
  */
 class GDCommadLine {
-    private static var VERSION = "0.0.1";
+    public static var VERSION = "0.0.2";
 
     /** the source for commands **/
     private var console :ConsoleReader;
+
 
     /**start the interpreter **/
     public static function main()
@@ -45,8 +47,8 @@ class GDCommadLine {
         while( true )
         {
         // initial prompt
-            console.cmd.prompt = ">> ";
-            Lib.print(">> ");
+            console.cmd.prompt = "GDShell:~>> ";
+            Lib.print("GDShell:~>> ");
 
             while (true)
             {
@@ -71,8 +73,8 @@ class GDCommadLine {
                 }
 
                 // restart after an error or completed command
-                console.cmd.prompt = ">> ";
-                Lib.print(">> ");
+                console.cmd.prompt = "GDShell:~>> ";
+                Lib.print("GDShell:~>> ");
             }
         }
     }}

@@ -1,0 +1,73 @@
+{
+    "dev_libs": [
+        {
+            "name": "lib_name",
+            "description": "",
+            "git_path": "",
+            "destination": "lib_name"
+        }
+        ,
+        {
+            "name": "lib_name",
+            "description": "",
+            "git_path": "",
+            "destination": "lib_name2"
+        },
+        {
+            "name": "lib_name",
+            "description": "",
+            "git_path": "",
+            "destination": "lib_name3"
+        },
+        {
+            "name": "lib_name",
+            "description": "",
+            "git_path": "",
+            "destination": "lib_name4"
+        },
+        {
+            "name": "lib_name",
+            "description": "",
+            "git_path": "",
+            "destination": "lib_name5"
+        },
+        {
+            "name": "lib_name",
+            "description": "",
+            "git_path": "",
+            "destination": "lib_name6"
+        },
+        {
+            "name": "lib_name",
+            "description": "",
+            "git_path": "",
+            "destination": "lib_name7"
+        },
+        {
+            "name": "lib_name",
+            "description": "",
+            "git_path": "",
+            "destination": "lib_name8"
+        },
+        {
+            "name": "lib_name",
+            "description": "",
+            "git_path": "",
+            "destination": "lib_name9"
+        },
+        {
+            "name": "lib_name",
+            "description": "",
+            "git_path": "",
+            "destination": "lib_name10"
+        },
+        {
+            "name": "lib_name",
+            "description": "",
+            "git_path": "",
+            "destination": "lib_name11"
+        }
+    ]
+    ,
+    "version":"0.0.2"
+}
