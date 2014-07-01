@@ -1,12 +1,9 @@
 package ;
 
-import haxe.io.Error;
 import de.gameduell.cli.ConsoleReader;
 import de.gameduell.cli.ConsoleReader;
 import de.gameduell.cli.processor.CmdProcessor;
-import sys.io.FileInput;
 import neko.Lib;
-import sys.FileSystem;
 
 /**
  * @autor kgar
@@ -19,6 +16,9 @@ class GDCommadLine {
     /** the source for commands **/
     private var console :ConsoleReader;
 
+    /** **/
+    private var processor:CmdProcessor;
+
 
     /**start the interpreter **/
     public static function main()
@@ -28,7 +28,7 @@ class GDCommadLine {
     }
     public function new()
     {
-        console = new ConsoleReader();
+        processor = new CmdProcessor();
     }
 
     /**
@@ -38,43 +38,32 @@ class GDCommadLine {
     public function run()
     {
         var args = Sys.args();
-        if (args.length > 0 && Sys.systemName() == "Windows") args.shift();
-        Lib.println("Gameduell interactive shell v" + VERSION);
-        Lib.println("type \"help\" for help");
+        var cmd:String;
 
-        var processor = new CmdProcessor();
-
-        while( true )
+        // if the argument are empty we set it to help command by default
+        if (args.length <= 0)
         {
-        // initial prompt
-            console.cmd.prompt = "GDShell:~>> ";
-            Lib.print("GDShell:~>> ");
-
-            while (true)
+            cmd = "help";
+        }
+        else
+        {
+            cmd = args[0];
+        }
+        try
+        {
+            var ret = processor.process(cmd);
+            if( ret != null )
+                Lib.println(ret+"\n");
+        }
+        catch (ex:CmdError)
+        {
+            switch (ex)
             {
-                try
-                {
-                    var ret = processor.process(console.readLine());
-                    if( ret != null )
-                        Lib.println(ret+"\n");
-                }
-                catch (ex:CmdError)
-                {
-                    switch (ex)
+                case IncompleteStatement:
                     {
-                        case IncompleteStatement:
-                            {
-                                console.cmd.prompt = ".. "; // continue prompt
-                                Lib.print(".. ");
-                                continue;
-                            }
-                        case InvalidStatement(msg): Lib.println(msg);
+                        Lib.print(".. ");
                     }
-                }
-
-                // restart after an error or completed command
-                console.cmd.prompt = "GDShell:~>> ";
-                Lib.print("GDShell:~>> ");
+                case InvalidStatement(msg): Lib.println(msg);
             }
         }
     }}
