@@ -1,10 +1,10 @@
 {
     "dev_libs": [
         {
-            "name": "lib_name",
+            "name": "Ash Framework",
             "description": "",
-            "git_path": "",
-            "destination": "lib_name"
+            "git_path": "https://phabricator.office.gameduell.de/diffusion/HAXLIBASH/ash.git",
+            "destination": "ash"
         }
         ,
         {
