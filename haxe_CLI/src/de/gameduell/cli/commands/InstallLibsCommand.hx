@@ -4,6 +4,7 @@ package de.gameduell.cli.commands;
  * @date 30.06.2014.
  * @company Gamduell GmbH
  */
+import sys.io.Process;
 import Sys;
 import sys.FileSystem;
 import sys.io.File;
@@ -35,6 +36,8 @@ class InstallLibsCommand implements IGDCommand {
     public function doInstallLibs(fileName:String):String
     {
         var content:String;
+        var globalErrorOccured:Bool = false;
+        var repoErrorOccured:Bool = false;
         var startTime:Float = Date.now().getTime();
         var parsedContent:{version:String, dev_libs:Array<Dynamic>};
         try
@@ -55,22 +58,35 @@ class InstallLibsCommand implements IGDCommand {
         }
 
         for (lib in parsedContent.dev_libs) {
-            Sys.println("Creating directory : [" + lib.destination + "]");
-            Sys.command("mkdir", [lib.destination]);
+            Sys.println("Installing lib "+ lib.name +"===============================================");
+            Sys.println("Creating directory : [" + lib.destination_path + "]");
+
+            Sys.command("mkdir", [lib.destination_path]);
 
             // check git first
-            checkGit();
+//            checkGit();
 
             //checkout into directory after creating it
-            if (Sys.command("git clone \"" + lib.git_path + "\" \"" + lib.destination + "\"") != 0) {
+            if (Sys.command("git clone \"" + lib.git_path + "\" \"" + lib.destination_path + "\"") != 0) {
                 Sys.println("Could not clone git repository [" + lib.git_path + "]");
+                repoErrorOccured = true;
+                globalErrorOccured = true;
             }
-            else {
-                Sys.command("haxe dev " + lib.name + " " + lib.destination) == 0 ? Sys.println(lib.name + " installed") : Sys.println(lib.name + " could not be installed");
+            if(!repoErrorOccured)
+            {
+                var command:String = "haxelib";
+                var arguments:Array<String> = ["dev",lib.name,lib.library_path];
+
+                var process:Process = new Process(command, arguments);
+                process.exitCode();
+
+                Sys.println("Output From Haxelib : "+ process.stdout.readAll().toString());
             }
+            repoErrorOccured = false;
+            Sys.println("Done Installing lib "+ lib.name +"==========================================");
         }
 
-        return "Installing done";
+        return "Installing done "+(globalErrorOccured ? " With some Erros" : " Without Errors");
     }
 
     function checkGit() {
