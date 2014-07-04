@@ -1,7 +1,5 @@
 package ;
 
-import de.gameduell.cli.ConsoleReader;
-import de.gameduell.cli.ConsoleReader;
 import de.gameduell.cli.processor.CmdProcessor;
 import neko.Lib;
 
@@ -13,8 +11,6 @@ import neko.Lib;
 class GDCommadLine {
     public static var VERSION = "0.0.2";
 
-    /** the source for commands **/
-    private var console :ConsoleReader;
 
     /** **/
     private var processor:CmdProcessor;
