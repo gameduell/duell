@@ -11,20 +11,27 @@ class CreateDummyFileCommand implements IGDCommand{
 
     /** Just dummy file to generate when ask for**/
     private var dummyJSON:Dynamic = Json.parse('{
-                                                  "dev_libs":[
-                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
-                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
-                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
-                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
-                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
-                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
-                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
-                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
-                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
-                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"},
-                                                      {"name" : "lib_name","git_path" : "","description":"", "destination":"lib_name"}
-                                                             ]
-                                               }');
+                                                    "version":"0.0.2"
+                                                    ,"env_url":"ssh://git@phabricator.office.gameduell.de:2222/diffusion/HAXMISCHAXEREPOLIST/haxe-repo-list.git"
+                                                    ,"dev_libs": [
+                                                                    "ash",
+                                                                    "types",
+                                                                    "asyncrunner",
+                                                                    "polygonal-ds",
+                                                                    "filesystem",
+                                                                    "graphics",
+                                                                    "hxcpp",
+                                                                    "hxjni",
+                                                                    "ios_appdelegate",
+                                                                    "lime",
+                                                                    "lime-tools",
+                                                                    "munit",
+                                                                    "media",
+                                                                    "opengl",
+                                                                    "platform",
+                                                                    "renderer"
+                                                                 ]
+                                                }');
 
     public function new()
     {
