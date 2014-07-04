@@ -1,73 +1,22 @@
 {
-    "dev_libs": [
-        {
-            "name": "Ash Framework",
-            "description": "",
-            "git_path": "https://phabricator.office.gameduell.de/diffusion/HAXLIBASH/ash.git",
-            "destination": "ash"
-        }
-        ,
-        {
-            "name": "lib_name",
-            "description": "",
-            "git_path": "",
-            "destination": "lib_name2"
-        },
-        {
-            "name": "lib_name",
-            "description": "",
-            "git_path": "",
-            "destination": "lib_name3"
-        },
-        {
-            "name": "lib_name",
-            "description": "",
-            "git_path": "",
-            "destination": "lib_name4"
-        },
-        {
-            "name": "lib_name",
-            "description": "",
-            "git_path": "",
-            "destination": "lib_name5"
-        },
-        {
-            "name": "lib_name",
-            "description": "",
-            "git_path": "",
-            "destination": "lib_name6"
-        },
-        {
-            "name": "lib_name",
-            "description": "",
-            "git_path": "",
-            "destination": "lib_name7"
-        },
-        {
-            "name": "lib_name",
-            "description": "",
-            "git_path": "",
-            "destination": "lib_name8"
-        },
-        {
-            "name": "lib_name",
-            "description": "",
-            "git_path": "",
-            "destination": "lib_name9"
-        },
-        {
-            "name": "lib_name",
-            "description": "",
-            "git_path": "",
-            "destination": "lib_name10"
-        },
-        {
-            "name": "lib_name",
-            "description": "",
-            "git_path": "",
-            "destination": "lib_name11"
-        }
-    ]
-    ,
     "version":"0.0.2"
+    ,"env_url":"ssh://git@phabricator.office.gameduell.de:2222/diffusion/HAXMISCHAXEREPOLIST/haxe-repo-list.git"
+    ,"dev_libs": [
+                    "ash",
+                    "types",
+                    "asyncrunner",
+                    "polygonal-ds",
+                    "filesystem",
+                    "graphics",
+                    "hxcpp",
+                    "hxjni",
+                    "ios_appdelegate",
+                    "lime",
+                    "lime-tools",
+                    "munit",
+                    "media",
+                    "opengl",
+                    "platform",
+                    "renderer"
+                 ]
 }

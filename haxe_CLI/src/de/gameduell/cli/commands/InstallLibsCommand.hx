@@ -14,43 +14,98 @@ import haxe.io.Error;
 import de.gameduell.cli.commands.impl.IGDCommand;
 class InstallLibsCommand implements IGDCommand {
 
+    private static var DEFAULT_ENVIRONMENT_URL:String = "ssh://git@phabricator.office.gameduell.de:2222/diffusion/HAXMISCHAXEREPOLIST/haxe-repo-list.git";
+    private var content:String;
+    private var parsedContent:{env_url:String,version:String, dev_libs:Array<String>};
+    private var parsedGlobalConfig:Dynamic;
+    private var repoErrorOccured:Bool = false;
+    private var globalErrorOccured:Bool = false;
     public function new() {}
 
     public function execute(cmd:String):String
     {
-        var fileName = null;
+        var fileName:String = null;
+        var environment:String;
+
         if (Sys.args().length > 1)
         {
             fileName = Sys.args()[1];
         }
 
-        if (fileName == null || fileName.length == 0)//file name specified
+        /** if file name specified **/
+        if (fileName == null || fileName.length == 0)
             return "syntax error you should specifiy the file name example c:/developer/config.json";
 
-        if (!FileSystem.exists(fileName))// File does not existe
+
+        /** if specified file exist ? **/
+        if (!FileSystem.exists(fileName))
             return "file with path '" + fileName + "' not found";
 
-        return doInstallLibs(fileName);
-    }
 
-    public function doInstallLibs(fileName:String):String
-    {
-        var content:String;
-        var globalErrorOccured:Bool = false;
-        var repoErrorOccured:Bool = false;
-        var startTime:Float = Date.now().getTime();
-        var parsedContent:{version:String, dev_libs:Array<Dynamic>};
+        /** Parse local config file **/
         try
         {
-            Sys.println("Parsing config file Start....");
             content = File.getContent(fileName);
             parsedContent = Json.parse(content);
-            Sys.println("Parsing config file Done !");
         }
         catch (e:Error)
         {
             return "Cannot Parse the file";
         }
+
+        /**
+        * =============================================================================================
+        * clone git repo containing remote config file
+        * if the env_url is not specified we take the default envirnoment url
+        * =============================================================================================
+        **/
+        environment = parsedContent.env_url == null ? DEFAULT_ENVIRONMENT_URL : parsedContent.env_url;
+
+        if( !getEnvironmentFile(environment) )
+        {
+            return "can't load the global config file from the server something went wrong";
+        }
+
+        /** Install libs and return final results **/
+        return doInstallLibs(fileName);
+    }
+        /**
+        * =============================================================================================
+        * cloning global config file repo
+        * Parse global config file
+        * =============================================================================================
+        **/
+    private function getEnvironmentFile( environment:String ):Bool
+    {
+        var destination:String = "haxe-repo-list";
+        var globalFileContent:String;
+
+        /** cloning global config file repo **/
+        if (Sys.command("git clone \"" + environment + "\" \"" + destination + "\"") != 0)
+        {
+            Sys.println(" Can't Get the  global config file ");
+            return false;
+        }
+
+        /** Parse global config file **/
+        try
+        {
+            globalFileContent = File.getContent(destination+"/haxe-repo-list.json");
+            parsedGlobalConfig = Json.parse(globalFileContent);
+        }
+        catch (e:Error)
+        {
+            Sys.println(" Cannot Parse global config file seems to be broken ");
+            return false;
+        }
+
+        return true;
+    }
+
+    private function doInstallLibs(fileName:String):String
+    {
+        var library:Dynamic;
+        repoErrorOccured = false;
 
         if (parsedContent != null && parsedContent.version != GDCommadLine.VERSION)
         {
@@ -58,62 +113,71 @@ class InstallLibsCommand implements IGDCommand {
         }
 
         for (lib in parsedContent.dev_libs) {
-            Sys.println("Installing lib "+ lib.name +"===============================================");
-            Sys.println("Creating directory : [" + lib.destination_path + "]");
-
-            Sys.command("mkdir", [lib.destination_path]);
-
-            // check git first
-//            checkGit();
-
-            //checkout into directory after creating it
-            if (Sys.command("git clone \"" + lib.git_path + "\" \"" + lib.destination_path + "\"") != 0) {
-                Sys.println("Could not clone git repository [" + lib.git_path + "]");
-                repoErrorOccured = true;
-                globalErrorOccured = true;
-            }
-            if(!repoErrorOccured)
-            {
-                var command:String = "haxelib";
-                var arguments:Array<String> = ["dev",lib.name,lib.library_path];
-
-                var process:Process = new Process(command, arguments);
-                process.exitCode();
-
-                Sys.println("Output From Haxelib : "+ process.stdout.readAll().toString());
-            }
+            library = Reflect.field(parsedGlobalConfig,lib);
+            installLibrary(library,lib);
             repoErrorOccured = false;
-            Sys.println("Done Installing lib "+ lib.name +"==========================================");
+            Sys.println("Done Installing lib "+ lib +"==========================================");
         }
 
         return "Installing done "+(globalErrorOccured ? " With some Erros" : " Without Errors");
     }
 
-    function checkGit() {
-        var gitExists = function()
-        try { Sys.command("git", []); return true; } catch (e:Dynamic) return false;
-        if (gitExists())
-            return;
-        // if we have already msys git/cmd in our PATH
-        var match = ~/(.*)git([\\|\/])cmd$/ ;
-        for (path in Sys.getEnv("PATH").split(";"))
+    public function installLibrary(library:Dynamic,lib:String):Void
+    {
+        var repoErrorOccured:Bool = false;
+        var gdLibContent:String;
+        var gdLibParsedContent:{dependencies:Array<String>};
+        if( library == null ) return;
+
+        Sys.println("Installing lib "+ lib +"===============================================");
+        Sys.println("Creating directory : [" + library.destination_path + "]");
+
+        Sys.command("mkdir", [library.destination_path]);
+
+        /**checkout into directory after creating it**/
+
+        if (Sys.command("git clone \"" + library.git_path + "\" \"" + library.destination_path + "\"") != 0)
         {
-            if (match.match(path.toLowerCase()))
+            Sys.println("Could not clone git repository [" + library.git_path + "]");
+            repoErrorOccured = true;
+            globalErrorOccured = true;
+        }
+
+        /** Haxelib dev **/
+        if(!repoErrorOccured)
+        {
+            var command:String = "haxelib";
+            var arguments:Array<String> = ["dev",lib,library.library_path];
+
+            var process:Process = new Process(command, arguments);
+            process.exitCode();
+
+            Sys.println(" Output From Haxelib : "+ process.stdout.readAll().toString());
+        }
+
+        /** If there is some custom dev lib to add**/
+        if( FileSystem.exists(library.destination_path+"/gd_lib.json") )
+        {
+            try
             {
-                var newPath = match.matched(1) + "git" + match.matched(2) + "bin";
-                Sys.putEnv("PATH", Sys.getEnv("PATH") + ";" + newPath);
+                gdLibContent = File.getContent(library.destination_path+"/gd_lib.json");
+                gdLibParsedContent = Json.parse(gdLibContent);
+                installGDLibs(gdLibParsedContent);
+            }
+            catch (e:Error)
+            {
+                Sys.println(" Cannot Parse gd lib config file seems to be broken ");
             }
         }
-        if (gitExists())
-            return;
-        // look at a few default paths
-        for (path in ["C:\\Program Files (x86)\\Git\\bin", "C:\\Progra~1\\Git\\bin"])
-            if (FileSystem.exists(path))
-            {
-                Sys.putEnv("PATH", Sys.getEnv("PATH") + ";" + path);
-                if (gitExists())
-                    return;
-            }
-        Sys.print("Could not execute git, please make sure it is installed and available in your PATH.");
     }
+    public function installGDLibs( gdLibParsedContent:{dependencies:Array<String>} ):Void
+    {
+        var libarary:Dynamic;
+        for (lib in gdLibParsedContent.dependencies)
+        {
+            libarary = Reflect.field(parsedGlobalConfig,lib);
+            installLibrary(libarary,lib);
+        }
+    }
+
 }

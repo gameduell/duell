@@ -19,7 +19,7 @@ class CmdProcessor
 {
     /** connecting command to a specific function */
     public static var commands : List<{ name : String, doc : String, command : IGDCommand }>;
-
+    private var currentTime:Float;
 
     public function new()
     {
@@ -38,7 +38,7 @@ class CmdProcessor
     **/
     public function process(cmd :String) :String
     {
-
+        var output:String;
         if( cmd.endsWith("\\") )
         {
             throw IncompleteStatement;
@@ -55,7 +55,10 @@ class CmdProcessor
         {
             if( c.name == cmd )
             {
-                return c.command.execute(cmd);
+                currentTime = Date.now().getTime();
+                output = c.command.execute(cmd);
+                Sys.println(" Time passed "+((Date.now().getTime()-currentTime)/1000)+" for command '"+cmd+"''");
+                return output;
             }
         }
         return "Command "+cmd+" Not Found, try to type help for more info";

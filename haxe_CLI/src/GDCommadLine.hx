@@ -57,13 +57,6 @@ class GDCommadLine {
         }
         catch (ex:CmdError)
         {
-            switch (ex)
-            {
-                case IncompleteStatement:
-                    {
-                        Lib.print(".. ");
-                    }
-                case InvalidStatement(msg): Lib.println(msg);
-            }
+            Sys.print("Unknown Command");
         }
     }}
