@@ -1,2 +1,2 @@
 -main GDCommandLine
--neko gdtool.n
+-neko ../../bin/gdtool.n
