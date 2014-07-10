@@ -46,9 +46,9 @@ class CreateDummyFileCommand implements IGDCommand{
         }
 
         if( fileName==null || fileName.length==0 )//check if the lazy ass didn't provide file name we set a default file name
-            fileName =  "dummy_gdshell_"+GDCommadLine.VERSION+".json";
+            fileName =  "dummy_gdshell_"+GDCommandLine.VERSION+".json";
 
-        dummyJSON.version = GDCommadLine.VERSION;
+        dummyJSON.version = GDCommandLine.VERSION;
         File.saveContent(fileName,Json.stringify(dummyJSON));
 
         return "dummy JSON was created to path \""+fileName+"\" you lazy ass";

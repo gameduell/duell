@@ -69,7 +69,7 @@ class CmdProcessor
     //================================================================================
     public static function printHelp() :String
     {
-        var ret:String="GDShell "+ GDCommadLine.VERSION+" \n";
+        var ret:String="GDShell "+ GDCommandLine.VERSION+" \n";
         for( c in commands )
         {
             ret += c.doc ;
