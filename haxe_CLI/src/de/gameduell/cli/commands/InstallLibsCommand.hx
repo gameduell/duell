@@ -116,6 +116,7 @@ class InstallLibsCommand implements IGDCommand {
 
     private function gitClone( gitURL:String,destination:String ):Int
     {
+        Sys.command("mkdir", [destination]);
         return Sys.command("git clone \"" + gitURL + "\" \"" + destination + "\"");
     }
 
@@ -159,7 +160,6 @@ class InstallLibsCommand implements IGDCommand {
         Sys.println("Installing lib "+ lib +"===============================================");
         Sys.println("Creating directory : [" + library.destination_path + "]");
 
-        Sys.command("mkdir", [library.destination_path]);
 
         /**checkout into directory after creating it**/
 
@@ -174,6 +174,7 @@ class InstallLibsCommand implements IGDCommand {
         }
         else
         {
+
             if( gitClone(library.git_path,library.destination_path) != 0 )
             {
                 Sys.println(" ERROR : Can't Install library "+lib);
