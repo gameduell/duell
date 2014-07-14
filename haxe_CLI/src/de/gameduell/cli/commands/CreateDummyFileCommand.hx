@@ -51,7 +51,7 @@ class CreateDummyFileCommand implements IGDCommand{
         dummyJSON.version = GDCommandLine.VERSION;
         File.saveContent(fileName,Json.stringify(dummyJSON));
 
-        return "dummy JSON was created to path \""+fileName+"\" you lazy ass";
+        return "dummy JSON was created to path \""+fileName+"\"";
     }
 
 }
