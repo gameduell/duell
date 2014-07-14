@@ -57,7 +57,7 @@ class CmdProcessor
             {
                 currentTime = Date.now().getTime();
                 output = c.command.execute(cmd);
-                Sys.println(" Time passed "+((Date.now().getTime()-currentTime)/1000)+" for command '"+cmd+"''");
+                Sys.println(" Time passed "+((Date.now().getTime()-currentTime)/1000)+" sec for command '"+cmd+"''");
                 return output;
             }
         }

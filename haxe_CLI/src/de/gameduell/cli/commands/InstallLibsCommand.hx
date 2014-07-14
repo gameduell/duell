@@ -50,7 +50,7 @@ class InstallLibsCommand implements IGDCommand {
         }
         catch (e:Error)
         {
-            return "Cannot Parse the file";
+            return "ERROR : Cannot Parse the file";
         }
 
         /**
@@ -63,7 +63,7 @@ class InstallLibsCommand implements IGDCommand {
 
         if( !getEnvironmentFile(environment) )
         {
-            return "can't load the global config file from the server something went wrong";
+            return "ERROR : Can't load the global config file from the server something went wrong";
         }
 
         /** Install libs and return final results **/
@@ -80,11 +80,23 @@ class InstallLibsCommand implements IGDCommand {
         var destination:String = "haxe-repo-list";
         var globalFileContent:String;
 
-        /** cloning global config file repo **/
-        if (Sys.command("git clone \"" + environment + "\" \"" + destination + "\"") != 0)
+
+        /** cloning global config file repo , if it exists we git pull**/
+        if (FileSystem.exists(destination))
         {
-            Sys.println(" Can't Get the  global config file ");
-            return false;
+            if( gitPull(destination) != 0 )
+            {
+                Sys.println(" ERROR : Can't Get the  global config file ");
+                return false;
+            }
+        }
+        else
+        {
+            if( gitClone(environment,destination) != 0 )
+            {
+                Sys.println(" ERROR : Can't Get the  global config file ");
+                return false;
+            }
         }
 
         /** Parse global config file **/
@@ -95,11 +107,26 @@ class InstallLibsCommand implements IGDCommand {
         }
         catch (e:Error)
         {
-            Sys.println(" Cannot Parse global config file seems to be broken ");
+            Sys.println(" ERROR : Cannot Parse global config file seems to be broken ");
             return false;
         }
 
         return true;
+    }
+
+    private function gitClone( gitURL:String,destination:String ):Int
+    {
+        return Sys.command("git clone \"" + gitURL + "\" \"" + destination + "\"");
+    }
+
+    private function gitPull( destination:String ):Int
+    {
+        var result:Int = 0;
+        Sys.println(" Directory already exists, Updating... ");
+        Sys.command("cd "+destination);
+        result = Sys.command("git pull");
+        Sys.command("cd ..");
+        return result;
     }
 
     private function doInstallLibs(fileName:String):String
@@ -116,7 +143,7 @@ class InstallLibsCommand implements IGDCommand {
             library = Reflect.field(parsedGlobalConfig,lib);
             installLibrary(library,lib);
             repoErrorOccured = false;
-            Sys.println("Done Installing lib "+ lib +"==========================================");
+            Sys.println("Done Installing lib "+ lib +" ==========================================");
         }
 
         return "Installing done "+(globalErrorOccured ? " With some Erros" : " Without Errors");
@@ -136,11 +163,23 @@ class InstallLibsCommand implements IGDCommand {
 
         /**checkout into directory after creating it**/
 
-        if (Sys.command("git clone \"" + library.git_path + "\" \"" + library.destination_path + "\"") != 0)
+        if (FileSystem.exists(library.destination_path))
         {
-            Sys.println("Could not clone git repository [" + library.git_path + "]");
-            repoErrorOccured = true;
-            globalErrorOccured = true;
+            if(gitPull(library.destination_path) != 0 )
+            {
+                Sys.println(" ERROR : Can't Install library "+lib);
+                repoErrorOccured = true;
+                globalErrorOccured = true;
+            }
+        }
+        else
+        {
+            if( gitClone(library.git_path,library.destination_path) != 0 )
+            {
+                Sys.println(" ERROR : Can't Install library "+lib);
+                repoErrorOccured = true;
+                globalErrorOccured = true;
+            }
         }
 
         /** Haxelib dev **/
@@ -166,7 +205,7 @@ class InstallLibsCommand implements IGDCommand {
             }
             catch (e:Error)
             {
-                Sys.println(" Cannot Parse gd lib config file seems to be broken ");
+                Sys.println(" ERROR : Cannot Parse gd lib config file seems to be broken ");
             }
         }
     }
