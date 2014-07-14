@@ -29,7 +29,8 @@ class CreateDummyFileCommand implements IGDCommand{
                                                                     "media",
                                                                     "opengl",
                                                                     "platform",
-                                                                    "renderer"
+                                                                    "renderer",
+                                                                    "unittest"
                                                                  ]
                                                 }');
 

@@ -17,6 +17,7 @@
                     "media",
                     "opengl",
                     "platform",
-                    "renderer"
+                    "renderer",
+                    "unittest"
                  ]
 }
