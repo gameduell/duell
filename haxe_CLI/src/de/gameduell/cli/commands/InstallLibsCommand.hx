@@ -134,7 +134,7 @@ class InstallLibsCommand implements IGDCommand {
         var library:Dynamic;
         repoErrorOccured = false;
 
-        if (parsedContent != null && parsedContent.version != GDCommadLine.VERSION)
+        if (parsedContent != null && parsedContent.version != GDCommandLine.VERSION)
         {
             return "the version in the file is different then the current Version of GDShell";
         }
@@ -146,7 +146,7 @@ class InstallLibsCommand implements IGDCommand {
             Sys.println("Done Installing lib "+ lib +" ==========================================");
         }
 
-        return "Installing done "+(globalErrorOccured ? " With some Erros" : " Without Errors");
+        return "Installing done "+(globalErrorOccured ? " With some Errors" : " Without Errors");
     }
 
     public function installLibrary(library:Dynamic,lib:String):Void
@@ -211,11 +211,11 @@ class InstallLibsCommand implements IGDCommand {
     }
     public function installGDLibs( gdLibParsedContent:{dependencies:Array<String>} ):Void
     {
-        var libarary:Dynamic;
+        var library:Dynamic;
         for (lib in gdLibParsedContent.dependencies)
         {
-            libarary = Reflect.field(parsedGlobalConfig,lib);
-            installLibrary(libarary,lib);
+            library = Reflect.field(parsedGlobalConfig,lib);
+            installLibrary(library,lib);
         }
     }
 

@@ -8,7 +8,7 @@ import neko.Lib;
  * @date 24.06.2014.
  * @company Gamduell GmbH
  */
-class GDCommadLine {
+class GDCommandLine {
     public static var VERSION = "0.0.2";
 
 
@@ -19,7 +19,7 @@ class GDCommadLine {
     /**start the interpreter **/
     public static function main()
     {
-        var interpreter = new GDCommadLine();
+        var interpreter = new GDCommandLine();
         interpreter.run();
     }
     public function new()
