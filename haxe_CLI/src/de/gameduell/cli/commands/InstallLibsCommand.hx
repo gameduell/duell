@@ -125,9 +125,8 @@ class InstallLibsCommand implements IGDCommand {
     {
         var result:Int = 0;
         Sys.println(" Directory already exists, Updating... ");
-        Sys.command("cd "+destination);
-        result = Sys.command("git pull");
-        Sys.command("cd ..");
+
+        result = Sys.command("cd " + destination + " && " + "git pull && cd ..");
         return result;
     }
 
