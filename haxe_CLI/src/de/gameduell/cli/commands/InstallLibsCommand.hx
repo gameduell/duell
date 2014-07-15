@@ -4,6 +4,7 @@ package de.gameduell.cli.commands;
  * @date 30.06.2014.
  * @company Gamduell GmbH
  */
+import tools.haxlib.SemVer;
 import sys.io.Process;
 import Sys;
 import sys.FileSystem;
@@ -135,6 +136,7 @@ class InstallLibsCommand implements IGDCommand {
         var library:Dynamic;
         repoErrorOccured = false;
 
+
         if (parsedContent != null && parsedContent.version != GDCommandLine.VERSION)
         {
             return "the version in the file is different then the current Version of GDShell";
@@ -147,12 +149,15 @@ class InstallLibsCommand implements IGDCommand {
             Sys.println("Done Installing lib "+ lib +" ==========================================");
         }
 
+
         return "Installing done "+(globalErrorOccured ? " With some Errors" : " Without Errors");
     }
 
     public function installLibrary(library:Dynamic,lib:String):Void
     {
         var repoErrorOccured:Bool = false;
+        var parsedHaxeLib:Dynamic;
+        var globalDependencies:List<{ project: String, version : String }>;
         var gdLibContent:String;
         var gdLibParsedContent:{dependencies:Array<String>};
         if( library == null ) return;
@@ -161,11 +166,12 @@ class InstallLibsCommand implements IGDCommand {
         Sys.println("Creating directory : [" + library.destination_path + "]");
 
 
+
         /**checkout into directory after creating it**/
 
         if (FileSystem.exists(library.destination_path))
         {
-            if(gitPull(library.destination_path) != 0 )
+            if( gitPull(library.destination_path) != 0 )
             {
                 Sys.println(" ERROR : Can't Install library "+lib);
                 repoErrorOccured = true;
@@ -183,6 +189,44 @@ class InstallLibsCommand implements IGDCommand {
             }
         }
 
+        /** Haxelib JSON File **/
+        try
+        {
+            parsedHaxeLib = Json.parse( File.getContent(library.library_path+"/haxelib.json") );
+            globalDependencies = new List();
+            try {
+                for( d in Reflect.fields(parsedHaxeLib.dependencies) ) {
+                    var version = try {
+                        SemVer.ofString( Std.string(Reflect.field(parsedHaxeLib.dependencies,d)) ).toString();
+                    } catch (e:Dynamic) "";
+                    globalDependencies.add({ project: d, version: version });
+                }
+            } catch(e:Dynamic) {}
+        }
+        catch (e:Error)
+        {
+            parsedHaxeLib = null;
+            globalDependencies = null;
+            Sys.println(" ERROR : Cannot Parse haxelib.json for "+lib+" file seems to be broken ");
+        }
+
+        if( globalDependencies != null )
+        {
+            var arguments:Array<String> =[];
+            trace(globalDependencies);
+            for ( dependency in globalDependencies )
+            {
+                Sys.println("Installing dependency "+dependency.project+" "+dependency.version);
+                arguments.push(dependency.project);
+                if( dependency.version != "" )
+                    arguments.push(dependency.version);
+
+                Sys.command("haxelib install ",arguments);
+                arguments = [];
+            }
+        }
+
+
         /** Haxelib dev **/
         if(!repoErrorOccured)
         {
@@ -193,6 +237,8 @@ class InstallLibsCommand implements IGDCommand {
             process.exitCode();
 
             Sys.println(" Output From Haxelib : "+ process.stdout.readAll().toString());
+
+
         }
 
         /** If there is some custom dev lib to add**/
