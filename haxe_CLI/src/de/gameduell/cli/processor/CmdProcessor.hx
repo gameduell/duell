@@ -2,6 +2,7 @@ package de.gameduell.cli.processor;
 
 import de.gameduell.cli.commands.CreateDummyFileCommand;
 import de.gameduell.cli.commands.InstallLibsCommand;
+import de.gameduell.cli.commands.SetupAndroidCommand;
 import de.gameduell.cli.commands.impl.IGDCommand;
 using Lambda;
 using StringTools;
@@ -13,7 +14,7 @@ enum CmdError
 /**
  * @autor kgar
  * @date 24.06.2014.
- * @company Gamduell GmbH
+ * @company Gameduell GmbH
  */
 class CmdProcessor
 {
@@ -24,8 +25,18 @@ class CmdProcessor
     public function new()
     {
         commands = new List();
-        addCommand("install","install [filename]       install libs based on the sepcified filename\n",new InstallLibsCommand());
-        addCommand("dummy"  ,"dummy   [filename]       generate dummy config file to filename destiination\n",new CreateDummyFileCommand());
+        addCommand("install",   "           install <filename>\n" +
+                                "\n" +
+                                "Install libs based on the specified config file\n", new InstallLibsCommand());
+        addCommand("dummy"  ,   "dummy <filename>\n" +
+                                "\n" +
+                                "Generate dummy config file to filename destination\n", new CreateDummyFileCommand());
+        addCommand("setup_android",     "   setup_android \n" +
+                                        "\n" +
+                                        "Setup the environment for android development. \n" +
+                                        "Currently it asks for downloading the android sdk, ndk, ant and jdk(except mac). \n" +
+                                        "The paths to the sdk's are then written to the hxcpp_config.xml file. \n" +
+                                        "The hxcpp_config file by default is in ~/.hxcpp_config.xml.\n", new SetupAndroidCommand());
     }
 
     function addCommand( name, doc, command ) : Void
@@ -72,8 +83,9 @@ class CmdProcessor
         var ret:String="GDShell "+ GDCommandLine.VERSION+" \n";
         for( c in commands )
         {
-            ret += c.doc ;
+            ret += "\n--------------------------\n\n" + c.doc ;
         }
+        ret += "\n--------------------------\n";
         return ret;
     }
 }

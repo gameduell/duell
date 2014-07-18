@@ -2,7 +2,7 @@ package de.gameduell.cli.commands;
 /**
  * @autor kgar
  * @date 30.06.2014.
- * @company Gamduell GmbH
+ * @company Gameduell GmbH
  */
 import sys.io.File;
 import haxe.Json;

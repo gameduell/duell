@@ -1,0 +1,355 @@
+/**
+ * @autor rcam
+ * @date 15.07.2014.
+ * @company Gameduell GmbH
+ */
+package de.gameduell.cli.commands;
+
+import de.gameduell.cli.helpers.PlatformHelper;
+import de.gameduell.cli.helpers.AskHelper;
+import de.gameduell.cli.helpers.DownloadHelper;
+import de.gameduell.cli.helpers.ExtractionHelper;
+import de.gameduell.cli.helpers.PathHelper;
+import de.gameduell.cli.helpers.StringHelper;
+import de.gameduell.cli.commands.impl.IGDCommand;
+import de.gameduell.cli.helpers.ProcessHelper;
+import de.gameduell.cli.helpers.HXCPPConfigXMLHelper;
+
+import haxe.Http;
+import haxe.io.Eof;
+import haxe.io.Path;
+import sys.io.File;
+import sys.FileSystem;
+import haxe.Json;
+import arguable.ArgParser;
+import neko.Lib;
+
+class SetupAndroidCommand implements IGDCommand
+{
+	private static var androidLinuxNDKPath = "http://dl.google.com/android/ndk/android-ndk-r8b-linux-x86.tar.bz2";
+	private static var androidLinuxSDKPath = "http://dl.google.com/android/android-sdk_r22.0.5-linux.tgz";
+	private static var androidMacNDKPath = "http://dl.google.com/android/ndk/android-ndk-r8b-darwin-x86.tar.bz2";
+	private static var androidMacSDKPath = "http://dl.google.com/android/android-sdk_r22.0.5-macosx.zip";
+	private static var androidWindowsNDKPath = "http://dl.google.com/android/ndk/android-ndk-r8b-windows.zip";
+	private static var androidWindowsSDKPath = "http://dl.google.com/android/android-sdk_r22.0.5-windows.zip";
+	private static var apacheAntUnixPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.2-bin.tar.gz";
+	private static var apacheAntWindowsPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.2-bin.zip";
+	private static var javaJDKURL = "http://www.oracle.com/technetwork/java/javase/downloads/jdk6u37-downloads-1859587.html";
+	
+	
+	
+	/// RESULTING VARIABLES
+	private var androidSDKPath : String = null;
+	private var androidNDKPath : String = null;
+	private var apacheANTPath : String = null;
+	private var javaJDKPath : String = null;
+	private var hxcppConfigPath : String = null;
+	private var androidSDKInstallSkip : Bool = false;
+    
+    public function new()
+    {
+
+    }
+
+    public function execute(cmd : String) : String
+    {
+    	downloadAndroidSDK();
+
+    	setupAndroidSDK();
+
+    	downloadAndroidNDK();
+
+    	downloadApacheAnt();
+
+    	setupJDKInstallation();
+
+    	setupHXCPP();
+
+    	return "success";
+    }
+
+    private function downloadAndroidSDK()
+    {
+    	/// variable setup
+    	var downloadPath = "";
+		var defaultInstallPath = "";
+		var ignoreRootFolder = "android-sdk";
+		
+		if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
+		{
+			downloadPath = androidWindowsSDKPath;
+			defaultInstallPath = "C:\\Development\\Android SDK";
+		
+		} 
+		else if (PlatformHelper.hostPlatform == Platform.LINUX) 
+		{
+			downloadPath = androidLinuxSDKPath;
+			defaultInstallPath = "/opt/android-sdk";
+			ignoreRootFolder = "android-sdk-linux";
+		} 
+		else if (PlatformHelper.hostPlatform == Platform.MAC) 
+		{
+			downloadPath = androidMacSDKPath;
+			defaultInstallPath = "/opt/android-sdk";
+			ignoreRootFolder = "android-sdk-mac";
+		}
+
+		var downloadAnswer = AskHelper.askYesOrNo("Download the android SDK");
+
+		/// ask for the instalation path
+		androidSDKPath = AskHelper.askString("Android SDK Location", defaultInstallPath);
+
+		/// clean up a bit
+		androidSDKPath = PathHelper.unescape(androidSDKPath);
+		androidSDKPath = StringHelper.strip(androidSDKPath);
+
+		if(androidSDKPath == "")
+			androidSDKPath = defaultInstallPath;
+
+		if(downloadAnswer == Yes) 
+		{	
+			/// the actual download
+			DownloadHelper.downloadFile(downloadPath);
+
+			/// create the directory
+			PathHelper.mkdir(androidSDKPath);
+			
+			/// the extraction
+			ExtractionHelper.extractFile(Path.withoutDirectory(downloadPath), androidSDKPath, ignoreRootFolder);
+			
+			/// set appropriate permissions
+			if(PlatformHelper.hostPlatform != Platform.WINDOWS)
+			{
+				ProcessHelper.runCommand("", "chmod", ["-R", "777", androidSDKPath], false);
+			}
+		}
+    }
+
+	private function setupAndroidSDK()
+	{
+		var install = AskHelper.askYesOrNo("Would you like to launch the Android SDK Manager to install packages?");
+
+		if(install == No)
+		{
+			Lib.println ("Please then make sure Android API 16 and SDK Platform-tools are installed");
+			return;
+		}
+
+		Lib.println ("Launching the Android SDK Manager to install packages");
+		Lib.println ("Please install Android API 16 and SDK Platform-tools");
+		
+		if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
+		{
+			ProcessHelper.runInstaller(androidSDKPath + "/SDK Manager.exe");
+		} 
+		else 
+		{
+			ProcessHelper.runInstaller(androidSDKPath + "/tools/android");
+		}
+
+		/// NOT SURE WHAT THIS IS FOR
+		/*
+		if (PlatformHelper.hostPlatform != Platform.WINDOWS && FileSystem.exists (Sys.getEnv ("HOME") + "/.android")) {
+			
+			ProcessHelper.runCommand ("", "chmod", [ "-R", "777", "~/.android" ], false);
+			ProcessHelper.runCommand ("", "cp", [ PathHelper.getHaxelib (new Haxelib ("lime-tools")) + "/templates/bin/debug.keystore", "~/.android/debug.keystore" ], false);
+			
+		}
+		*/
+	}
+
+	private function downloadAndroidNDK()
+	{
+    	/// variable setup
+		var downloadPath = "";
+		var defaultInstallPath = "";
+		var ignoreRootFolder = "android-ndk-r8b";
+		
+		if(PlatformHelper.hostPlatform == Platform.WINDOWS) 
+		{
+			downloadPath = androidWindowsNDKPath;
+			defaultInstallPath = "C:\\Development\\Android NDK";
+		} 
+		else if (PlatformHelper.hostPlatform == Platform.LINUX) 
+		{
+			downloadPath = androidLinuxNDKPath;
+			defaultInstallPath = "/opt/android-ndk";
+		} 
+		else 
+		{
+			downloadPath = androidMacNDKPath;
+			defaultInstallPath = "/opt/android-ndk";
+		}
+
+		/// check if the user wants to download the android ndk
+		var downloadAnswer = AskHelper.askYesOrNo("Download the android NDK");
+
+		/// ask for the instalation path
+		androidNDKPath = AskHelper.askString("Android NDK Location", defaultInstallPath);
+
+		/// clean up a bit
+		androidNDKPath = PathHelper.unescape(androidNDKPath);
+		androidNDKPath = StringHelper.strip(androidNDKPath);
+
+		if(androidNDKPath == "")
+			androidNDKPath = defaultInstallPath;
+
+		if(downloadAnswer == Yes) 
+		{
+			/// the actual download
+			DownloadHelper.downloadFile(downloadPath);
+
+			/// create the directory
+			PathHelper.mkdir(androidNDKPath);
+			
+			/// the extraction
+			ExtractionHelper.extractFile(Path.withoutDirectory(downloadPath), androidNDKPath, ignoreRootFolder);
+		}
+	}
+
+	private function downloadApacheAnt()
+	{
+    	/// variable setup
+		var downloadPath = "";
+		var defaultInstallPath = "";
+		var ignoreRootFolder = "apache-ant-1.9.2";
+	
+		if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
+		{
+			downloadPath = apacheAntWindowsPath;
+			defaultInstallPath = "C:\\Development\\Apache Ant";
+		} 
+		else 
+		{
+			downloadPath = apacheAntUnixPath;
+			defaultInstallPath = "/opt/apache-ant";
+		}
+
+		/// check if the user wants to download apache ant
+		var downloadAnswer = AskHelper.askYesOrNo("Download Apache Ant");
+
+		/// ask for the instalation path
+		apacheANTPath = AskHelper.askString("Apache Ant Location", defaultInstallPath);
+
+		/// clean up a bit
+		apacheANTPath = PathHelper.unescape(apacheANTPath);
+		apacheANTPath = StringHelper.strip(apacheANTPath);
+
+		if(apacheANTPath == "")
+			apacheANTPath = defaultInstallPath;
+
+		if(downloadAnswer == Yes) 
+		{
+			/// the actual download
+			DownloadHelper.downloadFile(downloadPath);
+
+			/// create the directory
+			PathHelper.mkdir(apacheANTPath);
+			
+			/// the extraction
+			ExtractionHelper.extractFile(Path.withoutDirectory(downloadPath), apacheANTPath, ignoreRootFolder);
+		}
+	}
+
+	private function setupJDKInstallation()
+	{
+		if (PlatformHelper.hostPlatform != Platform.MAC) 
+		{
+			var defaultInstallPath;
+			if(PlatformHelper.hostPlatform == Platform.WINDOWS) 
+			{
+				defaultInstallPath = "C:\\Program Files\\Java\\jdk1.7.0\\";
+			} 
+			else /// Linux
+			{
+				defaultInstallPath = "/opt/jdk";
+			} 
+
+			var answer = AskHelper.askYesOrNo("Download and install the Java JDK");
+		
+			if (answer == Yes) 
+			{
+				Lib.println ("You must visit the Oracle website to download the Java 6 JDK for your platform");
+				var secondAnswer = AskHelper.askYesOrNo("Would you like to go there now?");
+			
+				if (secondAnswer != No) 
+				{
+					ProcessHelper.openURL(javaJDKURL);	
+				}
+			}
+
+			javaJDKPath = AskHelper.askString("Java JDK Location", defaultInstallPath);
+
+			/// clean up a bit
+			javaJDKPath = PathHelper.unescape(javaJDKPath);
+			javaJDKPath = StringHelper.strip(javaJDKPath);
+
+			if(javaJDKPath == "")
+				javaJDKPath = defaultInstallPath;
+		}
+	}
+ 
+	private function setupHXCPP()
+	{
+    	hxcppConfigPath = getDefaultHXCPPConfigLocation();
+
+		var hxcppHelper = new HXCPPConfigXMLHelper(hxcppConfigPath);
+
+		var existingDefines : Map<String, String> = hxcppHelper.getDefines();
+
+    	var newDefines : Map<String, String> = getDefinesToWriteToHXCPP();
+
+		Lib.println("Writing new definitions to hxcpp config file:");
+
+		for(def in newDefines.keys())
+		{
+			Lib.println(def + ":" + newDefines.get(def));
+		}
+
+		for(def in existingDefines.keys())
+		{
+			if(!newDefines.exists(def))
+			{
+				newDefines.set(def, existingDefines.get(def));
+			}
+		}
+
+		hxcppHelper.writeDefines(newDefines);
+	}
+
+	private function getDefaultHXCPPConfigLocation() : String
+	{
+		var env = Sys.environment();
+
+		var home = "";
+		
+		if (env.exists ("HOME")) 
+		{
+			home = env.get ("HOME");
+		} 
+		else if(env.exists ("USERPROFILE")) 
+		{
+			home = env.get ("USERPROFILE");
+		} 
+		else 
+		{	
+			throw "Could not find the home folder, no HOME variable is set. Can't find hxcpp_config.xml";
+		}
+		
+		return home + "/.hxcpp_config.xml";
+	}
+
+	private function getDefinesToWriteToHXCPP() : Map<String, String>
+	{
+		var defines = new Map<String, String>();
+		defines.set("ANDROID_SDK", androidSDKPath);
+		defines.set("ANDROID_NDK_ROOT", androidNDKPath);
+		defines.set("ANT_HOME", apacheANTPath);
+		defines.set("ANDROID_SETUP", "YES");
+
+		if(PlatformHelper.hostPlatform != Platform.MAC)
+			defines.set("JAVA_HOME", javaJDKPath);
+
+		return defines;
+	}
+}
