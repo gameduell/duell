@@ -1,9 +1,13 @@
-package de.gameduell.cli.commands;
 /**
  * @autor kgar
  * @date 30.06.2014.
  * @company Gameduell GmbH
  */
+package de.gameduell.cli.commands;
+
+import de.gameduell.cli.helpers.SemVer;
+import de.gameduell.cli.helpers.LogHelper;
+
 import sys.io.Process;
 import Sys;
 import sys.FileSystem;
@@ -12,7 +16,8 @@ import sys.io.File;
 import haxe.Json;
 import haxe.io.Error;
 import de.gameduell.cli.commands.impl.IGDCommand;
-class InstallLibsCommand implements IGDCommand {
+class InstallLibsCommand implements IGDCommand 
+{
 
     private static var DEFAULT_ENVIRONMENT_URL:String = "ssh://git@phabricator.office.gameduell.de:2222/diffusion/HAXMISCHAXEREPOLIST/haxe-repo-list.git";
     private var content:String;
@@ -80,13 +85,12 @@ class InstallLibsCommand implements IGDCommand {
         var destination:String = "haxe-repo-list";
         var globalFileContent:String;
 
-
         /** cloning global config file repo , if it exists we git pull**/
         if (FileSystem.exists(destination))
         {
             if( gitPull(destination) != 0 )
             {
-                Sys.println(" ERROR : Can't Get the  global config file ");
+                LogHelper.error("Can't Get the  global config file ");
                 return false;
             }
         }
@@ -94,7 +98,7 @@ class InstallLibsCommand implements IGDCommand {
         {
             if( gitClone(environment,destination) != 0 )
             {
-                Sys.println(" ERROR : Can't Get the  global config file ");
+                LogHelper.error("Can't Get the  global config file ");
                 return false;
             }
         }
@@ -107,7 +111,7 @@ class InstallLibsCommand implements IGDCommand {
         }
         catch (e:Error)
         {
-            Sys.println(" ERROR : Cannot Parse global config file seems to be broken ");
+            LogHelper.error("Cannot Parse global config file seems to be broken ");
             return false;
         }
 
@@ -123,7 +127,7 @@ class InstallLibsCommand implements IGDCommand {
     private function gitPull( destination:String ):Int
     {
         var result:Int = 0;
-        Sys.println(" Directory already exists, Updating... ");
+        LogHelper.info(" Directory already exists, Updating... ");
 
         result = Sys.command("cd " + destination + " && " + "git pull && cd ..");
         return result;
@@ -134,6 +138,7 @@ class InstallLibsCommand implements IGDCommand {
         var library:Dynamic;
         repoErrorOccured = false;
 
+
         if (parsedContent != null && parsedContent.version != GDCommandLine.VERSION)
         {
             return "the version in the file is different then the current Version of GDShell";
@@ -143,8 +148,9 @@ class InstallLibsCommand implements IGDCommand {
             library = Reflect.field(parsedGlobalConfig,lib);
             installLibrary(library,lib);
             repoErrorOccured = false;
-            Sys.println("Done Installing lib "+ lib +" ==========================================");
+            LogHelper.println("Done Installing lib "+ lib +" ==========================================");
         }
+
 
         return "Installing done "+(globalErrorOccured ? " With some Errors" : " Without Errors");
     }
@@ -152,21 +158,24 @@ class InstallLibsCommand implements IGDCommand {
     public function installLibrary(library:Dynamic,lib:String):Void
     {
         var repoErrorOccured:Bool = false;
+        var parsedHaxeLib:Dynamic;
+        var globalDependencies:List<{ project: String, version : String }>;
         var gdLibContent:String;
         var gdLibParsedContent:{dependencies:Array<String>};
         if( library == null ) return;
 
-        Sys.println("Installing lib "+ lib +"===============================================");
-        Sys.println("Creating directory : [" + library.destination_path + "]");
+        LogHelper.println("Installing lib "+ lib +"===============================================");
+        LogHelper.println("Creating directory : [" + library.destination_path + "]");
+
 
 
         /**checkout into directory after creating it**/
 
         if (FileSystem.exists(library.destination_path))
         {
-            if(gitPull(library.destination_path) != 0 )
+            if( gitPull(library.destination_path) != 0 )
             {
-                Sys.println(" ERROR : Can't Install library "+lib);
+                LogHelper.error("Can't Install library "+lib);
                 repoErrorOccured = true;
                 globalErrorOccured = true;
             }
@@ -176,11 +185,49 @@ class InstallLibsCommand implements IGDCommand {
 
             if( gitClone(library.git_path,library.destination_path) != 0 )
             {
-                Sys.println(" ERROR : Can't Install library "+lib);
+                LogHelper.println("Can't Install library "+lib);
                 repoErrorOccured = true;
                 globalErrorOccured = true;
             }
         }
+
+        /** Haxelib JSON File **/
+        try
+        {
+            parsedHaxeLib = Json.parse( File.getContent(library.library_path+"/haxelib.json") );
+            globalDependencies = new List();
+            try {
+                for( d in Reflect.fields(parsedHaxeLib.dependencies) ) {
+                    var version = try {
+                        SemVer.ofString( Std.string(Reflect.field(parsedHaxeLib.dependencies,d)) ).toString();
+                    } catch (e:Dynamic) "";
+                    globalDependencies.add({ project: d, version: version });
+                }
+            } catch(e:Dynamic) {}
+        }
+        catch (e:Error)
+        {
+            parsedHaxeLib = null;
+            globalDependencies = null;
+            LogHelper.error("Cannot Parse haxelib.json for "+lib+" file seems to be broken ");
+        }
+
+        if( globalDependencies != null )
+        {
+            var arguments:Array<String> =[];
+            trace(globalDependencies);
+            for ( dependency in globalDependencies )
+            {
+                LogHelper.println("Installing dependency "+dependency.project+" "+dependency.version);
+                arguments.push(dependency.project);
+                if( dependency.version != "" )
+                    arguments.push(dependency.version);
+
+                Sys.command("haxelib install ",arguments);
+                arguments = [];
+            }
+        }
+
 
         /** Haxelib dev **/
         if(!repoErrorOccured)
@@ -191,7 +238,9 @@ class InstallLibsCommand implements IGDCommand {
             var process:Process = new Process(command, arguments);
             process.exitCode();
 
-            Sys.println(" Output From Haxelib : "+ process.stdout.readAll().toString());
+            LogHelper.println("Output From Haxelib : "+ process.stdout.readAll().toString());
+
+
         }
 
         /** If there is some custom dev lib to add**/
@@ -205,7 +254,7 @@ class InstallLibsCommand implements IGDCommand {
             }
             catch (e:Error)
             {
-                Sys.println(" ERROR : Cannot Parse gd lib config file seems to be broken ");
+                LogHelper.error("Cannot Parse gd lib config file seems to be broken ");
             }
         }
     }

@@ -1,6 +1,8 @@
 package ;
 
 import de.gameduell.cli.processor.CmdProcessor;
+import de.gameduell.cli.helpers.LogHelper;
+
 import neko.Lib;
 
 /**
@@ -33,6 +35,8 @@ class GDCommandLine {
     **/
     public function run()
     {
+        printBanner();
+
         var args = Sys.args();
         var cmd:String;
 
@@ -49,10 +53,22 @@ class GDCommandLine {
         {
             var ret = processor.process(cmd);
             if( ret != null )
-                Lib.println(ret+"\n");
+                LogHelper.println(ret+"\n");
         }
         catch (ex:CmdError)
         {
-            Sys.print("Unknown Command");
+            LogHelper.error("Unknown Command");
         }
-    }}
+    }
+
+    private function printBanner()
+    {
+        LogHelper.println("\x1b[33;1m __                          ");         
+        LogHelper.println(" _____ ____  _____ _____ _____ __");   
+        LogHelper.println("|   __|    \\|_   _|     |     |  |");   
+        LogHelper.println("|  |  |  |  | | | |  |  |  |  |  |__");
+        LogHelper.println("|_____|____/  |_| |_____|_____|_____|\x1b[0m");
+        LogHelper.println("");
+        LogHelper.println("\x1b[1mGDTool \x1b[0m\x1b[3;37mGameduell command line tool\x1b[0m\x1b[0m");
+    }
+}

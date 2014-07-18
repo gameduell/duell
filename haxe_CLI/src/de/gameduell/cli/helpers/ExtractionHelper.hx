@@ -18,11 +18,13 @@ class Reader {
 
 	var i : haxe.io.Input;
 
-	public function new(i) {
+	public function new(i) 
+	{
 		this.i = i;
 	}
 
-	function readZipDate() {
+	function readZipDate() 
+	{
 		var t = i.readUInt16();
 		var hour = (t >> 11) & 31;
 		var min = (t >> 5) & 63;
@@ -34,35 +36,41 @@ class Reader {
 		return new Date(year + 1980, month-1, day, hour, min, sec << 1);
 	}
 
-	function readExtraFields(length) {
+	function readExtraFields(length) 
+	{
 		var fields = new List();
 		while( length > 0 ) {
 			if( length < 4 ) throw "Invalid extra fields data";
 			var tag = i.readUInt16();
 			var len = i.readUInt16();
 			if( length < len ) throw "Invalid extra fields data";
-			switch( tag ) {
-			case 0x7075:
-				var version = i.readByte();
-				if( version != 1 ) {
-					var data = new haxe.io.BytesBuffer();
-					data.addByte(version);
-					data.add(i.read(len-1));
-					fields.add(FUnknown(tag,data.getBytes()));
-				} else {
-					var crc = i.readInt32();
-					var name = i.read(len - 5).toString();
-					fields.add(FInfoZipUnicodePath(name,crc));
-				}
-			default:
-				fields.add(FUnknown(tag,i.read(len)));
+			switch( tag ) 
+			{
+				case 0x7075:
+					var version = i.readByte();
+					if( version != 1 ) 
+					{
+						var data = new haxe.io.BytesBuffer();
+						data.addByte(version);
+						data.add(i.read(len-1));
+						fields.add(FUnknown(tag,data.getBytes()));
+					} 
+					else 
+					{
+						var crc = i.readInt32();
+						var name = i.read(len - 5).toString();
+						fields.add(FInfoZipUnicodePath(name,crc));
+					}
+				default:
+					fields.add(FUnknown(tag,i.read(len)));
 			}
 			length -= 4 + len;
 		}
 		return fields;
 	}
 
-	public function readEntryHeader() : Entry {
+	public function readEntryHeader() : Entry 
+	{
 		var i = this.i;
 		var h = i.readInt32();
 		if( h == 0x02014B50 || h == 0x06054B50 )
@@ -103,7 +111,8 @@ class Reader {
 		};
 	}
 
-	public function read() : List<Entry> {
+	public function read() : List<Entry> 
+	{
 		var l = new List();
 		var buf = null;
 		var tmp = null;
@@ -171,12 +180,14 @@ class Reader {
 		return l;
 	}
 	
-	public static function readZip( i : haxe.io.Input ) {
+	public static function readZip( i : haxe.io.Input ) 
+	{
 		var r = new Reader(i);
 		return r.read();
 	}
 
-	public static function unzip( f : Entry ) {
+	public static function unzip( f : Entry ) 
+	{
 		if( !f.compressed )
 			return f.data;
 		#if neko

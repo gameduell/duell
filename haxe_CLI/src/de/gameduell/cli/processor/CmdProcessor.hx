@@ -4,6 +4,8 @@ import de.gameduell.cli.commands.CreateDummyFileCommand;
 import de.gameduell.cli.commands.InstallLibsCommand;
 import de.gameduell.cli.commands.SetupAndroidCommand;
 import de.gameduell.cli.commands.impl.IGDCommand;
+import de.gameduell.cli.helpers.LogHelper;
+
 using Lambda;
 using StringTools;
 enum CmdError
@@ -68,7 +70,7 @@ class CmdProcessor
             {
                 currentTime = Date.now().getTime();
                 output = c.command.execute(cmd);
-                Sys.println(" Time passed "+((Date.now().getTime()-currentTime)/1000)+" sec for command '"+cmd+"''");
+                LogHelper.println(" Time passed "+((Date.now().getTime()-currentTime)/1000)+" sec for command '"+cmd+"''");
                 return output;
             }
         }
@@ -80,7 +82,7 @@ class CmdProcessor
     //================================================================================
     public static function printHelp() :String
     {
-        var ret:String="GDShell "+ GDCommandLine.VERSION+" \n";
+        var ret : String="GDShell "+ GDCommandLine.VERSION+" \n";
         for( c in commands )
         {
             ret += "\n--------------------------\n\n" + c.doc ;

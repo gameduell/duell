@@ -10,6 +10,7 @@ import de.gameduell.cli.helpers.AskHelper;
 import de.gameduell.cli.helpers.DownloadHelper;
 import de.gameduell.cli.helpers.ExtractionHelper;
 import de.gameduell.cli.helpers.PathHelper;
+import de.gameduell.cli.helpers.LogHelper;
 import de.gameduell.cli.helpers.StringHelper;
 import de.gameduell.cli.commands.impl.IGDCommand;
 import de.gameduell.cli.helpers.ProcessHelper;
@@ -53,19 +54,47 @@ class SetupAndroidCommand implements IGDCommand
 
     public function execute(cmd : String) : String
     {
-    	downloadAndroidSDK();
+    	try
+    	{
 
-    	setupAndroidSDK();
+	    	LogHelper.println("");
+	    	LogHelper.println("------");
+	    	LogHelper.println("\x1b[1mAndroid Setup\x1b[0m");
+	    	LogHelper.println("------");
+	    	LogHelper.println("");
 
-    	downloadAndroidNDK();
+	    	downloadAndroidSDK();
 
-    	downloadApacheAnt();
+	    	LogHelper.println("");
 
-    	setupJDKInstallation();
+	    	setupAndroidSDK();
 
-    	setupHXCPP();
+	    	LogHelper.println("");
 
-    	return "success";
+	    	downloadAndroidNDK();
+
+	    	LogHelper.println("");
+
+	    	downloadApacheAnt();
+
+	    	LogHelper.println("");
+
+	    	setupJDKInstallation();
+
+	    	LogHelper.println("");
+
+	    	setupHXCPP();
+
+	    	LogHelper.println("------");
+	    	LogHelper.println("end");
+	    	LogHelper.println("------");
+
+    	} catch(error : Dynamic)
+    	{
+    		LogHelper.error("An error occurred, do you need admin permissions to run the script? Check if you have permissions to write on the paths you specify.");
+    	}
+	    
+	    return "success";
     }
 
     private function downloadAndroidSDK()
@@ -131,12 +160,12 @@ class SetupAndroidCommand implements IGDCommand
 
 		if(install == No)
 		{
-			Lib.println ("Please then make sure Android API 16 and SDK Platform-tools are installed");
+			LogHelper.println ("Please then make sure Android API 16 and SDK Platform-tools are installed");
 			return;
 		}
 
-		Lib.println ("Launching the Android SDK Manager to install packages");
-		Lib.println ("Please install Android API 16 and SDK Platform-tools");
+		LogHelper.println ("Launching the Android SDK Manager to install packages");
+		LogHelper.println ("Please install Android API 16 and SDK Platform-tools");
 		
 		if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
 		{
@@ -269,7 +298,7 @@ class SetupAndroidCommand implements IGDCommand
 		
 			if (answer == Yes) 
 			{
-				Lib.println ("You must visit the Oracle website to download the Java 6 JDK for your platform");
+				LogHelper.println ("You must visit the Oracle website to download the Java 6 JDK for your platform");
 				var secondAnswer = AskHelper.askYesOrNo("Would you like to go there now?");
 			
 				if (secondAnswer != No) 
@@ -299,11 +328,11 @@ class SetupAndroidCommand implements IGDCommand
 
     	var newDefines : Map<String, String> = getDefinesToWriteToHXCPP();
 
-		Lib.println("Writing new definitions to hxcpp config file:");
+		LogHelper.info("Writing new definitions to hxcpp config file:");
 
 		for(def in newDefines.keys())
 		{
-			Lib.println(def + ":" + newDefines.get(def));
+			LogHelper.info(def + ":" + newDefines.get(def));
 		}
 
 		for(def in existingDefines.keys())
@@ -342,13 +371,50 @@ class SetupAndroidCommand implements IGDCommand
 	private function getDefinesToWriteToHXCPP() : Map<String, String>
 	{
 		var defines = new Map<String, String>();
-		defines.set("ANDROID_SDK", androidSDKPath);
-		defines.set("ANDROID_NDK_ROOT", androidNDKPath);
-		defines.set("ANT_HOME", apacheANTPath);
+
+		if(FileSystem.exists(androidSDKPath))
+		{
+			defines.set("ANDROID_SDK", FileSystem.fullPath(androidSDKPath));
+		}
+		else
+		{
+			LogHelper.error("Path specified for android SDK doesn't exist!");
+		}		
+
+		if(FileSystem.exists(androidNDKPath))
+		{
+			defines.set("ANDROID_NDK_ROOT", FileSystem.fullPath(androidNDKPath));
+		}
+		else
+		{
+			LogHelper.error("Path specified for android NDK doesn't exist!");
+		}		
+
+		if(FileSystem.exists(apacheANTPath))
+		{
+			defines.set("ANT_HOME", FileSystem.fullPath(apacheANTPath));
+		}
+		else
+		{
+			LogHelper.error("Path specified for apache Ant doesn't exist!");
+		}	
+
 		defines.set("ANDROID_SETUP", "YES");
 
 		if(PlatformHelper.hostPlatform != Platform.MAC)
-			defines.set("JAVA_HOME", javaJDKPath);
+		{
+			if(FileSystem.exists(javaJDKPath))
+			{
+				defines.set("JAVA_HOME", FileSystem.fullPath(javaJDKPath));
+			}
+			else
+			{
+				LogHelper.error("Path specified for Java JDK doesn't exist!");
+			}	
+		}
+
+
+		defines.set("ANDROID_SETUP", "YES");
 
 		return defines;
 	}
