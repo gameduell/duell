@@ -63,7 +63,7 @@ class BaseSetupCommand implements IGDCommand
 
     	} catch(error : Dynamic)
     	{
-    		LogHelper.error("An error occurred, do you need admin permissions to run the script? Check if you have permissions to write on the paths you specify.");
+    		LogHelper.error("An error occurred, do you need admin permissions to run the script? Check if you have permissions to write on the paths you specify. Error:" + error);
     	}
 	    
 	    return "success";

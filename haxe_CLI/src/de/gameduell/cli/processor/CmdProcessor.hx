@@ -106,7 +106,7 @@ class CmdProcessor
         ret += "\n--------------------------\n";
         ret += "\n\x1b[1mCommand explanation\x1b[0m\n";
         ret += "\n--------------------------\n";
-        ret += "\nPlease run the tool with one of - " + commands.map(function(cmd) {return cmd.name;}).join(", ") + "or help to show this message.\n";
+        ret += "\nPlease run the tool with one of - " + commands.map(function(cmd) {return cmd.name;}).join(", ") + " or help to show this message.\n";
 
 
         for( c in commands )
