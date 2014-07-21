@@ -18,7 +18,6 @@ import haxe.io.Error;
 import de.gameduell.cli.commands.impl.IGDCommand;
 class InstallLibsCommand implements IGDCommand 
 {
-
     private static var DEFAULT_ENVIRONMENT_URL:String = "ssh://git@phabricator.office.gameduell.de:2222/diffusion/HAXMISCHAXEREPOLIST/haxe-repo-list.git";
     private var content:String;
     private var parsedContent:{env_url:String,version:String, dev_libs:Array<String>};

@@ -17,7 +17,6 @@ class CreateDummyFileCommand implements IGDCommand{
                                                                     "ash",
                                                                     "types",
                                                                     "asyncrunner",
-                                                                    "polygonal-ds",
                                                                     "filesystem",
                                                                     "graphics",
                                                                     "hxcpp",

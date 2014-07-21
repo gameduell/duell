@@ -37,8 +37,6 @@ class SetupAndroidCommand implements IGDCommand
 	private static var apacheAntWindowsPath = "http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.2-bin.zip";
 	private static var javaJDKURL = "http://www.oracle.com/technetwork/java/javase/downloads/jdk6u37-downloads-1859587.html";
 	
-	
-	
 	/// RESULTING VARIABLES
 	private var androidSDKPath : String = null;
 	private var androidNDKPath : String = null;
