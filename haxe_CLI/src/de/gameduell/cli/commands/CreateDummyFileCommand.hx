@@ -22,6 +22,7 @@ class CreateDummyFileCommand implements IGDCommand{
                                                                     "hxcpp",
                                                                     "hxjni",
                                                                     "ios_appdelegate",
+                                                                    "android_appdelegate",
                                                                     "lime",
                                                                     "lime-tools",
                                                                     "munit",

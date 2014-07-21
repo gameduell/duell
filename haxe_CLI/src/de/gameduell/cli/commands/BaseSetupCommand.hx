@@ -22,7 +22,6 @@ import haxe.io.Path;
 import sys.io.File;
 import sys.FileSystem;
 import haxe.Json;
-import arguable.ArgParser;
 import neko.Lib;
 
 class BaseSetupCommand implements IGDCommand
