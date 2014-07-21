@@ -19,6 +19,7 @@ class CreateDummyFileCommand implements IGDCommand{
                                                                     "asyncrunner",
                                                                     "filesystem",
                                                                     "graphics",
+                                                                    "events",
                                                                     "hxcpp",
                                                                     "hxjni",
                                                                     "ios_appdelegate",
