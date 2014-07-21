@@ -156,7 +156,7 @@ class SetupAndroidCommand implements IGDCommand
 
 	private function setupAndroidSDK()
 	{
-		var install = AskHelper.askYesOrNo("Would you like to launch the Android SDK Manager to install packages?");
+		var install = AskHelper.askYesOrNo("Would you like to install necessary Android packages (API16, Platform-tools and tools)");
 
 		if(install == No)
 		{
@@ -164,18 +164,8 @@ class SetupAndroidCommand implements IGDCommand
 			return;
 		}
 
-		LogHelper.println ("Launching the Android SDK Manager to install packages");
-		LogHelper.println ("Please install Android API 16 and SDK Platform-tools");
+		ProcessHelper.runCommand("", androidSDKPath + "/tools/android", ["update", "sdk", "--no-ui", "--filter", "16,tool,platform-tool"]);
 		
-		if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
-		{
-			ProcessHelper.runInstaller(androidSDKPath + "/SDK Manager.exe");
-		} 
-		else 
-		{
-			ProcessHelper.runInstaller(androidSDKPath + "/tools/android");
-		}
-
 		/// NOT SURE WHAT THIS IS FOR
 		/*
 		if (PlatformHelper.hostPlatform != Platform.WINDOWS && FileSystem.exists (Sys.getEnv ("HOME") + "/.android")) {
