@@ -85,6 +85,28 @@ class HXCPPConfigXMLHelper
 		output.close();
 	}
 
+	public static function getProbableHXCPPConfigLocation() : String
+	{
+		var env = Sys.environment();
+
+		var home = "";
+		
+		if (env.exists ("HOME")) 
+		{
+			home = env.get ("HOME");
+		} 
+		else if(env.exists ("USERPROFILE")) 
+		{
+			home = env.get ("USERPROFILE");
+		} 
+		else 
+		{	
+			return null;
+		}
+		
+		return home + "/.hxcpp_config.xml";
+	}
+
 	private function getDefinesFromSectionVars(sectionElement : Fast) 
 	{
 		var defines = new Map<String, String>();
@@ -107,5 +129,4 @@ class HXCPPConfigXMLHelper
 		}
 		return defines;
 	}
-	
 }

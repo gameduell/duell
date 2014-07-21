@@ -10,9 +10,9 @@ import neko.Lib;
  * @date 24.06.2014.
  * @company Gamduell GmbH
  */
-class GDCommandLine {
-    public static var VERSION = "0.0.2";
-
+class GDCommandLine 
+{
+    public static var VERSION = "0.1.0";
 
     /** **/
     private var processor:CmdProcessor;

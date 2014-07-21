@@ -212,47 +212,45 @@ class ProcessHelper
 	}
 	
 	
-	public static function runProcess(path:String, command:String, args:Array <String>, waitForOutput:Bool = true, safeExecute:Bool = true, ignoreErrors:Bool = false, print:Bool = false) : String {
+	public static function runProcess(path : String, command : String, args : Array <String>, waitForOutput : Bool = true, safeExecute : Bool = true, ignoreErrors : Bool = false, print : Bool = false) : String {
 		
-		if (print) {
-			
+		if (print) 
+		{
 			var message = command;
 			
-			for (arg in args) {
-				
-				if (arg.indexOf (" ") > -1) {
-					
+			for (arg in args) 
+			{
+				if (arg.indexOf (" ") > -1) 
+				{
 					message += " \"" + arg + "\"";
-					
-				} else {
-					
+				} 
+				else 
+				{
 					message += " " + arg;
-					
 				}
-				
 			}
 			
 			Sys.println (message);
 			
 		}
 		
-		command = PathHelper.escape (command);
+		command = PathHelper.escape(command);
 		
-		if (safeExecute) {
-			
+		if(safeExecute) 
+		{
 			try {
 				
-				if (path != null && path != "" && !FileSystem.exists (FileSystem.fullPath (path)) && !FileSystem.exists (FileSystem.fullPath (new Path (path).dir))) {
-					
-					LogHelper.error ("The specified target path \"" + path + "\" does not exist");
-					
+				if(path != null && path != "" && !FileSystem.exists(FileSystem.fullPath (path)) && !FileSystem.exists(FileSystem.fullPath (new Path(path).dir))) 
+				{
+					LogHelper.error("The specified target path \"" + path + "\" does not exist");
 				}
 				
-				return _runProcess (path, command, args, waitForOutput, ignoreErrors);
+				return _runProcess(path, command, args, waitForOutput, ignoreErrors);
 				
 			} catch (e:Dynamic) {
 				
-				if (!ignoreErrors) {
+				if(!ignoreErrors) 
+				{
 					
 					LogHelper.error ("", e);
 					
@@ -299,7 +297,6 @@ class ProcessHelper
 			}
 			
 		}
-		
 		LogHelper.info ("", " - \x1b[1mRunning process:\x1b[0m " + command + argString);
 		
 		var output = "";
@@ -315,7 +312,6 @@ class ProcessHelper
 			while (waiting) {
 				
 				try  {
-					
 					var current = process.stdout.readAll (1024);
 					buffer.write (current);
 					

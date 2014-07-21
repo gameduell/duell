@@ -58,9 +58,9 @@ class SetupAndroidCommand implements IGDCommand
     	{
 
 	    	LogHelper.println("");
-	    	LogHelper.println("------");
-	    	LogHelper.println("\x1b[1mAndroid Setup\x1b[0m");
-	    	LogHelper.println("------");
+	    	LogHelper.println("\x1b[2m------");
+	    	LogHelper.println("Android Setup");
+	    	LogHelper.println("------\x1b[0m");
 	    	LogHelper.println("");
 
 	    	downloadAndroidSDK();
@@ -85,9 +85,9 @@ class SetupAndroidCommand implements IGDCommand
 
 	    	setupHXCPP();
 
-	    	LogHelper.println("------");
+	    	LogHelper.println("\x1b[2m------");
 	    	LogHelper.println("end");
-	    	LogHelper.println("------");
+	    	LogHelper.println("------\x1b[0m");
 
     	} catch(error : Dynamic)
     	{
@@ -320,7 +320,12 @@ class SetupAndroidCommand implements IGDCommand
  
 	private function setupHXCPP()
 	{
-    	hxcppConfigPath = getDefaultHXCPPConfigLocation();
+    	hxcppConfigPath = HXCPPConfigXMLHelper.getProbableHXCPPConfigLocation();
+
+    	if(hxcppConfigPath == null)
+    	{
+			LogHelper.error("Could not find the home folder, no HOME variable is set. Can't find hxcpp_config.xml");
+    	}
 
 		var hxcppHelper = new HXCPPConfigXMLHelper(hxcppConfigPath);
 
@@ -328,11 +333,11 @@ class SetupAndroidCommand implements IGDCommand
 
     	var newDefines : Map<String, String> = getDefinesToWriteToHXCPP();
 
-		LogHelper.info("Writing new definitions to hxcpp config file:");
+		LogHelper.info("\x1b[1mWriting new definitions to hxcpp config file:\x1b[0m");
 
 		for(def in newDefines.keys())
 		{
-			LogHelper.info(def + ":" + newDefines.get(def));
+			LogHelper.info("\x1b[1m" + def + "\x1b[0m:" + newDefines.get(def));
 		}
 
 		for(def in existingDefines.keys())
@@ -398,8 +403,6 @@ class SetupAndroidCommand implements IGDCommand
 		{
 			LogHelper.error("Path specified for apache Ant doesn't exist!");
 		}	
-
-		defines.set("ANDROID_SETUP", "YES");
 
 		if(PlatformHelper.hostPlatform != Platform.MAC)
 		{
