@@ -35,23 +35,13 @@ class GDCommandLine
     **/
     public function run()
     {
+        var command = parseArgumentsAndGetCommand();
+
         printBanner();
 
-        var args = Sys.args();
-        var cmd:String;
-
-        // if the argument are empty we set it to help command by default
-        if (args.length <= 0)
-        {
-            cmd = "help";
-        }
-        else
-        {
-            cmd = args[0];
-        }
         try
         {
-            var ret = processor.process(cmd);
+            var ret = processor.process(command);
             if( ret != null )
                 LogHelper.println(ret+"\n");
         }
@@ -59,6 +49,33 @@ class GDCommandLine
         {
             LogHelper.error("Unknown Command");
         }
+    }
+
+    private function parseArgumentsAndGetCommand()
+    {
+        for(arg in Sys.args())
+        {
+            if(arg.charAt(0) == "-")
+            {
+                switch(arg)
+                {
+                    case("-verbose"):
+                        LogHelper.verbose = true;
+                    case("-nocolor"):
+                        LogHelper.enableColor = false;
+                    default:
+                        LogHelper.println("unknown parameter " + arg);
+                        break;
+                }
+            }
+            else
+            {
+                return arg;
+            }
+        }
+
+        return "help";
+
     }
 
     private function printBanner()

@@ -56,8 +56,6 @@ class CmdProcessor
                                         "\n" +
                                         "Setup the environment for development in mac. \n" +
                                         "Currently it checks for xcode and the command line tools, and helps installing them.\n" , new SetupMacCommand());
-
-        LogHelper.verbose = true;
     }
 
     function addCommand( name, doc, command ) : Void
@@ -103,10 +101,13 @@ class CmdProcessor
     {
         var ret : String="GDShell "+ GDCommandLine.VERSION+" \n";
 
+
+
         ret += "\n--------------------------\n";
         ret += "\n\x1b[1mCommand explanation\x1b[0m\n";
         ret += "\n--------------------------\n";
         ret += "\nPlease run the tool with one of - " + commands.map(function(cmd) {return cmd.name;}).join(", ") + " or help to show this message.\n";
+        ret += "\nAdditionally you can set common command parameters. Currently there are -verbose and -nocolor. Example: gdtool -verbose setup\n";
 
 
         for( c in commands )
