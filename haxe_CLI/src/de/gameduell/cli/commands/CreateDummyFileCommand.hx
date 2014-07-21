@@ -11,7 +11,7 @@ class CreateDummyFileCommand implements IGDCommand{
 
     /** Just dummy file to generate when ask for**/
     private var dummyJSON:Dynamic = Json.parse('{
-                                                    "version":"0.0.2"
+                                                    "version":"0.1.0"
                                                     ,"env_url":"ssh://git@phabricator.office.gameduell.de:2222/diffusion/HAXMISCHAXEREPOLIST/haxe-repo-list.git"
                                                     ,"dev_libs": [
                                                                     "ash",
