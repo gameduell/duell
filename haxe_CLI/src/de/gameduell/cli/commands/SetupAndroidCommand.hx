@@ -161,8 +161,7 @@ class SetupAndroidCommand implements IGDCommand
 			return;
 		}
 
-		ProcessHelper.runCommand("", androidSDKPath + "/tools/android", ["update", "sdk", "--no-ui", "--filter", "16,tool,platform-tool"]);
-		
+		ProcessHelper.runCommand("", androidSDKPath + "/tools/android", ["update", "sdk", "--no-ui", "--filter", "1,2,3,16"]); /// numbers "taken from android list sdk --all"
 		/// NOT SURE WHAT THIS IS FOR
 		/*
 		if (PlatformHelper.hostPlatform != Platform.WINDOWS && FileSystem.exists (Sys.getEnv ("HOME") + "/.android")) {

@@ -105,7 +105,7 @@ class SetupMacCommand implements IGDCommand
 
 		var output : String = ProcessHelper.runProcess("", "pkgutil", ["--pkg-info=com.apple.pkg.CLTools_Executables"], true, true, true, false);
 
-		if(output.indexOf("package-id:") == -1)
+		if(output == null || output.indexOf("package-id:") == -1)
 		{
 			LogHelper.println("It seems the xcode command line tools are not installed.");
 
