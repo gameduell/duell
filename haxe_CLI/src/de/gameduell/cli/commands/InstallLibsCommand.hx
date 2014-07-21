@@ -213,8 +213,7 @@ class InstallLibsCommand implements IGDCommand
 
         if( globalDependencies != null )
         {
-            var arguments:Array<String> =[];
-            trace(globalDependencies);
+            var arguments:Array<String> =["install"];
             for ( dependency in globalDependencies )
             {
                 LogHelper.println("Installing dependency "+dependency.project+" "+dependency.version);
@@ -222,8 +221,8 @@ class InstallLibsCommand implements IGDCommand
                 if( dependency.version != "" )
                     arguments.push(dependency.version);
 
-                Sys.command("haxelib install ",arguments);
-                arguments = [];
+                Sys.command("haxelib",arguments);
+                arguments = ["install"];
             }
         }
 
