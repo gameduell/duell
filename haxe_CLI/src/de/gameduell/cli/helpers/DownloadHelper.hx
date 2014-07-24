@@ -92,7 +92,7 @@ class DownloadHelper
 				return;
 			}
 		}
-		
+		trace("Starting Download...");
 		var out = File.write(localPath, true);
 		var progress = new Progress(out);
 		var h = new Http(remotePath);
@@ -100,6 +100,8 @@ class DownloadHelper
 		h.cnxTimeout = 30;
 		
 		h.onError = function (e) {
+
+			trace("Error!", e);
 			progress.close();
 			FileSystem.deleteFile(localPath);
 			throw e;

@@ -39,11 +39,11 @@ class Reader {
 	function readExtraFields(length) 
 	{
 		var fields = new List();
-		while( length > 0 ) {
-			if( length < 4 ) throw "Invalid extra fields data";
+		while(length > 0) {
+			if(length < 4) throw "Invalid extra fields data";
 			var tag = i.readUInt16();
 			var len = i.readUInt16();
-			if( length < len ) throw "Invalid extra fields data";
+			if(length < len) throw "Invalid extra fields data";
 			switch( tag ) 
 			{
 				case 0x7075:
