@@ -97,6 +97,7 @@ class DownloadHelper
 		var progress = new Progress(out);
 		var h = new Http(remotePath);
 		
+		trace("Download Started...");
 		h.cnxTimeout = 30;
 		
 		h.onError = function (e) {
