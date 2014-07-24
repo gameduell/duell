@@ -92,7 +92,7 @@ class DownloadHelper
 				return;
 			}
 		}
-		trace("Starting Download...");
+		
 		var out = File.write(localPath, true);
 		var progress = new Progress(out);
 		var h = new Http(remotePath);
@@ -113,7 +113,6 @@ class DownloadHelper
 		}
 		
 		h.customRequest (false, progress);
-		trace("Download Finished...");
 		
 		if (h.responseHeaders != null && h.responseHeaders.exists("Location")) 
 		{	
