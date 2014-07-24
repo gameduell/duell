@@ -219,8 +219,6 @@ class SetupAndroidCommand implements IGDCommand
 			
 			/// the extraction
 			ExtractionHelper.extractFile(Path.withoutDirectory(downloadPath), androidNDKPath, ignoreRootFolder);
-
-			trace("Extraction Finished...");
 		}
 	}
 

@@ -91,8 +91,10 @@ class DownloadHelper
 			{
 				return;
 			}
+
+			FileSystem.deleteFile(localPath);
 		}
-		
+
 		var out = File.write(localPath, true);
 		var progress = new Progress(out);
 		var h = new Http(remotePath);
