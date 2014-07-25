@@ -28,6 +28,8 @@ class SetupFlashCommand implements IGDCommand
 {	
 	private static var airMacPath = "http://airdownload.adobe.com/air/mac/download/latest/AdobeAIRSDK.tbz2";
 	private static var airWindowsPath = "http://airdownload.adobe.com/air/win/download/latest/AdobeAIRSDK.zip";
+	private static var flashDebuggerMacPath = "http://fpdownload.macromedia.com/pub/flashplayer/updaters/14/flashplayer_14_sa.dmg";
+	private static var flashDebuggerWindowsPath = "http://download.macromedia.com/pub/flashplayer/updaters/14/flashplayer_14_sa.exe";
 	
 	/// RESULTING VARIABLES
 	private var airSDKPath : String = null;
@@ -54,6 +56,10 @@ class SetupFlashCommand implements IGDCommand
 
 	    	LogHelper.println("Installing the air haxelib...");
 			ProcessHelper.runCommand ("", "haxelib", [ "install", "air3" ], true, true);
+
+	    	LogHelper.println("");
+
+	    	downloadFlashDebugger();
 
 	    	LogHelper.println("");
 
@@ -110,6 +116,34 @@ class SetupFlashCommand implements IGDCommand
 			
 			/// the extraction
 			ExtractionHelper.extractFile(Path.withoutDirectory(downloadPath), airSDKPath, "");
+		}
+    }
+
+    private function downloadFlashDebugger()
+    {
+    	/// variable setup
+    	var downloadPath = "";
+		var defaultInstallPath = "";
+
+		if(PlatformHelper.hostPlatform == Platform.WINDOWS) 
+		{	
+			downloadPath = flashDebuggerWindowsPath;
+		} 
+		else if(PlatformHelper.hostPlatform == Platform.MAC) 
+		{	
+			downloadPath = flashDebuggerMacPath;
+		}
+
+		var downloadAnswer = AskHelper.askYesOrNo("Download and install the Flash Debugger?");
+
+		if(downloadAnswer == Yes) 
+		{	
+			/// the actual download
+			DownloadHelper.downloadFile(downloadPath);
+
+			LogHelper.info("Running installer " + Path.withoutDirectory(downloadPath));
+			// running the installer
+			ProcessHelper.runInstaller(Path.withoutDirectory(downloadPath));
 		}
     }
  
