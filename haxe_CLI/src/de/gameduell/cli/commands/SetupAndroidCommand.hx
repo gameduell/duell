@@ -24,6 +24,8 @@ import sys.FileSystem;
 import haxe.Json;
 import neko.Lib;
 
+using StringTools;
+
 class SetupAndroidCommand implements IGDCommand
 {
 	private static var androidLinuxNDKPath = "http://dl.google.com/android/ndk/android-ndk-r8b-linux-x86.tar.bz2";
@@ -161,7 +163,31 @@ class SetupAndroidCommand implements IGDCommand
 			return;
 		}
 
-		ProcessHelper.runCommand("", androidSDKPath + "/tools/android", ["update", "sdk", "--no-ui", "--filter", "1,2,3,19"]); /// numbers "taken from android list sdk --all"
+		var packageListOutput = ProcessHelper.runProcess(androidSDKPath + "/tools/", "./android", ["list", "sdk"]); /// numbers "taken from android list sdk --all"
+
+        var rawPackageList = packageListOutput.split("\n");
+        
+        /// filter the actual package lines, lines starting like " 1-" or " 12-"
+		var r = ~/^ *[0-9]+\-.*$/;  
+        rawPackageList = rawPackageList.filter(function(str) { return r.match(str); });
+        
+        /// filter the packages we want
+        r = ~/(Android SDK Tools|Android SDK Platform|Android SDK Build-tools|SDK Platform Android 4.4.2, API 19|SDK Platform Android 4.1.2, API 16)/;
+        var packageListWithNames = rawPackageList.filter(function(str) { return r.match(str); });
+        
+        /// retrieve only the number
+        var packageNumberList = packageListWithNames.map(function(str) { return str.substr(0, str.indexOf("-")).ltrim(); });
+        
+        if(packageNumberList.length != 0)
+        {
+        	LogHelper.info("Will download " + packageListWithNames.join(", "));
+        	ProcessHelper.runCommand(androidSDKPath + "/tools/", "./android", ["update", "sdk", "--no-ui", "--filter", packageNumberList.join(",")]); /// numbers "taken from android list sdk --all"
+        }
+        else
+        {
+        	LogHelper.println("No packages to download.");
+        }
+
 		/// NOT SURE WHAT THIS IS FOR
 		/*
 		if (PlatformHelper.hostPlatform != Platform.WINDOWS && FileSystem.exists (Sys.getEnv ("HOME") + "/.android")) {
