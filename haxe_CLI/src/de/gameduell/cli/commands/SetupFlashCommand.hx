@@ -30,6 +30,7 @@ class SetupFlashCommand implements IGDCommand
 	private static var airWindowsPath = "http://airdownload.adobe.com/air/win/download/latest/AdobeAIRSDK.zip";
 	private static var flashDebuggerMacPath = "http://fpdownload.macromedia.com/pub/flashplayer/updaters/14/flashplayer_14_sa.dmg";
 	private static var flashDebuggerWindowsPath = "http://download.macromedia.com/pub/flashplayer/updaters/14/flashplayer_14_sa.exe";
+	private static var flashPlayerSystemPluginPath = "http://get.adobe.com/flashplayer/otherversions/";
 	
 	/// RESULTING VARIABLES
 	private var airSDKPath : String = null;
@@ -57,6 +58,10 @@ class SetupFlashCommand implements IGDCommand
 	    	LogHelper.println("Installing the air haxelib...");
 			ProcessHelper.runCommand ("", "haxelib", [ "install", "air3" ], true, true);
 
+	    	LogHelper.println("");
+
+	    	downloadFlashPlayer();
+	    	
 	    	LogHelper.println("");
 
 	    	downloadFlashDebugger();
@@ -144,6 +149,18 @@ class SetupFlashCommand implements IGDCommand
 			LogHelper.info("Running installer " + Path.withoutDirectory(downloadPath));
 			// running the installer
 			ProcessHelper.runInstaller(Path.withoutDirectory(downloadPath));
+		}
+
+		LogHelper.println("You additionally need to associate .swf files with the debugger.");
+    }
+
+    private function downloadFlashPlayer()
+    {
+		var answer = AskHelper.askYesOrNo("Go to the flash website and download the Flash Player System plugin?");
+
+		if(answer == Yes)
+		{
+			ProcessHelper.openURL(flashPlayerSystemPluginPath);
 		}
     }
  

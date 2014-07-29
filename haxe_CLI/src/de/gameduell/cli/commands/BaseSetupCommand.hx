@@ -28,8 +28,6 @@ class BaseSetupCommand implements IGDCommand
 {	
 	private static var haxeURL = "http://haxe.org/";
 	
-	/// RESULTING VARIABLES
-    
     public function new()
     {
 
@@ -104,7 +102,7 @@ class BaseSetupCommand implements IGDCommand
 		{
 			LogHelper.println("not found");
 			LogHelper.println("Installing hxcpp...");
-			ProcessHelper.runProcess("", "haxelib", ["run", "hxcpp"], true, true);
+			ProcessHelper.runProcess("", "haxelib", ["install", "hxcpp"], true, true);
 
     		LogHelper.println("Rechecking hxcpp installation... ");
 

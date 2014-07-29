@@ -78,6 +78,8 @@ class DownloadHelper
 {
 	public static function downloadFile(remotePath : String, localPath : String = "", followingLocation : Bool = false) : Void
 	{
+		/// following location is for showing recursion
+		
 		if (localPath == "") 
 		{
 			localPath = Path.withoutDirectory(remotePath);

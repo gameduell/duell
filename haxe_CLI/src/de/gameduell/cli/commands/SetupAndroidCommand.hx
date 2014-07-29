@@ -363,28 +363,6 @@ class SetupAndroidCommand implements IGDCommand
 		hxcppHelper.writeDefines(newDefines);
 	}
 
-	private function getDefaultHXCPPConfigLocation() : String
-	{
-		var env = Sys.environment();
-
-		var home = "";
-		
-		if (env.exists ("HOME")) 
-		{
-			home = env.get ("HOME");
-		} 
-		else if(env.exists ("USERPROFILE")) 
-		{
-			home = env.get ("USERPROFILE");
-		} 
-		else 
-		{	
-			throw "Could not find the home folder, no HOME variable is set. Can't find hxcpp_config.xml";
-		}
-		
-		return home + "/.hxcpp_config.xml";
-	}
-
 	private function getDefinesToWriteToHXCPP() : Map<String, String>
 	{
 		var defines = new Map<String, String>();
