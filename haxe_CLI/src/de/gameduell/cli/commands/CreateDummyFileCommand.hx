@@ -16,6 +16,7 @@ class CreateDummyFileCommand implements IGDCommand{
                                                     ,"dev_libs": [
                                                                     "ash",
                                                                     "types",
+                                                                    "events",
                                                                     "asyncrunner",
                                                                     "filesystem",
                                                                     "graphics",
