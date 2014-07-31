@@ -34,7 +34,7 @@ class SetupMacCommand implements IGDCommand
 
     }
 
-    public function execute(cmd : String) : String
+    public function execute(cmd : String, args : Array<String>) : String
     {
     	try
     	{

@@ -2,11 +2,12 @@ package duell.processor;
 
 import duell.commands.IGDCommand;
 import duell.commands.dependencies.CreateDummyFileCommand;
-import duell.commands.dependencies.InstallLibsCommand;
+import duell.commands.dependencies.InstallDependenciesCommand;
 import duell.commands.setup.SetupAndroidCommand;
 import duell.commands.setup.SetupFlashCommand;
 import duell.commands.setup.BaseSetupCommand;
 import duell.commands.setup.SetupMacCommand;
+import duell.commands.setup.UpdateToolCommand;
 import duell.helpers.LogHelper;
 
 using Lambda;
@@ -32,10 +33,13 @@ class CmdProcessor
         commands = new List();
         addCommand("install",   "   \x1b[1minstall <filename>\x1b[0m\n" +
                                 "\n" +
-                                "Install libs based on the specified project config file\n", new InstallLibsCommand());
+                                "Install libs based on the specified project config file\n", new InstallDependenciesCommand());
         addCommand("dummy"  ,   "   \x1b[1mdummy <filename>\x1b[0m\n" +
                                 "\n" +
                                 "Generate dummy project config file to filename destination\n", new CreateDummyFileCommand());
+        addCommand("update_tool",       "\x1b[update_tool\x1b[0m\n" +
+                                        "\n" +
+                                        "Update the tool itself. \n", new UpdateToolCommand());
         addCommand("setup",             "   \x1b[1msetup\x1b[0m\n" +
                                         "\n" +
                                         "Basic setup for the environment. \n" +
@@ -66,7 +70,7 @@ class CmdProcessor
     /**
     * process a line of user input
     **/
-    public function process(cmd :String) :String
+    public function process(cmd : String, args : Array<String>) :String
     {
         var output:String;
         if( cmd.endsWith("\\") )
@@ -86,7 +90,7 @@ class CmdProcessor
             if( c.name == cmd )
             {
                 currentTime = Date.now().getTime();
-                output = c.command.execute(cmd);
+                output = c.command.execute(cmd, args);
                 LogHelper.println(" Time passed "+((Date.now().getTime()-currentTime)/1000)+" sec for command '"+cmd+"''");
                 return output;
             }

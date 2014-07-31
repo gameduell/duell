@@ -41,7 +41,7 @@ class BaseSetupCommand implements IGDCommand
 
     }
 
-    public function execute(cmd : String) : String
+    public function execute(cmd : String, args : Array<String>) : String
     {
     	try
     	{
@@ -152,21 +152,15 @@ class BaseSetupCommand implements IGDCommand
 		if(duellConfig.repoListURLs.indexOf(repoListURL) == -1)
 			duellConfig.repoListURLs.push(repoListURL);
 
+		duellConfig.writeToConfig();
+
 		LogHelper.println("You can review this in " + DuellConfigHelper.getDuellConfigFileLocation());
 	}
 
 	private function installCommand()
 	{
 		///install command into the settings dir, etc
-		LogHelper.println("Checking if the duell command is installed in haxelib...");
-
-    	var duell = Haxelib.getHaxelib("duell");
-
-		if(duell.exists())
-		{
-			LogHelper.println("Installed!");
-			return;
-		}
+		LogHelper.println("Installing the duell command in haxelib...");
 
 		var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 		LogHelper.println("Will install the duell tool from " + duellConfig.repoListURLs.join(", "));
@@ -180,8 +174,7 @@ class BaseSetupCommand implements IGDCommand
 
 		DuellLibListHelper.installDuellLibrary(libMap.get("duell"));
 
-		LogHelper.println("rerun the tool with \"haxelib run duell\", so you use the updated version of this tool.");
-		Sys.exit(0);
+		LogHelper.println("installed!");
 	}
 
 	private function installCommandLine()

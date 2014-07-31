@@ -43,12 +43,12 @@ class CreateDummyFileCommand implements IGDCommand{
     {
     }
 
-    public function execute( cmd:String ):String
+    public function execute(cmd:String, args : Array<String>):String
     {
         var fileName = null;
-        if(Sys.args().length > 1)
+        if(args.length > 1)
         {
-            fileName =  Sys.args()[1];
+            fileName =  args[1];
         }
 
         if( fileName==null || fileName.length==0 )//check if the lazy ass didn't provide file name we set a default file name

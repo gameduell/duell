@@ -23,7 +23,7 @@ import haxe.Json;
 import haxe.io.Error;
 
 import duell.commands.IGDCommand;
-class InstallLibsCommand implements IGDCommand 
+class InstallDependenciesCommand implements IGDCommand 
 {
 
     private var duellLibList : Map<String, DuellLib>;
@@ -31,10 +31,9 @@ class InstallLibsCommand implements IGDCommand
     private var globalErrorOccured : Bool = false;
     public function new() {}
 
-    public function execute(cmd:String):String
+    public function execute(cmd : String, args : Array<String>):String
     {
-        /** are we in a project? **/
-        if (!FileSystem.exists(DuellLibListHelper.DEPENDENCY_LIST_FILENAME))
+        if (!FileSystem.exists(Sys.getCwd() + "/" + DuellLibListHelper.DEPENDENCY_LIST_FILENAME))
             return "File with path '" + DuellLibListHelper.DEPENDENCY_LIST_FILENAME + "' not found, please execute from the project directory.";
 
         duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());

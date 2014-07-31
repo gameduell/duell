@@ -36,15 +36,16 @@ class Duell
     **/
     public function run()
     {
-        var command = parseArgumentsAndGetCommand();
+        var commandAndArgs = parseArgumentsAndGetCommand();
 
         printBanner();
 
         try
         {
-            var ret = processor.process(command);
-            if( ret != null )
-                LogHelper.println(ret+"\n");
+            var ret = processor.process(commandAndArgs.command, commandAndArgs.args);
+
+            if (ret != null)
+                LogHelper.println(ret + "\n");
         }
         catch (ex:CmdError)
         {
@@ -52,15 +53,18 @@ class Duell
         }
     }
 
-    private function parseArgumentsAndGetCommand()
+    private function parseArgumentsAndGetCommand() : {command : String, args : Array<String>}
     {
-
         var args = Sys.args();
 
-        if(args[0] == "haxelib")
+        if(Sys.getEnv("HAXELIB_RUN") == "1")
         {
+            Sys.setCwd(args.pop());
         }
-        for(arg in Sys.args())
+
+        var command = "";
+
+        args.filter(function(arg) 
         {
             if(arg.charAt(0) == "-")
             {
@@ -68,21 +72,27 @@ class Duell
                 {
                     case("-verbose"):
                         LogHelper.verbose = true;
+                        return false;
                     case("-nocolor"):
                         LogHelper.enableColor = false;
-                    default:
-                        LogHelper.println("unknown parameter " + arg);
-                        break;
+                        return false;
                 }
+
+                return true;
             }
             else
             {
-                return arg;
+                if(command == "")
+                {
+                    command = arg;
+                    return false;
+                }
+
+                return true;
             }
-        }
+        });
 
-        return "help";
-
+        return {command:command, args:args};
     }
 
     private function printBanner()

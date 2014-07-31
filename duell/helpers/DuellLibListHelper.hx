@@ -133,10 +133,6 @@ class DuellLibListHelper
     {
         var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 
-        var parsedHaxeLib : Dynamic;
-        var gdLibContent : String;
-        var gdLibParsedContent : {dependencies : Array<String>};
-
         LogHelper.println("Installing lib " + library.name +"===============================================");
         LogHelper.println("Creating directory : [" + library.destinationPath + "]");
 
@@ -160,7 +156,7 @@ class DuellLibListHelper
 
         LogHelper.println("Setting repo as haxelib dev");
 
-        ProcessHelper.runCommand(path, "haxelib", ["dev", library.name, "."]);
+        ProcessHelper.runCommand(path, "haxelib", ["dev", library.name, duellConfigJSON.localLibraryPath + "/" + library.libPath]);
 
         LogHelper.info("Done Installing lib " + library.name +" ==========================================");
 
@@ -170,10 +166,70 @@ class DuellLibListHelper
         }
 
     }
+
     public static function installHaxeLibrary(lib : String)
     {
         ProcessHelper.runCommand("", "haxelib", ["install", lib]);
     }
 
+    public static function updateWithDependenciesFile(filename : String)
+    {
+        var duellLibList = getDuellLibList();
+
+        var requestedLibraries : {version:String, duell_libs:Array<String>, haxe_libs:Array<String>} = null;
+        try
+        {
+            var content = File.getContent(filename);
+            requestedLibraries = Json.parse(content);
+        }
+        catch (e:Error)
+        {
+            LogHelper.error("Cannot parse " + filename);
+        }
+
+        if (requestedLibraries != null && requestedLibraries.version != Duell.VERSION)
+        {
+            LogHelper.error("the version in the file is different then the current Version of Duell tool");
+        }
+
+        for (requestedLib in requestedLibraries.duell_libs) 
+        {
+            if(!duellLibList.exists(requestedLib))
+            {
+                LogHelper.error("Unknown library " + requestedLib + ". Please check the repo list for this library.");
+            }
+
+            var duellLib = duellLibList.get(requestedLib);
+
+            updateDuellLib(duellLib);
+
+        }
+
+        for (requestedLib in requestedLibraries.haxe_libs) 
+        {
+            updateHaxeLibrary(requestedLib);
+        }
+    }
+
+    public static function updateDuellLib(library : DuellLib)
+    {        
+        var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+
+        LogHelper.println("Updating lib " + library.name +"===============================================");
+
+        var path = duellConfigJSON.localLibraryPath + "/" + library.destinationPath;
+
+        if (!FileSystem.exists(path))
+        {
+            LogHelper.error("library " + library.name + " not installed!");
+        }
+
+        GitHelper.pull(path);
+    }
+
+    public static function updateHaxeLibrary(lib : String)
+    {
+        ProcessHelper.runCommand("", "haxelib", ["update", lib]);
+    }
 }
 
