@@ -59,7 +59,7 @@ class BaseSetupCommand implements IGDCommand
 
 	    	LogHelper.println("");
 
-	    	installCommand();
+	    	installDuell();
 
 	    	LogHelper.println("");
 
@@ -157,7 +157,7 @@ class BaseSetupCommand implements IGDCommand
 		LogHelper.println("You can review this in " + DuellConfigHelper.getDuellConfigFileLocation());
 	}
 
-	private function installCommand()
+	private function installDuell()
 	{
 		///install command into the settings dir, etc
 		LogHelper.println("Installing the duell command in haxelib...");

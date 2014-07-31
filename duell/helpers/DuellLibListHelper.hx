@@ -90,8 +90,14 @@ class DuellLibListHelper
         }
     }
 
+    private static var alreadyInstalledFiles : Array<String> = new Array<String>();
     public static function installWithDependenciesFile(filename : String)
     {
+        if(alreadyInstalledFiles.indexOf(filename) != -1)
+            return;
+
+        alreadyInstalledFiles.push(filename);
+
         var duellLibList = getDuellLibList();
 
         var requestedLibraries : {version:String, duell_libs:Array<String>, haxe_libs:Array<String>} = null;
@@ -172,8 +178,14 @@ class DuellLibListHelper
         ProcessHelper.runCommand("", "haxelib", ["install", lib]);
     }
 
+    private static var alreadyUpdatedFiles : Array<String> = new Array<String>();
     public static function updateWithDependenciesFile(filename : String)
     {
+        if(alreadyUpdatedFiles.indexOf(filename) != -1)
+            return;
+
+        alreadyUpdatedFiles.push(filename);
+
         var duellLibList = getDuellLibList();
 
         var requestedLibraries : {version:String, duell_libs:Array<String>, haxe_libs:Array<String>} = null;
