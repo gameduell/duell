@@ -34,7 +34,7 @@ typedef ConfigurationData = {
 		LIBRARY_DATA : LibraryConfigurationData
 	} >,
 
-	NDLLS : Array<{NAME : String, PATH : String, BUILD_FILE_PATH : String, REGISTER_STATICS : Bool}>,
+	NDLLS : Array<{NAME : String, BIN_PATH : String, BUILD_FILE_PATH : String, REGISTER_STATICS : Bool}>,
 
 	/// functions to be used during template processing on the macro parameter
 	TEMPLATE_FUNCTIONS : Dynamic 

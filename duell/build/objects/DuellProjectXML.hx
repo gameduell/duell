@@ -32,7 +32,7 @@ class DuellProjectXML
 	/// PARSING STATE
 	private var currentXML : Fast = null;
 	private var currentDuellLib : DuellLib = null; /// currently being parsed lib, null if parsing the project
-	private var currentXMLPath : String = null; /// used to resolve paths. Is used by all XML parsers (library and platform)
+	private var currentXMLPath : Array<String> = []; /// used to resolve paths. Is used by all XML parsers (library and platform)
 	/// --------------
 
 	private var parsingConditions : Array<String>; /// used in validating elements for "if" or "unless"
@@ -40,10 +40,6 @@ class DuellProjectXML
 
 	private function new() : Void
 	{
-		parsingConditions = [];
-
-		parsingConditions.concat(Configuration.getConfigParsingDefines());
-		parsingConditions.concat(PlatformConfiguration.getConfigParsingDefines());
 	}
 
 	private static var cache : DuellProjectXML;
@@ -60,6 +56,11 @@ class DuellProjectXML
 
 	public function parse()
 	{
+
+		parsingConditions = [];
+		parsingConditions = parsingConditions.concat(Configuration.getConfigParsingDefines());
+		parsingConditions = parsingConditions.concat(PlatformConfiguration.getConfigParsingDefines());
+
 		if (!FileSystem.exists(DuellDefines.PROJECT_CONFIG_FILENAME))
 		{
 			LogHelper.error('Project config file not found. There should be a ${DuellDefines.PROJECT_CONFIG_FILENAME} here');
@@ -72,28 +73,27 @@ class DuellProjectXML
 			parseFile(platformXML);
 		}
 
-		parseFile(DuellDefines.PROJECT_CONFIG_FILENAME);
+		parseFile(Sys.getCwd() + "/" + DuellDefines.PROJECT_CONFIG_FILENAME);
 
 		parseDuellLibs();
 	}
 
 	private function parseFile(file : String)
 	{		
+		if (!PathHelper.isPathRooted(file))
+			LogHelper.error("internal error, parseFile should only receive rooted paths.");
+			
 		var elements = file.split("/");
 		elements.pop();
-		currentXMLPath = resolvePath(elements.join("/"));
+		currentXMLPath.push(elements.join("/"));
+
+		trace(currentXMLPath);
 
 		var stringContent = File.getContent(file);
 
-		var template = haxe.Template(stringContent);
+		stringContent = processXML(stringContent);
 
-		template.execute({}, {
-			duelllib: function(_, s) return DuellLib.getDuellLib(s).getPath(),
-			haxelib: function(_, s) return Haxelib.getHaxelib(s).getPath(),
-			projectpath: function(_, s) return Sys.getCwd()
-		});
-
-		currentXML = new Fast(Xml.parse().firstElement());
+		currentXML = new Fast(Xml.parse(stringContent).firstElement());
 
 		for (element in currentXML.elements) 
 		{
@@ -129,6 +129,8 @@ class DuellProjectXML
 					parseIncludeElement(element);
 			}
 		}
+
+		currentXMLPath.pop();
 	}
 
 	private var libsAlreadyParsed = new Array<{name : String, version : String}>();
@@ -268,7 +270,7 @@ class DuellProjectXML
 	{
 		if (element.has.path)
 		{
-			Configuration.getData().OUTPUT = element.att.path;
+			Configuration.getData().OUTPUT = resolvePath(element.att.path);
 		}
 	}
 
@@ -295,6 +297,7 @@ class DuellProjectXML
 		var name : String = "";
 		var buildFilePath : String = "project/Build.xml";
 		var binPath = "bin";
+		var registerStatics = true;
 		if (element.has.name)
 		{
 			name  = element.att.name;
@@ -308,6 +311,13 @@ class DuellProjectXML
 			{
 				binPath = element.att.resolve("bin-path");
 			}	
+
+			if (element.has.resolve("register-statics"))
+			{
+				registerStatics = (element.att.resolve("register-statics") == "true")? true : false;
+			}
+
+			Configuration.getData().NDLLS.push({REGISTER_STATICS : registerStatics, BIN_PATH : resolvePath(binPath), NAME : name, BUILD_FILE_PATH : resolvePath(buildFilePath)});
 		}
 	}
 
@@ -317,7 +327,7 @@ class DuellProjectXML
 		{
 			var path = resolvePath(element.att.path);
 
-
+			parseFile(path);
 		}
 	}
 
@@ -330,6 +340,19 @@ class DuellProjectXML
 		if (PathHelper.isPathRooted(path))
 			return path;
 
-		return currentXMLPath + "/" + path;
+		return currentXMLPath[currentXMLPath.length - 1] + "/" + path;
+	}
+
+	private function processXML(xml : String) : String
+	{
+		var template = new haxe.Template(xml);
+
+		xml = template.execute({}, {
+			duelllib: function(_, s) return DuellLib.getDuellLib(s).getPath(),
+			haxelib: function(_, s) return Haxelib.getHaxelib(s).getPath(),
+			projectpath: function(_, s) return Sys.getCwd()
+		});
+
+		return xml;
 	}
 }
