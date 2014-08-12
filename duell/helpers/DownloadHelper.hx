@@ -89,7 +89,7 @@ class DownloadHelper
 		{
 			var answer = AskHelper.askYesOrNo("File found. Use existing file?");
 			
-			if (answer != No) 
+			if (answer) 
 			{
 				return;
 			}

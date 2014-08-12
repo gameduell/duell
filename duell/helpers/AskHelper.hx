@@ -8,15 +8,9 @@ package duell.helpers;
 
 import duell.helpers.StringHelper;
 
-enum Answer 
-{
-	Yes;
-	No;
-}
-
 class AskHelper
 {
-	public static function askYesOrNo(question : String) : Answer 
+	public static function askYesOrNo(question : String) : Bool 
 	{
 		while (true) 
 		{
@@ -24,8 +18,8 @@ class AskHelper
 			
 			switch(Sys.stdin().readLine()) 
 			{
-				case "n": return No;
-				case "y": return Yes;
+				case "n": return false;
+				case "y": return true;
 			}
 		}
 

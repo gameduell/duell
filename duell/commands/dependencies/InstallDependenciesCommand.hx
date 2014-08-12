@@ -7,7 +7,7 @@ package duell.commands.dependencies;
 
 import duell.objects.SemVer;
 import duell.objects.DuellConfigJSON;
-import duell.objects.DuellLib;
+import duell.objects.DuellLibReference;
 import duell.helpers.LogHelper;
 import duell.helpers.GitHelper;
 import duell.helpers.DuellLibListHelper;
@@ -26,7 +26,7 @@ import duell.commands.IGDCommand;
 class InstallDependenciesCommand implements IGDCommand 
 {
 
-    private var duellLibList : Map<String, DuellLib>;
+    private var duellLibList : Map<String, DuellLibReference>;
     private var duellConfigJSON : DuellConfigJSON;
     private var globalErrorOccured : Bool = false;
     public function new() {}
@@ -48,7 +48,7 @@ class InstallDependenciesCommand implements IGDCommand
             PathHelper.mkdir(duellConfigJSON.localLibraryPath);
         }
 
-        var duellLibList = DuellLibListHelper.getDuellLibList();
+        var duellLibList = DuellLibListHelper.getDuellLibReferenceList();
 
         DuellLibListHelper.installWithDependenciesFile(DuellLibListHelper.DEPENDENCY_LIST_FILENAME);
 

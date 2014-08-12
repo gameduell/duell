@@ -94,7 +94,7 @@ class BaseSetupCommand implements IGDCommand
 
 			var answer = AskHelper.askYesOrNo("Do you want to visit the haxe website to install it?");
 
-			if(answer == Yes)
+			if(answer)
 			{
 				ProcessHelper.openURL(haxeURL);
 			}
@@ -143,7 +143,7 @@ class BaseSetupCommand implements IGDCommand
 		{
 			LogHelper.println("There are already a repo list urs configured (" + duellConfig.repoListURLs.join(",") + ")");
 			var answer = AskHelper.askYesOrNo("Do you want to add the new url (answer yes), or override the current ones (answer no)?");
-			if(answer == No)
+			if(!answer)
 			{
 				duellConfig.repoListURLs = new Array<String>();
 			}
@@ -165,14 +165,14 @@ class BaseSetupCommand implements IGDCommand
 		var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 		LogHelper.println("Will install the duell tool from " + duellConfig.repoListURLs.join(", "));
 
-		var libMap = DuellLibListHelper.getDuellLibList();
+		var libMap = DuellLibListHelper.getDuellLibReferenceList();
 
 		if(!libMap.exists("duell"))
 		{
 			LogHelper.error("Could not find \"duell\" in " + duellConfig.repoListURLs.join(", "));
 		}
 
-		DuellLibListHelper.installDuellLibrary(libMap.get("duell"));
+		libMap.get("duell").install();
 
 		LogHelper.println("installed!");
 	}
@@ -205,7 +205,7 @@ class BaseSetupCommand implements IGDCommand
 			
 			answer = AskHelper.askYesOrNo("Do you want to install the \"duell\" command?");
 			
-			if (answer == Yes) 
+			if (answer) 
 			{
 				try {
 					ProcessHelper.runCommand("", "sudo", [ "cp", "-f", Haxelib.getHaxelib("duell").getPath() + "/bin/duell.sh", "/usr/bin/duell" ], false);

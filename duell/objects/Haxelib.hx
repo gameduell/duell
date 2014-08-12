@@ -136,6 +136,14 @@ class Haxelib
 		
 		return path;
 	}
-	
-	
+
+    public function update()
+    {
+        ProcessHelper.runCommand("", "haxelib", ["update", name]);
+    }
+
+    public function install()
+    {
+        ProcessHelper.runCommand("", "haxelib", ["install", name]);
+    }
 }

@@ -64,7 +64,7 @@ class Duell
 
         var command = "";
 
-        args.filter(function(arg) 
+        args = args.filter(function(arg) 
         {
             if(arg.charAt(0) == "-")
             {

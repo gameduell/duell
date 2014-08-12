@@ -1,0 +1,2 @@
+Files in this directory are used by the program that is compiled in the BuildCommand. 
+They should not be used in any other place, for example, it should not be used in commands. 

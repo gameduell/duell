@@ -157,4 +157,12 @@ class PathHelper
 		}
 		
 	}
+
+	public static function isPathRooted(path : String) : Bool
+	{
+		if (path.charAt(0) == "/" || path.charAt(0) == "\\" || path.charAt(1) == ":")
+			return true;
+
+		return false;
+	}
 }

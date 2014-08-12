@@ -88,7 +88,7 @@ class UpdateToolCommand implements IGDCommand
 
 	private function updateTheTool()
 	{
-		var duellLibList = DuellLibListHelper.getDuellLibList();
+		var duellLibList = DuellLibListHelper.getDuellLibReferenceList();
 
 		var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 
@@ -99,6 +99,6 @@ class UpdateToolCommand implements IGDCommand
 
 		var duell = duellLibList.get("duell");
 		LogHelper.println("updating " + duellConfigJSON.localLibraryPath + "/" + duell.destinationPath);
-		DuellLibListHelper.updateDuellLib(duell);
+		duell.update();
 	}
 }

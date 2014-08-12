@@ -112,7 +112,7 @@ class SetupFlashCommand implements IGDCommand
 		if(airSDKPath == "")
 			airSDKPath = defaultInstallPath;
 
-		if(downloadAnswer == Yes) 
+		if(downloadAnswer) 
 		{	
 			/// the actual download
 			DownloadHelper.downloadFile(downloadPath);
@@ -142,7 +142,7 @@ class SetupFlashCommand implements IGDCommand
 
 		var downloadAnswer = AskHelper.askYesOrNo("Download and install the Flash Debugger?");
 
-		if(downloadAnswer == Yes) 
+		if(downloadAnswer) 
 		{	
 			/// the actual download
 			DownloadHelper.downloadFile(downloadPath);
@@ -159,7 +159,7 @@ class SetupFlashCommand implements IGDCommand
     {
 		var answer = AskHelper.askYesOrNo("Go to the flash website and download the Flash Player System plugin?");
 
-		if(answer == Yes)
+		if(answer)
 		{
 			ProcessHelper.openURL(flashPlayerSystemPluginPath);
 		}

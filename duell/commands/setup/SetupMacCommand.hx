@@ -83,7 +83,7 @@ class SetupMacCommand implements IGDCommand
 
 			var answer = AskHelper.askYesOrNo("Do you want to visit the apple website to install it?");
 
-			if(answer == Yes)
+			if(answer)
 			{
 				ProcessHelper.openURL(appleXcodeURL);
 			}

@@ -136,7 +136,7 @@ class SetupAndroidCommand implements IGDCommand
 		if(androidSDKPath == "")
 			androidSDKPath = defaultInstallPath;
 
-		if(downloadAnswer == Yes) 
+		if(downloadAnswer) 
 		{	
 			/// the actual download
 			DownloadHelper.downloadFile(downloadPath);
@@ -159,7 +159,7 @@ class SetupAndroidCommand implements IGDCommand
 	{
 		var install = AskHelper.askYesOrNo("Would you like to install necessary Android packages (API16 and 19, Platform-tools and tools)");
 
-		if(install == No)
+		if(!install)
 		{
 			LogHelper.println ("Please then make sure Android API 16 and SDK Platform-tools are installed");
 			return;
@@ -237,7 +237,7 @@ class SetupAndroidCommand implements IGDCommand
 		if(androidNDKPath == "")
 			androidNDKPath = defaultInstallPath;
 
-		if(downloadAnswer == Yes) 
+		if(downloadAnswer) 
 		{
 			/// the actual download
 			DownloadHelper.downloadFile(downloadPath);
@@ -281,7 +281,8 @@ class SetupAndroidCommand implements IGDCommand
 		if(apacheANTPath == "")
 			apacheANTPath = defaultInstallPath;
 
-		if(downloadAnswer == Yes) 
+		if(downloadAnswer
+			) 
 		{
 			/// the actual download
 			DownloadHelper.downloadFile(downloadPath);
@@ -310,12 +311,12 @@ class SetupAndroidCommand implements IGDCommand
 
 			var answer = AskHelper.askYesOrNo("Download and install the Java JDK");
 		
-			if (answer == Yes) 
+			if (answer) 
 			{
 				LogHelper.println ("You must visit the Oracle website to download the Java 6 JDK for your platform");
 				var secondAnswer = AskHelper.askYesOrNo("Would you like to go there now?");
 			
-				if (secondAnswer != No) 
+				if (secondAnswer) 
 				{
 					ProcessHelper.openURL(javaJDKURL);	
 				}

@@ -10,7 +10,8 @@ import duell.helpers.DuellConfigHelper;
 import duell.helpers.GitHelper;
 import duell.helpers.PathHelper;
 import duell.objects.DuellConfigJSON;
-import duell.objects.DuellLib;
+import duell.objects.DuellLibReference;
+import duell.objects.Haxelib;
 
 import sys.io.File;
 import Reflect;
@@ -20,15 +21,15 @@ import haxe.Json;
 
 class DuellLibListHelper
 {
-    public static var DEPENDENCY_LIST_FILENAME = "duell_dependencies.json" ;
+    public static var DEPENDENCY_LIST_FILENAME = "duell_dependencies.json";
 
-	private static var repoListCache : Map<String, DuellLib> = null;
-    public static function getDuellLibList() : Map<String, DuellLib>
+	private static var repoListCache : Map<String, DuellLibReference> = null;
+    public static function getDuellLibReferenceList() : Map<String, DuellLibReference>
     {
     	if(repoListCache != null)
     		return repoListCache;
 
-        repoListCache = new Map<String, DuellLib>();
+        repoListCache = new Map<String, DuellLibReference>();
 
     	var duellConfig : DuellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 
@@ -76,7 +77,7 @@ class DuellLibListHelper
     {
         var listOfRepos = Reflect.fields(configJSON);
 
-        var duellLibMap = new Map<String, DuellLib>();
+        var duellLibMap = new Map<String, DuellLibReference>();
 
         for(repo in listOfRepos)
         {
@@ -86,7 +87,7 @@ class DuellLibListHelper
                 LogHelper.info("Found duplicate for " + repo + " in the repo list URLs. Using " + repoInfo.git_path);
             }
 
-            repoListCache.set(repo, new DuellLib(repo, repoInfo.git_path, repoInfo.library_path, repoInfo.destination_path));
+            repoListCache.set(repo, new DuellLibReference(repo, repoInfo.git_path, repoInfo.library_path, repoInfo.destination_path));
         }
     }
 
@@ -98,7 +99,9 @@ class DuellLibListHelper
 
         alreadyInstalledFiles.push(filename);
 
-        var duellLibList = getDuellLibList();
+        var duellConfig : DuellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+
+        var duellLibList = getDuellLibReferenceList();
 
         var requestedLibraries : {version:String, duell_libs:Array<String>, haxe_libs:Array<String>} = null;
         try
@@ -125,57 +128,20 @@ class DuellLibListHelper
 
             var duellLib = duellLibList.get(requestedLib);
 
-            installDuellLibrary(duellLib);
+            duellLib.install();
 
+            var path = duellConfig.localLibraryPath + "/" + duellLib.destinationPath;
+
+            if (FileSystem.exists(path + "/" + DEPENDENCY_LIST_FILENAME))
+            {
+                installWithDependenciesFile(path + "/" + DEPENDENCY_LIST_FILENAME);
+            }
         }
 
         for (requestedLib in requestedLibraries.haxe_libs) 
         {
-            installHaxeLibrary(requestedLib);
+            Haxelib.getHaxelib(requestedLib).install();
         }
-    }
-
-    public static function installDuellLibrary(library : DuellLib)
-    {
-        var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
-
-        LogHelper.println("Installing lib " + library.name +"===============================================");
-        LogHelper.println("Creating directory : [" + library.destinationPath + "]");
-
-        var path = duellConfigJSON.localLibraryPath + "/" + library.destinationPath;
-
-        /// checkout 
-        if (FileSystem.exists(path))
-        {
-            if (GitHelper.pull(path) != 0 )
-            {
-                LogHelper.error("Can't Install library " + library.name);
-            }
-        }
-        else
-        {
-            if(GitHelper.clone(library.gitPath, path) != 0 )
-            {
-                LogHelper.error("Can't Install library " + library.name);
-            }
-        }
-
-        LogHelper.println("Setting repo as haxelib dev");
-
-        ProcessHelper.runCommand(path, "haxelib", ["dev", library.name, duellConfigJSON.localLibraryPath + "/" + library.libPath]);
-
-        LogHelper.info("Done Installing lib " + library.name +" ==========================================");
-
-        if (FileSystem.exists(path + "/" + DEPENDENCY_LIST_FILENAME))
-        {
-            installWithDependenciesFile(path + "/" + DEPENDENCY_LIST_FILENAME);
-        }
-
-    }
-
-    public static function installHaxeLibrary(lib : String)
-    {
-        ProcessHelper.runCommand("", "haxelib", ["install", lib]);
     }
 
     private static var alreadyUpdatedFiles : Array<String> = new Array<String>();
@@ -186,7 +152,9 @@ class DuellLibListHelper
 
         alreadyUpdatedFiles.push(filename);
 
-        var duellLibList = getDuellLibList();
+        var duellConfig : DuellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+
+        var duellLibList = getDuellLibReferenceList();
 
         var requestedLibraries : {version:String, duell_libs:Array<String>, haxe_libs:Array<String>} = null;
         try
@@ -213,35 +181,23 @@ class DuellLibListHelper
 
             var duellLib = duellLibList.get(requestedLib);
 
-            updateDuellLib(duellLib);
+            duellLib.update();
+
+            var path = duellConfig.localLibraryPath + "/" + duellLib.destinationPath;
+
+            if (FileSystem.exists(path + "/" + DEPENDENCY_LIST_FILENAME))
+            {
+                updateWithDependenciesFile(path + "/" + DEPENDENCY_LIST_FILENAME);
+            }
 
         }
 
         for (requestedLib in requestedLibraries.haxe_libs) 
         {
-            updateHaxeLibrary(requestedLib);
+            Haxelib.getHaxelib(requestedLib).update();
         }
     }
 
-    public static function updateDuellLib(library : DuellLib)
-    {        
-        var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 
-        LogHelper.println("Updating lib " + library.name +"===============================================");
-
-        var path = duellConfigJSON.localLibraryPath + "/" + library.destinationPath;
-
-        if (!FileSystem.exists(path))
-        {
-            LogHelper.error("library " + library.name + " not installed!");
-        }
-
-        GitHelper.pull(path);
-    }
-
-    public static function updateHaxeLibrary(lib : String)
-    {
-        ProcessHelper.runCommand("", "haxelib", ["update", lib]);
-    }
 }
 
