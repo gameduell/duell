@@ -5,13 +5,9 @@
  */
 package duell.build.main;
 
-import duell.processor.CmdProcessor;
-import duell.helpers.LogHelper;
-import duell.helpers.AskHelper;
 
 import duell.build.plugin.platform.PlatformBuild;
 
-import neko.Lib;
 
 class BuildMain 
 {

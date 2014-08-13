@@ -5,22 +5,15 @@
  */
 package duell.commands.dependencies;
 
-import duell.objects.SemVer;
 import duell.objects.DuellConfigJSON;
 import duell.objects.DuellLibReference;
 import duell.helpers.LogHelper;
-import duell.helpers.GitHelper;
 import duell.helpers.DuellLibListHelper;
 import duell.helpers.DuellConfigHelper;
 import duell.helpers.PathHelper;
 
-import sys.io.Process;
 import Sys;
 import sys.FileSystem;
-import sys.io.File;
-import sys.io.File;
-import haxe.Json;
-import haxe.io.Error;
 
 import duell.commands.IGDCommand;
 class InstallDependenciesCommand implements IGDCommand 

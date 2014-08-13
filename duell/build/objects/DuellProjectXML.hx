@@ -9,7 +9,6 @@ import duell.defines.DuellDefines;
 
 import duell.helpers.PathHelper;
 import duell.helpers.LogHelper;
-import duell.helpers.AskHelper;
 import duell.helpers.XMLHelper;
 
 import duell.objects.DuellLib;
