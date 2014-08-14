@@ -5,6 +5,8 @@
  */
 
 package duell.commands;
-interface IGDCommand {
+
+interface IGDCommand
+{
     function execute(cmdStr : String, args : Array<String>):String;
 }

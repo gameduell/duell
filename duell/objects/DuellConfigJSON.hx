@@ -5,9 +5,7 @@
  */
 package duell.objects;
 
-import duell.helpers.PathHelper;
 
-import haxe.xml.Fast;
 import sys.io.File;
 import sys.FileSystem;
 

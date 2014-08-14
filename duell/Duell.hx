@@ -2,9 +2,7 @@ package duell;
 
 import duell.processor.CmdProcessor;
 import duell.helpers.LogHelper;
-import duell.helpers.AskHelper;
 
-import neko.Lib;
 
 /**
  * @autor kgar

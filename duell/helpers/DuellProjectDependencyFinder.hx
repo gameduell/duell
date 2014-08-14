@@ -5,7 +5,6 @@
  */
 package duell.objects;
 
-import duell.helpers.PathHelper;
 import duell.helpers.LogHelper;
 import duell.objects.DuellLib;
 import duell.objects.Haxelib;
@@ -13,7 +12,6 @@ import duell.objects.Haxelib;
 import sys.io.File;
 import sys.FileSystem;
 
-import haxe.Json;
 
 class DuellProjectDependencyHelper
 {

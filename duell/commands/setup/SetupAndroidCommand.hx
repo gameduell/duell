@@ -17,13 +17,8 @@ import duell.helpers.HXCPPConfigXMLHelper;
 
 import duell.objects.HXCPPConfigXML;
 
-import haxe.Http;
-import haxe.io.Eof;
 import haxe.io.Path;
-import sys.io.File;
 import sys.FileSystem;
-import haxe.Json;
-import neko.Lib;
 
 using StringTools;
 

@@ -7,21 +7,8 @@ package duell.commands.setup;
 
 import duell.helpers.PlatformHelper;
 import duell.helpers.AskHelper;
-import duell.helpers.DownloadHelper;
-import duell.helpers.ExtractionHelper;
-import duell.helpers.PathHelper;
 import duell.helpers.LogHelper;
-import duell.helpers.StringHelper;
 import duell.helpers.ProcessHelper;
-import duell.helpers.HXCPPConfigXMLHelper;
-
-import haxe.Http;
-import haxe.io.Eof;
-import haxe.io.Path;
-import sys.io.File;
-import sys.FileSystem;
-import haxe.Json;
-import neko.Lib;
 
 import duell.commands.IGDCommand;
 class SetupMacCommand implements IGDCommand

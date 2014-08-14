@@ -6,7 +6,6 @@
  
 package duell.helpers;
 
-import sys.FileSystem;
 import duell.helpers.ProcessHelper;
 
 class GitHelper

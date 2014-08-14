@@ -6,7 +6,6 @@
 
 package duell.helpers;
 
-import duell.helpers.PlatformHelper;
 
 import sys.FileSystem;
 
