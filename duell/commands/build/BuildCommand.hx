@@ -32,7 +32,6 @@ class BuildCommand implements IGDCommand
 {
 	var libList : LibList = { duellLibs : new Array<DuellLib>(), haxelibs : new Array<Haxelib>() };
 	var buildLib : DuellLib = null;
-	var defines : Map<String, String> = new Map<String, String>();
 
 	var arguments : Array<String>;
 
@@ -58,10 +57,6 @@ class BuildCommand implements IGDCommand
 	    	LogHelper.info("");
 
 	    	determinePlatformToBuildForFromArguments(args);
-
-	    	LogHelper.println("");
-
-	    	determineProfileFromArguments(args);
 
 	    	LogHelper.println("");
 
@@ -115,21 +110,6 @@ class BuildCommand implements IGDCommand
 				Sys.exit(0);
     		}
     	}
-    }
-
-    private function determineProfileFromArguments(args : Array<String>)
-    {
-    	var profile = "release";
-    	if (args.length >= 2)
-    	{
-	    	if (args[1] == "debug" || args[2] == "release")
-	    	{
-	    		profile = args[1];
-	    	}
-	    }
-
-	    LogHelper.println("Building with profile " + profile);
-	    defines[profile] = null;
     }
 
 	private function determineAndValidateDependenciesAndDefines()

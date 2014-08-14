@@ -16,7 +16,8 @@ typedef ConfigurationData = {
 		TITLE : String,
 		VERSION : String,
 		PACKAGE : String,
-		COMPANY : String
+		COMPANY : String,
+		BUILD_NUMBER : String
 	},
 	HAXE_COMPILE_ARGS : Array<String>,
 
@@ -26,7 +27,7 @@ typedef ConfigurationData = {
 	},
 
 	OUTPUT : String,
-	SOURCE : String,
+	SOURCES : Array<String>,
 	MAIN : String,
 	PLATFORM : PlatformConfigurationData,
 	LIBRARY : Array< {
@@ -64,7 +65,8 @@ class Configuration
 				TITLE : "Test Project",
 				VERSION : "0.0.1",
 				PACKAGE : "com.test.proj",
-				COMPANY : "Test Company"
+				COMPANY : "Test Company",
+				BUILD_NUMBER : "1"
 			},
 			HAXE_COMPILE_ARGS : [],
 
@@ -74,8 +76,8 @@ class Configuration
 			},
 
 
-			OUTPUT : "Export",
-			SOURCE : "Source",
+			OUTPUT : haxe.io.Path.join([Sys.getCwd(), "Export"]),
+			SOURCES : [],
 			MAIN : "Main",
 			PLATFORM : PlatformConfiguration.getData(),
 			LIBRARY : [],
