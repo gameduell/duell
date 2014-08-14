@@ -82,7 +82,7 @@ class CmdProcessor
     //================================================================================
     public static function printHelp() :String
     {
-        var ret : String = 'GDShell '+ Duell.VERSION+' \n';
+        var ret : String = 'Version '+ Duell.VERSION +' \n';
 
         ret += '\n--------------------------\n';
         ret += '\n\x1b[1mCommand explanation\x1b[0m\n';

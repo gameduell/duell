@@ -11,7 +11,7 @@ import duell.helpers.LogHelper;
  */
 class Duell 
 {
-    public static var VERSION = "0.3.0";
+    public static var VERSION = "0.4.0";
 
     /** **/
     private var processor:CmdProcessor;
