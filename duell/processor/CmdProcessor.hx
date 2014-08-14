@@ -3,12 +3,10 @@ package duell.processor;
 import duell.commands.setup.EnvironmentSetupCommand;
 import duell.helpers.DuellLibListHelper;
 import duell.commands.IGDCommand;
-import duell.commands.dependencies.CreateDummyDependenciesCommand;
-import duell.commands.dependencies.InstallDependenciesCommand;
 import duell.commands.setup.SetupAndroidCommand;
 import duell.commands.setup.SetupFlashCommand;
 import duell.commands.setup.ToolSetupCommand;
-import duell.commands.setup.SetupMacCommand;
+
 import duell.commands.setup.UpdateToolCommand;
 import duell.commands.build.BuildCommand;
 import duell.helpers.LogHelper;
