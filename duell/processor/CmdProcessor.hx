@@ -3,8 +3,7 @@ package duell.processor;
 import duell.commands.setup.EnvironmentSetupCommand;
 import duell.helpers.DuellLibListHelper;
 import duell.commands.IGDCommand;
-import duell.commands.setup.SetupAndroidCommand;
-import duell.commands.setup.SetupFlashCommand;
+
 import duell.commands.setup.ToolSetupCommand;
 
 import duell.commands.setup.UpdateToolCommand;
@@ -37,28 +36,9 @@ class CmdProcessor
 
         addCommand('setup', EnvironmentSetupCommand.helpString, new EnvironmentSetupCommand());
 
-
         addCommand('self_setup', ToolSetupCommand.helpString, new ToolSetupCommand());
 
         addCommand('self_update', UpdateToolCommand.helpString, new UpdateToolCommand());
-
-        /*
-        addCommand('setup_android',     '   \x1b[1msetup_android\x1b[0m\n' +
-                                        '\n' +
-                                        'Setup the environment for android development. \n' +
-                                        'Currently it asks for downloading the android sdk, ndk, ant and jdk(except mac). \n' +
-                                        'The paths to the sdk\'s are then written to the hxcpp_config.xml file. \n' +
-                                        'The hxcpp_config file by default is in ~/.hxcpp_config.xml.\n', new SetupAndroidCommand());
-
-        addCommand('setup_flash',       '   \x1b[1msetup_flash\x1b[0m\n' +
-                                        '\n' +
-                                        'Setup the environment for flash development. \n' +
-                                        'Currently it asks for downloading the air sdk. \n' +
-                                        'The path to the sdk is written to the hxcpp_config.xml file. \n' +
-                                        'The hxcpp_config file by default is in ~/.hxcpp_config.xml.\n', new SetupFlashCommand());
-
-*/
-
     }
 
     function addCommand( name, doc, command ) : Void
