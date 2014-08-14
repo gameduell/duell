@@ -5,9 +5,7 @@
  */
 package duell.build.main;
 
-
 import duell.build.plugin.platform.PlatformBuild;
-
 
 class BuildMain 
 {

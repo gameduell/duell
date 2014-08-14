@@ -1,11 +1,13 @@
 package duell.processor;
 
+import duell.commands.setup.EnvironmentSetupCommand;
+import duell.helpers.DuellLibListHelper;
 import duell.commands.IGDCommand;
 import duell.commands.dependencies.CreateDummyDependenciesCommand;
 import duell.commands.dependencies.InstallDependenciesCommand;
 import duell.commands.setup.SetupAndroidCommand;
 import duell.commands.setup.SetupFlashCommand;
-import duell.commands.setup.BaseSetupCommand;
+import duell.commands.setup.ToolSetupCommand;
 import duell.commands.setup.SetupMacCommand;
 import duell.commands.setup.UpdateToolCommand;
 import duell.commands.build.BuildCommand;
@@ -33,16 +35,16 @@ class CmdProcessor
     {
         commands = new List();
 
-        addCommand('build',             '   \x1b[1mbuild <platform>\x1b[0m\n' +
-                                        '\n' +
-                                        'To be run inside a project that has a duell.json. \n' +
-                                        'Will build the specified platform.\n', new BuildCommand());
+        addCommand('build', BuildCommand.helpString, new BuildCommand());
 
-        addCommand('setup',             '   \x1b[1msetup\x1b[0m\n' +
-                                        '\n' +
-                                        'Basic setup for the environment. It checks/creates a folders .duell in your home folder. \n' +
-                                        'Inside that folder a config file is created and the tool itself is downloaded, installed into haxelib and \'duell\' command placed into the path.\n', new BaseSetupCommand());
+        addCommand('setup', EnvironmentSetupCommand.helpString, new EnvironmentSetupCommand());
 
+
+        addCommand('self_setup', ToolSetupCommand.helpString, new ToolSetupCommand());
+
+        addCommand('self_update', UpdateToolCommand.helpString, new UpdateToolCommand());
+
+        /*
         addCommand('setup_android',     '   \x1b[1msetup_android\x1b[0m\n' +
                                         '\n' +
                                         'Setup the environment for android development. \n' +
@@ -57,22 +59,8 @@ class CmdProcessor
                                         'The path to the sdk is written to the hxcpp_config.xml file. \n' +
                                         'The hxcpp_config file by default is in ~/.hxcpp_config.xml.\n', new SetupFlashCommand());
 
-        addCommand('setup_mac',         '   \x1b[1msetup_mac\x1b[0m\n' +
-                                        '\n' +
-                                        'Setup the environment for development in mac. \n' +
-                                        'Currently it checks for xcode and the command line tools, and helps installing them.\n' , new SetupMacCommand());
+*/
 
-        addCommand('install_dependencies',   '   \x1b[1minstall_dependencies\x1b[0m\n' +
-                                             '\n' +
-                                             'To be run inside a project that has a duell_dependencies.json\n', new InstallDependenciesCommand());
-
-        addCommand('dependencies_example'  ,    '   \x1b[1mdependencies_example\x1b[0m\n' +
-                                                '\n' +
-                                                'Generate dependencies project config file with the name ${duell.helpers.DuellLibListHelper.DEPENDENCY_LIST_FILENAME} in the current directory.\n', new CreateDummyDependenciesCommand());
-
-        addCommand('update_tool',       '   \x1b[1mupdate_tool\x1b[0m\n' +
-                                        '\n' +
-                                        'Update the tool itself. \n', new UpdateToolCommand());
     }
 
     function addCommand( name, doc, command ) : Void
@@ -121,8 +109,8 @@ class CmdProcessor
         ret += '\n--------------------------\n';
         ret += '\n\x1b[1mCommand explanation\x1b[0m\n';
         ret += '\n--------------------------\n';
-        ret += '\nPlease run the tool with one of - ' + commands.map(function(cmd) {return cmd.name;}).join(', ') + ' or help to show this message.\n';
-        ret += '\nAdditionally you can set common command parameters. Currently there are -verbose and -nocolor. Example: gdtool -verbose setup\n';
+        ret += '\nPlease run the tool with one of (' + commands.map(function(cmd) {return cmd.name;}).join(', ') + ') or help to show this message.\n';
+        ret += '\nAdditionally you can set common command parameters. Currently there are -verbose and -nocolor. Example: duell -verbose setup\n';
 
         for (c in commands)
         {

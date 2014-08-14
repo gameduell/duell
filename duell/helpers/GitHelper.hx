@@ -37,4 +37,23 @@ class GitHelper
         result = ProcessHelper.runCommand(destination, "git", ["pull"]);
         return result;
     }
+
+    static public function updateNeeded(destination : String) : Bool
+    {
+        var result : String = "";
+
+        ProcessHelper.runCommand(destination, "git", ["remote", "update"]);
+        ProcessHelper.runCommand(destination, "git", ["status", "-b", "master", "--porcelain"]);
+
+        result = ProcessHelper.runProcess(destination, "git", ["status", "-b", "master", "--porcelain"]);
+
+        if (result.indexOf("behind") != -1)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 }

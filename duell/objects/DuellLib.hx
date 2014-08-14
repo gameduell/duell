@@ -139,27 +139,46 @@ class DuellLib
 		return path;
 	}
 
+    public function updateNeeded() : Bool
+    {
+        var duellLibList = DuellLibListHelper.getDuellLibReferenceList();
+
+        if (duellLibList.exists(name))
+        {
+            return duellLibList.get(name).updateNeeded();
+        }
+        else
+        {
+            LogHelper.error('Couldn\'t find the Duell Library reference in the repo list for $name. Can\'t check for updates.');
+            return false;
+        }
+    }
+
     public function update()
     {
         var duellLibList = DuellLibListHelper.getDuellLibReferenceList();
 
-        if (!duellLibList.exists(name))
+        if (duellLibList.exists(name))
         {
-        	LogHelper.error('Couldn\'t find the Duell Library reference in the repo list for $name. Can\'t update it.');
+            duellLibList.get(name).update();
         }
-
-        duellLibList.get(name).update();
+        else
+        {
+            LogHelper.error('Couldn\'t find the Duell Library reference in the repo list for $name. Can\'t update it.');
+        }
     }
 
     public function install()
     {
         var duellLibList = DuellLibListHelper.getDuellLibReferenceList();
 
-        if (!duellLibList.exists(name))
+        if (duellLibList.exists(name))
         {
-        	LogHelper.error('Couldn\'t find the Duell Library reference in the repo list for $name. Can\'t install it.');
+            duellLibList.get(name).install();
         }
-
-        duellLibList.get(name).install();
+        else
+        {
+            LogHelper.error('Couldn\'t find the Duell Library reference in the repo list for $name. Can\'t install it.');
+        }
     }
 }
