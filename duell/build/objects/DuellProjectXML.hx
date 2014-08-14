@@ -19,6 +19,8 @@ import duell.build.objects.Configuration;
 import duell.build.plugin.platform.PlatformConfiguration;
 import duell.build.plugin.platform.PlatformXMLParser;
 
+import haxe.io.Path;
+
 import sys.io.File;
 import sys.FileSystem;
 
@@ -56,7 +58,6 @@ class DuellProjectXML
 
 	public function parse()
 	{
-
 		parsingConditions = [];
 		parsingConditions = parsingConditions.concat(Configuration.getConfigParsingDefines());
 		parsingConditions = parsingConditions.concat(PlatformConfiguration.getConfigParsingDefines());
@@ -82,12 +83,10 @@ class DuellProjectXML
 	{		
 		if (!PathHelper.isPathRooted(file))
 			LogHelper.error("internal error, parseFile should only receive rooted paths.");
-			
-		var elements = file.split("/");
-		elements.pop();
-		currentXMLPath.push(elements.join("/"));
 
-		trace(currentXMLPath);
+		currentXMLPath.push(Path.directory(file));
+
+		Configuration.getData().SOURCES.push(currentXMLPath[currentXMLPath.length - 1]);
 
 		var stringContent = File.getContent(file);
 
@@ -106,6 +105,12 @@ class DuellProjectXML
 
 				case 'output':
 					parseOutputElement(element);
+
+				case 'source':
+					parseSourceElement(element);
+
+				case 'main':
+					parseMainElement(element);
 
 				case 'haxe-compile-arg':
 					parseHaxeCompileArgElement(element);
@@ -274,6 +279,22 @@ class DuellProjectXML
 		}
 	}
 
+	private function parseSourceElement(element : Fast)
+	{
+		if (element.has.path)
+		{
+			Configuration.getData().SOURCES.push(resolvePath(element.att.path));
+		}
+	}
+
+	private function parseMainElement(element : Fast)
+	{
+		if (element.has.name)
+		{
+			Configuration.getData().MAIN = element.att.name;
+		}
+	}
+
 	private function parseHaxeCompileArgElement(element : Fast)
 	{
 		if (element.has.value)
@@ -340,7 +361,7 @@ class DuellProjectXML
 		if (PathHelper.isPathRooted(path))
 			return path;
 
-		return currentXMLPath[currentXMLPath.length - 1] + "/" + path;
+		return Path.join([currentXMLPath[currentXMLPath.length - 1] ,path]);
 	}
 
 	private function processXML(xml : String) : String
