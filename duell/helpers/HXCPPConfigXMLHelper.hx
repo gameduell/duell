@@ -12,21 +12,8 @@ class HXCPPConfigXMLHelper
 	{
 		var env = Sys.environment();
 
-		var home = "";
-		
-		if (env.exists ("HOME")) 
-		{
-			home = env.get("HOME");
-		} 
-		else if(env.exists("USERPROFILE")) 
-		{
-			home = env.get("USERPROFILE");
-		} 
-		else 
-		{	
-			return null;
-		}
-		
+		var home = duell.helpers.PathHelper.getHomeFolder();
+
 		return home + "/.hxcpp_config.xml";
 	}
 }

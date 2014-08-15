@@ -12,6 +12,8 @@ import duell.helpers.ProcessHelper;
 
 import sys.FileSystem;
 
+import haxe.io.Path;
+
 class DuellLibReference 
 {
 	public var name : String;
@@ -67,7 +69,8 @@ class DuellLibReference
         LogHelper.println("Installing lib " + name + "===============================================");
         LogHelper.println("Creating directory : [" + destinationPath + "]");
 
-        var path = duellConfigJSON.localLibraryPath + "/" + destinationPath;
+        var path = Path.join([duellConfigJSON.localLibraryPath, destinationPath]);
+
 
         /// checkout 
         if (FileSystem.exists(path))

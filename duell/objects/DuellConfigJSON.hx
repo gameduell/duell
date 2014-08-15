@@ -5,6 +5,7 @@
  */
 package duell.objects;
 
+import duell.helpers.PathHelper;
 
 import sys.io.File;
 import sys.FileSystem;
@@ -27,6 +28,9 @@ class DuellConfigJSON
         configJSON = Json.parse(configContent);
 
 		localLibraryPath = configJSON.localLibraryPath;
+
+		localLibraryPath = PathHelper.unescape(localLibraryPath); /// ~ paths are not very nice to sys.FileSystem
+
 		repoListURLs = configJSON.repoListURLs;
 	}
 

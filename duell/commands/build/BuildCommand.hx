@@ -124,7 +124,8 @@ class BuildCommand implements IGDCommand
 
 	private function buildNewExecutableWithBuildLibAndDependencies()
 	{
-		var outputFolder = ".build";
+		var outputFolder = haxe.io.Path.join([duell.helpers.DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"]);
+		var outputRun = haxe.io.Path.join(['$outputFolder", "run.n']);
 
 		var buildArguments = new Array<String>();
 
@@ -132,7 +133,7 @@ class BuildCommand implements IGDCommand
 		buildArguments.push("duell.build.main.BuildMain");
 
 		buildArguments.push("-neko");
-		buildArguments.push('$outputFolder/buildtool/run.n');
+		buildArguments.push(outputRun);
 
 
 		buildArguments.push("-cp");
@@ -147,14 +148,14 @@ class BuildCommand implements IGDCommand
 			buildArguments.push(duellLib.getPath());
 		}
 
-		PathHelper.mkdir('$outputFolder/buildtool');
+		PathHelper.mkdir(outputFolder);
 
 		var result = duell.helpers.ProcessHelper.runCommand("", "haxe", buildArguments);
 
 		if (result != 0)
 			LogHelper.error("An error occured while compiling the build tool");
 
-		var runArguments = ['$outputFolder/buildtool/run.n'];
+		var runArguments = [outputRun];
 		runArguments = runArguments.concat(arguments);
 
 		result = duell.helpers.ProcessHelper.runCommand("", "neko", runArguments);

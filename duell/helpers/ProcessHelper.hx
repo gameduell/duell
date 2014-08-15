@@ -129,12 +129,12 @@ class ProcessHelper
 		
 		if(safeExecute) 
 		{
+			if(path != null && path != "" && !FileSystem.exists(FileSystem.fullPath (path)) && !FileSystem.exists(FileSystem.fullPath(new Path(path).dir))) 
+			{
+				LogHelper.error ("The specified target path \"" + path + "\" does not exist");
+				return 1;
+			}
 			try {
-				if(path != null && path != "" && !FileSystem.exists(FileSystem.fullPath (path)) && !FileSystem.exists(FileSystem.fullPath (new Path(path).dir))) 
-				{
-					LogHelper.error ("The specified target path \"" + path + "\" does not exist");
-					return 1;
-				}
 				
 				return _runCommand(path, command, args);
 				
@@ -272,7 +272,6 @@ class ProcessHelper
 	private static function _runProcess (path:String, command:String, args:Array<String>, waitForOutput:Bool, ignoreErrors:Bool):String {
 		
 		var oldPath:String = "";
-		
 		if (path != null && path != "") {
 			
 			LogHelper.info ("", " - \x1b[1mChanging directory:\x1b[0m " + path + "");
