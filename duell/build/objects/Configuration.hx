@@ -10,8 +10,6 @@ import duell.build.plugin.library.LibraryConfiguration;
 
 
 typedef ConfigurationData = {
-	PROFILE : String, // debug or release or something else we might want later
-
 	APP : {
 		TITLE : String,
 		VERSION : String,
@@ -60,7 +58,6 @@ class Configuration
 	{
 		_configuration = {
 
-			PROFILE : "debug",
 			APP : {
 				TITLE : "Test Project",
 				VERSION : "0.0.1",

@@ -9,4 +9,5 @@ extern class PlatformBuild
 {
 	public function new() : Void;
 	public function build(args : Array<String>) : Void;
+	public function run(args : Array<String>) : Void;
 }

@@ -49,7 +49,7 @@ class BuildCommand implements IGDCommand
 	    	LogHelper.info("------\x1b[0m");
 	    	LogHelper.info("");
 
-	    	determinePlatformToBuildForFromArguments(args);
+	    	determinePlatformToBuildForFromArguments();
 
 	    	LogHelper.println("");
 
@@ -73,14 +73,14 @@ class BuildCommand implements IGDCommand
 	    return "success";
     }
 
-    private function determinePlatformToBuildForFromArguments(args : Array<String>)
+    private function determinePlatformToBuildForFromArguments()
     {
-    	if (args.length == 0)
+    	if (arguments.length == 0)
     	{
     		LogHelper.error("Please specify a platform as a parameter. \"duell build <platform>\".");
     	}
 
-    	var platformName = args[0].toLowerCase();
+    	var platformName = arguments[0].toLowerCase();
 
     	var platformNameCorrectnessCheck = ~/^[a-z0-9]+$/;
 
@@ -153,7 +153,7 @@ class BuildCommand implements IGDCommand
 			LogHelper.error("An error occured while compiling the build tool");
 
 		var runArguments = ['$outputFolder/buildtool/run.n'];
-		runArguments.concat(arguments);
+		runArguments = runArguments.concat(arguments);
 
 		result = duell.helpers.ProcessHelper.runCommand("", "neko", runArguments);
 

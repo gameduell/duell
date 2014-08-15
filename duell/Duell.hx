@@ -70,10 +70,8 @@ class Duell
                 {
                     case("-verbose"):
                         LogHelper.verbose = true;
-                        return false;
                     case("-nocolor"):
                         LogHelper.enableColor = false;
-                        return false;
                 }
 
                 return true;
