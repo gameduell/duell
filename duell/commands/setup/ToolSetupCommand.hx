@@ -23,11 +23,17 @@ import sys.io.File;
 import sys.FileSystem;
 
 import duell.commands.IGDCommand;
-class BaseSetupCommand implements IGDCommand
+
+class ToolSetupCommand implements IGDCommand
 {	
 	private static var haxeURL = "http://haxe.org/";
     private static var defaultRepoListURL:String = "ssh://git@phabricator.office.gameduell.de:2222/diffusion/HAXMISCHAXEREPOLIST/haxe-repo-list.git";
-	
+
+    public static var helpString : String = '   \x1b[1mself_setup\x1b[0m\n' +
+                                            '\n' +
+                                            'Basic setup for the duell tool. It checks/creates a folders .duell in your home folder. \n' +
+                                            'Inside that folder a config file is created and the tool itself is downloaded, installed into haxelib and \'duell\' command placed into the path.\n';
+
     public function new()
     {
 

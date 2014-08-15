@@ -5,6 +5,8 @@
  */
 package duell.commands.build;
 
+import duell.helpers.ProcessHelper;
+import haxe.CallStack;
 import Sys;
 
 import duell.defines.DuellDefines;
@@ -27,7 +29,7 @@ import duell.commands.IGDCommand;
 typedef LibList = { duellLibs: Array<DuellLib>, haxelibs: Array<Haxelib> }
 
 class BuildCommand implements IGDCommand
-{	
+{
 	var libList : LibList = { duellLibs : new Array<DuellLib>(), haxelibs : new Array<Haxelib>() };
 	var buildLib : DuellLib = null;
 
@@ -36,6 +38,11 @@ class BuildCommand implements IGDCommand
     public function new()
     {
     }
+
+    public static var helpString : String = '   \x1b[1mbuild <platform>\x1b[0m\n' +
+                                            '\n' +
+                                            'To be run inside a project that has a duell_project.xml. \n' +
+                                            'Will build the specified platform.\n';
 
     public function execute(cmd : String, args : Array<String>) : String
     {
@@ -118,11 +125,6 @@ class BuildCommand implements IGDCommand
 	private function buildNewExecutableWithBuildLibAndDependencies()
 	{
 		var outputFolder = ".build";
-
-		if(outputFolder == null || outputFolder == "")
-		{
-			LogHelper.error("<output path=<path_for_output> /> needs to be specified in the project file.");
-		}
 
 		var buildArguments = new Array<String>();
 

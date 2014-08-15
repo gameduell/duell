@@ -18,8 +18,12 @@ import duell.commands.IGDCommand;
 class UpdateToolCommand implements IGDCommand
 {	
 	private static var haxeURL = "http://haxe.org/";
-    private static var defaultRepoListURL:String = "ssh://git@phabricator.office.gameduell.de:2222/diffusion/HAXMISCHAXEREPOLIST/haxe-repo-list.git";
-	
+    private static var defaultRepoListURL : String = "ssh://git@phabricator.office.gameduell.de:2222/diffusion/HAXMISCHAXEREPOLIST/haxe-repo-list.git";
+
+    public static var helpString : String = '   \x1b[1mself_update\x1b[0m\n' +
+                                            '\n' +
+                                            'Update the tool itself. \n';
+
     public function new()
     {
 
