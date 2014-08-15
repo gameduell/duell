@@ -114,11 +114,6 @@ class BuildCommand implements IGDCommand
 
 	private function determineAndValidateDependenciesAndDefines()
 	{
-		if (FileSystem.exists(buildLib.getPath() + "/" + DuellDefines.PLATFORM_CONFIG_FILENAME))
-		{
-			parseDependencies(buildLib.getPath() + "/" + DuellDefines.PLATFORM_CONFIG_FILENAME);
-		}
-
 		parseDependencies(DuellDefines.PROJECT_CONFIG_FILENAME);
 	}
 

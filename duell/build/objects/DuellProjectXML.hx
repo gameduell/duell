@@ -66,13 +66,6 @@ class DuellProjectXML
 			LogHelper.error('Project config file not found. There should be a ${DuellDefines.PROJECT_CONFIG_FILENAME} here');
 		}
 
-		var platformXML = DuellLib.getDuellLib("duellbuild" + PlatformConfiguration.getData().PLATFORM_NAME).getPath() + "/" + DuellDefines.PLATFORM_CONFIG_FILENAME;
-
-		if (FileSystem.exists(platformXML))
-		{
-			parseFile(platformXML);
-		}
-
 		parseFile(Sys.getCwd() + "/" + DuellDefines.PROJECT_CONFIG_FILENAME);
 
 		parseDuellLibs();
@@ -357,10 +350,12 @@ class DuellProjectXML
 
 	public function resolvePath(path : String) : String
 	{
+		path = PathHelper.unescape(path);
+		
 		if (PathHelper.isPathRooted(path))
 			return path;
 
-		return Path.join([currentXMLPath[currentXMLPath.length - 1] ,path]);
+		return Path.join([currentXMLPath[currentXMLPath.length - 1], path]);
 	}
 
 	private function processXML(xml : String) : String
