@@ -34,7 +34,13 @@ class DuellConfigJSON
 
 		repoListURLs = configJSON.repoListURLs;
 
+		if (repoListURLs == null)
+			repoListURLs = [];
+
 		setupsCompleted = configJSON.setupsCompleted;
+		
+		if (setupsCompleted == null)
+			setupsCompleted = [];
 	}
 
 	private static var cache : DuellConfigJSON;

@@ -2,6 +2,9 @@ package duell.processor;
 
 import duell.commands.setup.EnvironmentSetupCommand;
 import duell.helpers.DuellLibListHelper;
+import duell.helpers.DuellConfigHelper;
+
+import duell.objects.DuellConfigJSON;
 import duell.commands.IGDCommand;
 
 import duell.commands.setup.ToolSetupCommand;
@@ -61,6 +64,31 @@ class CmdProcessor
         if( cmd == 'help' )
         {
             return printHelp();
+        }
+
+        /** Check if the self_setup was done already **/
+
+        var isMissingSelfSetup = false;
+        if (cmd != 'self_setup')
+        {
+            if (!sys.FileSystem.exists(DuellConfigHelper.getDuellConfigFileLocation()))
+            {
+                isMissingSelfSetup = true;
+            }
+            else
+            {
+                var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+
+                if (duellConfig.setupsCompleted.indexOf("self") == -1)
+                {
+                    isMissingSelfSetup = true;
+                }
+            }
+        }
+
+        if (isMissingSelfSetup)
+        {
+            LogHelper.error('You are missing the initial setup. Please run duell self_setup');
         }
 
         /** Other commands **/

@@ -37,6 +37,16 @@ class BuildMain
 		{
 	 		var build = new PlatformBuild();
 
+	 		var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+
+	 		for (requiredSetup in build.getRequiredSetups())
+	 		{
+		        if (duellConfig.setupsCompleted.indexOf(requiredSetup) == -1)
+		        {
+		        	LogHelper.error('You are missing a setup. Please run duell setup $requiredSetup');
+		        }
+	 		}
+
 	 		build.build(args);
 
 	 		if (run)

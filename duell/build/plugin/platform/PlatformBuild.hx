@@ -7,6 +7,8 @@ package duell.build.plugin.platform;
 
 extern class PlatformBuild
 {
+	public var requiredSetups : Array<String>;
+
 	public function new() : Void;
 	public function build(args : Array<String>) : Void;
 	public function run(args : Array<String>) : Void;

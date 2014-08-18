@@ -26,7 +26,6 @@ import duell.commands.IGDCommand;
 
 class ToolSetupCommand implements IGDCommand
 {	
-	private static var setupCompletedMarker = "SELF_SETUP";
 	private static var haxeURL = "http://haxe.org/";
     private static var defaultRepoListURL:String = "ssh://git@phabricator.office.gameduell.de:2222/diffusion/HAXMISCHAXEREPOLIST/haxe-repo-list.git";
 
@@ -307,9 +306,9 @@ class ToolSetupCommand implements IGDCommand
     	LogHelper.println("Saving Setup Done Marker... ");
 		var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 
-		if (duellConfig.setupsCompleted.indexOf(setupCompletedMarker) == -1)
+		if (duellConfig.setupsCompleted.indexOf("self") == -1)
 		{
-			duellConfig.setupsCompleted.push(setupCompletedMarker);
+			duellConfig.setupsCompleted.push("self");
 			duellConfig.writeToConfig();
 		}
 	}

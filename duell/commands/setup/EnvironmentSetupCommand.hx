@@ -3,7 +3,9 @@ package duell.commands.setup;
 import duell.helpers.ProcessHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.AskHelper;
+import duell.helpers.DuellConfigHelper;
 import duell.objects.DuellLib;
+import duell.objects.DuellConfigJSON;
 import haxe.CallStack;
 import duell.helpers.LogHelper;
 import duell.commands.IGDCommand;
@@ -16,6 +18,7 @@ class EnvironmentSetupCommand implements IGDCommand
                                             '(mac, android, flash)\n';
 
     var setupLib : DuellLib = null;
+    var platformName : String;
     var arguments : Array<String>;
 
     public function new()
@@ -62,7 +65,7 @@ class EnvironmentSetupCommand implements IGDCommand
             LogHelper.error("Please specify a platform as a parameter. \"duell setup <platform>\". (android, flash, mac)");
         }
 
-        var platformName = args[0].toLowerCase();
+        platformName = args[0].toLowerCase();
 
         var platformNameCorrectnessCheck = ~/^[a-z0-9]+$/;
 
@@ -136,6 +139,16 @@ class EnvironmentSetupCommand implements IGDCommand
 
         if (result != 0)
             LogHelper.error("An error occured while running the environment tool");
+
+
+        LogHelper.println("Saving Setup Done Marker... ");
+        var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+
+        if (duellConfig.setupsCompleted.indexOf(platformName) == -1)
+        {
+            duellConfig.setupsCompleted.push(platformName);
+            duellConfig.writeToConfig();
+        }
     }
 
 }
