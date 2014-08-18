@@ -28,10 +28,13 @@ typedef ConfigurationData = {
 	SOURCES : Array<String>,
 	MAIN : String,
 	PLATFORM : PlatformConfigurationData,
-	LIBRARY : Array< {
-		LIBRARY_NAME : String,
-		LIBRARY_DATA : LibraryConfigurationData
-	} >,
+
+	LIBRARY : Dynamic,  /* anonymous structure that looks like, e.g.:
+						{
+							GRAPHICS : duell.build.plugin.library.LibraryConfigurationData,
+							FILESYSTEM : duell.build.plugin.library.LibraryConfigurationData
+						}
+						*/
 
 	NDLLS : Array<{NAME : String, BIN_PATH : String, BUILD_FILE_PATH : String, REGISTER_STATICS : Bool}>,
 

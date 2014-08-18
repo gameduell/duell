@@ -36,7 +36,7 @@ class DuellProjectXML
 	private var currentXMLPath : Array<String> = []; /// used to resolve paths. Is used by all XML parsers (library and platform)
 	/// --------------
 
-	private var parsingConditions : Array<String>; /// used in validating elements for "if" or "unless"
+	public var parsingConditions : Array<String>; /// used in validating elements for "if" or "unless"
 
 
 	private function new() : Void
@@ -297,12 +297,31 @@ class DuellProjectXML
 
 	private function parsePlatformConfigSection(platformSectionXML : Fast)
 	{
-		PlatformXMLParser.getConfig().parse(platformSectionXML);
+		PlatformXMLParser.parse(platformSectionXML);
 	}
 
-	private function parseLibraryConfigSection(element : Fast)
+	private function parseLibraryConfigSection(xml : Fast)
 	{
-		
+		for (element in xml.elements) 
+		{
+			if (!XMLHelper.isValidElement(element, parsingConditions))
+				continue;
+
+			var name = element.name;
+
+			var libXMLParser = null;
+
+			var lib = Reflect.field(Configuration.getData().LIBRARY, name);
+
+
+			var parserClass = Type.resolveClass('duell.build.plugin.library.$name.LibraryXMLParser');
+
+			if (parserClass != null)
+			{
+				var parseFunction : Dynamic = Reflect.field(parserClass, "parse");
+				Reflect.callMethod(parserClass, parseFunction, [element]);
+			}
+		}
 	}
 
 	private function parseNDLLElement(element : Fast)
