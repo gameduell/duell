@@ -275,8 +275,25 @@ class BuildCommand implements IGDCommand
 
 		dependenciesAlreadyParsed.push(duellLib);
 
-		if (!duellLib.exists())
+		if (duellLib.exists())
 		{
+            if (duellLib.updateNeeded() == true)
+            {
+                var libraryName:String = duellLib.name;
+                var answer = AskHelper.askYesOrNo('The library of $libraryName is not up to date on the master branch. Would you like to try to update it?');
+
+                if(answer)
+                {
+                    duellLib.update();
+                }
+            }
+            else
+            {
+                LogHelper.info("", "No update needed");
+            }
+        }
+        else
+        {
 			var answer = AskHelper.askYesOrNo('DuellLib ${duellLib.name} is missing, would you like to install it?');
 
 			if (answer)
