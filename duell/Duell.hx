@@ -64,28 +64,13 @@ class Duell
 
         args = args.filter(function(arg) 
         {
-            if(arg.charAt(0) == "-")
+            if(arg.charAt(0) != "-" && command == "")
             {
-                switch(arg)
-                {
-                    case("-verbose"):
-                        LogHelper.verbose = true;
-                    case("-nocolor"):
-                        LogHelper.enableColor = false;
-                }
-
-                return true;
+                command = arg;
+                return false;
             }
-            else
-            {
-                if(command == "")
-                {
-                    command = arg;
-                    return false;
-                }
 
-                return true;
-            }
+            return true;
         });
 
         return {command:command, args:args};

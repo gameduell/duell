@@ -8,6 +8,8 @@ package duell.build.main;
 import duell.build.plugin.platform.PlatformBuild;
 
 import duell.helpers.LogHelper;
+import duell.helpers.DuellConfigHelper;
+import duell.objects.DuellConfigJSON;
 
 class BuildMain 
 {
@@ -15,31 +17,13 @@ class BuildMain
     {
  		var args = Sys.args();
 
- 		var run : Bool = false;
-
- 		for (arg in Sys.args())
- 		{
- 			if (arg == "-nocolor")
- 			{
- 				duell.helpers.LogHelper.enableColor = false;
- 			}
- 			else if (arg == "-verbose")
- 			{
- 				duell.helpers.LogHelper.verbose = true;
- 			} 
- 			else if (arg == "-run")
- 			{
- 				run = true;
- 			}
- 		}
-
 		try 
 		{
 	 		var build = new PlatformBuild();
 
 	 		var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 
-	 		for (requiredSetup in build.getRequiredSetups())
+	 		for (requiredSetup in build.requiredSetups)
 	 		{
 		        if (duellConfig.setupsCompleted.indexOf(requiredSetup) == -1)
 		        {
@@ -49,7 +33,7 @@ class BuildMain
 
 	 		build.build(args);
 
-	 		if (run)
+	 		if (Sys.args().indexOf("-run") != -1)
 	 		{
 	 			build.run(args);
 	 		}

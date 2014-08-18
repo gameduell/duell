@@ -139,8 +139,17 @@ class DuellLib
 		return path;
 	}
 
+	public static var noUpdateEnabled : Bool = null;
     public function updateNeeded() : Bool
     {
+    	if (noUpdateEnabled == null)
+    	{
+    		noUpdateEnabled = Sys.args().indexOf("-noupdate") != -1;
+    	}
+
+    	if (noUpdateEnabled)
+    		return false;
+
         var duellLibList = DuellLibListHelper.getDuellLibReferenceList();
 
         if (duellLibList.exists(name))
