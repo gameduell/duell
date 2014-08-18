@@ -1,24 +1,21 @@
-package duell.commands.setup;
+package duell.commands.create;
 
 import duell.helpers.ProcessHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.AskHelper;
-import duell.helpers.DuellConfigHelper;
 import duell.objects.DuellLib;
-import duell.objects.DuellConfigJSON;
 import haxe.CallStack;
 import duell.helpers.LogHelper;
 import duell.commands.IGDCommand;
 
-class EnvironmentSetupCommand implements IGDCommand
+class CreateCommand implements IGDCommand
 {
-    public static var helpString : String = '   \x1b[1msetup <platform>\x1b[0m\n' +
+    public static var helpString : String = '   \x1b[1mcreate <plugin_name>\x1b[0m\n' +
                                             '\n' +
-                                            'Setup for the specified environment.\n' +
-                                            '(mac, android, flash)\n';
+                                            'Generic running of plugins from duell libs. \n' +
+                                            'Can be used for creating a default project in current folder like: duell create emptyProject . \n';
 
     var setupLib : DuellLib = null;
-    var platformName : String;
     var arguments : Array<String>;
 
     public function new()
@@ -34,15 +31,15 @@ class EnvironmentSetupCommand implements IGDCommand
         {
             LogHelper.info("");
             LogHelper.info("\x1b[2m------");
-            LogHelper.info("Setup");
+            LogHelper.info("Create");
             LogHelper.info("------\x1b[0m");
             LogHelper.info("");
 
-            determinePlatformToSetupFromArguments(args);
+            determineDuellLibraryFromArguments(args);
 
             LogHelper.println("");
 
-            buildNewEnvironmentWithSetupLib();
+            runPluginLib();
 
             LogHelper.println("");
             LogHelper.info("\x1b[2m------");
@@ -58,27 +55,27 @@ class EnvironmentSetupCommand implements IGDCommand
         return "success";
     }
 
-    private function determinePlatformToSetupFromArguments(args : Array<String>)
+    private function determineDuellLibraryFromArguments(args : Array<String>)
     {
         if (args.length == 0)
         {
-            LogHelper.error("Please specify a platform as a parameter. \"duell setup <platform>\". (android, flash, mac)");
+            LogHelper.error("Please specify a plugin as a parameter. \"duell create <plugin_name>\". (helloWorld, emptyProject, help, ...)");
         }
 
-        platformName = args[0].toLowerCase();
+        var pluginName = args[0];
 
-        var platformNameCorrectnessCheck = ~/^[a-z0-9]+$/;
+        var pluginNameCorrectnessCheck = ~/^[A-Za-z0-9]+$/;
 
-        if (!platformNameCorrectnessCheck.match(platformName))
-            LogHelper.error('Unknown platform $platformName, should be composed of only letters or numbers, no spaces of other characters. Example: \"duell setup mac\" or \"duell setup android\"');
+        if (!pluginNameCorrectnessCheck.match(pluginName))
+            LogHelper.error('Unknown plugin $pluginName, should be composed of only letters or numbers, no spaces of other characters. Example: \"duell create emptyProject\" or \"duell create helloWorld\"');
 
-        setupLib = DuellLib.getDuellLib("duellsetup" + platformName);
+        setupLib = DuellLib.getDuellLib("duellcreate" + pluginName);
 
         if (setupLib.exists())
         {
             if (setupLib.updateNeeded() == true)
             {
-                var answer = AskHelper.askYesOrNo('The library of $platformName environment is not up to date on the master branch. Would you like to try to update it?');
+                var answer = AskHelper.askYesOrNo('The plugin with name $pluginName is not up to date on the master branch. Would you like to try to update it?');
 
                 if(answer)
                 {
@@ -92,7 +89,7 @@ class EnvironmentSetupCommand implements IGDCommand
         }
         else
         {
-            var answer = AskHelper.askYesOrNo('A library for setup of $platformName environment is not currently installed. Would you like to try to install it?');
+            var answer = AskHelper.askYesOrNo('The plugin of name $pluginName is not currently installed. Would you like to try to install it?');
 
             if(answer)
             {
@@ -100,13 +97,13 @@ class EnvironmentSetupCommand implements IGDCommand
             }
             else
             {
-                LogHelper.println('Rerun with the library "duellsetup$platformName" installed');
+                LogHelper.println('Rerun with the plugin/library "$pluginName" installed');
                 Sys.exit(0);
             }
         }
     }
 
-    private function buildNewEnvironmentWithSetupLib()
+    private function runPluginLib()
     {
         var outputFolder = haxe.io.Path.join([duell.helpers.DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"]);
         var outputRun = haxe.io.Path.join(['$outputFolder", "run.n']);
@@ -114,7 +111,7 @@ class EnvironmentSetupCommand implements IGDCommand
         var buildArguments = new Array<String>();
 
         buildArguments.push("-main");
-        buildArguments.push("duell.setup.main.SetupMain");
+        buildArguments.push("duell.create.CreateMain");
 
         buildArguments.push("-neko");
         buildArguments.push(outputRun);
@@ -130,7 +127,7 @@ class EnvironmentSetupCommand implements IGDCommand
         var result = duell.helpers.ProcessHelper.runCommand("", "haxe", buildArguments);
 
         if (result != 0)
-            LogHelper.error("An error occured while compiling the environment tool");
+            LogHelper.error("An error occured while compiling the plugin");
 
         var runArguments = [outputRun];
         runArguments.concat(arguments);
@@ -138,17 +135,7 @@ class EnvironmentSetupCommand implements IGDCommand
         result = duell.helpers.ProcessHelper.runCommand("", "neko", runArguments);
 
         if (result != 0)
-            LogHelper.error("An error occured while running the environment tool");
-
-
-        LogHelper.println("Saving Setup Done Marker... ");
-        var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
-
-        if (duellConfig.setupsCompleted.indexOf(platformName) == -1)
-        {
-            duellConfig.setupsCompleted.push(platformName);
-            duellConfig.writeToConfig();
-        }
+            LogHelper.error("An error occured while running the plugin");
     }
 
 }

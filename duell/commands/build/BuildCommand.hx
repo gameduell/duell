@@ -56,7 +56,7 @@ class BuildCommand implements IGDCommand
 	    	LogHelper.info("------\x1b[0m");
 	    	LogHelper.info("");
 
-	    	determinePlatformToBuildForFromArguments();
+	    	determinePlatformToBuildFromArguments();
 
 	    	LogHelper.println("");
 
@@ -80,7 +80,7 @@ class BuildCommand implements IGDCommand
 	    return "success";
     }
 
-    private function determinePlatformToBuildForFromArguments()
+    private function determinePlatformToBuildFromArguments()
     {
     	if (arguments.length == 0)
     	{
@@ -96,8 +96,24 @@ class BuildCommand implements IGDCommand
 
     	buildLib = DuellLib.getDuellLib("duellbuild" + platformName);
 
-    	if (!buildLib.exists())
+    	if (buildLib.exists())
     	{
+            if (buildLib.updateNeeded() == true)
+            {
+                var answer = AskHelper.askYesOrNo('The library of $platformName is not up to date on the master branch. Would you like to try to update it?');
+
+                if(answer)
+                {
+                    buildLib.update();
+                }
+            }
+            else
+            {
+                LogHelper.info("","No update needed");
+            }
+        }
+        else
+        {
     		var answer = AskHelper.askYesOrNo('A library for building $platformName is not currently installed. Would you like to try to install it?');
 
     		if(answer)
@@ -259,8 +275,25 @@ class BuildCommand implements IGDCommand
 
 		dependenciesAlreadyParsed.push(duellLib);
 
-		if (!duellLib.exists())
+		if (duellLib.exists())
 		{
+            if (duellLib.updateNeeded() == true)
+            {
+                var libraryName:String = duellLib.name;
+                var answer = AskHelper.askYesOrNo('The library of $libraryName is not up to date on the master branch. Would you like to try to update it?');
+
+                if(answer)
+                {
+                    duellLib.update();
+                }
+            }
+            else
+            {
+                LogHelper.info("", "No update needed");
+            }
+        }
+        else
+        {
 			var answer = AskHelper.askYesOrNo('DuellLib ${duellLib.name} is missing, would you like to install it?');
 
 			if (answer)
