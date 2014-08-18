@@ -30,7 +30,8 @@ class DuellConfigJSON
 
 		localLibraryPath = configJSON.localLibraryPath;
 
-		localLibraryPath = PathHelper.unescape(localLibraryPath); /// ~ paths are not very nice to sys.FileSystem
+		if (localLibraryPath != null)
+			localLibraryPath = PathHelper.unescape(localLibraryPath); /// ~ paths are not very nice to sys.FileSystem
 
 		repoListURLs = configJSON.repoListURLs;
 
@@ -38,7 +39,7 @@ class DuellConfigJSON
 			repoListURLs = [];
 
 		setupsCompleted = configJSON.setupsCompleted;
-		
+
 		if (setupsCompleted == null)
 			setupsCompleted = [];
 	}
