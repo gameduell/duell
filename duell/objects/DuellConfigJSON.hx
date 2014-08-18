@@ -17,6 +17,7 @@ class DuellConfigJSON
 	///variables in the config, if you change them, do writeToConfig to commit the changes
 	public var localLibraryPath : String;
 	public var repoListURLs : Array<String>;
+	public var setupsCompleted : Array<String>;
 	public var configJSON : Dynamic;
 
 	private var configPath : String;
@@ -32,6 +33,8 @@ class DuellConfigJSON
 		localLibraryPath = PathHelper.unescape(localLibraryPath); /// ~ paths are not very nice to sys.FileSystem
 
 		repoListURLs = configJSON.repoListURLs;
+
+		setupsCompleted = configJSON.setupsCompleted;
 	}
 
 	private static var cache : DuellConfigJSON;
@@ -56,6 +59,7 @@ class DuellConfigJSON
 	{		
 		configJSON.localLibraryPath = localLibraryPath;
 		configJSON.repoListURLs = repoListURLs;
+		configJSON.setupsCompleted = setupsCompleted;
 
 		FileSystem.deleteFile(configPath);
 		
