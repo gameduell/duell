@@ -157,6 +157,11 @@ class BuildCommand implements IGDCommand
 		{
 			buildArguments.push("-cp");
 			buildArguments.push(duellLib.getPath());
+			if (FileSystem.exists(haxe.io.Path.join([duellLib.getPath(), "duell", "build", "plugin", "library", duellLib.name, "LibraryXMLParser.hx"])))
+			{
+				buildArguments.push("--macro");
+				buildArguments.push('keep(\"duell.build.plugin.library.${duellLib.name}.LibraryXMLParser\")');
+			}
 		}
 
 		PathHelper.mkdir(outputFolder);

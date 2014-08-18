@@ -309,10 +309,10 @@ class DuellProjectXML
 
 			var name = element.name;
 
+
 			var libXMLParser = null;
 
 			var lib = Reflect.field(Configuration.getData().LIBRARY, name);
-
 
 			var parserClass = Type.resolveClass('duell.build.plugin.library.$name.LibraryXMLParser');
 
