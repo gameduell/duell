@@ -4,7 +4,7 @@
  * @company Gameduell GmbH
  */
 
-package duell.build.helpers;
+package duell.helpers;
 
 import duell.build.objects.Configuration;
 
@@ -20,7 +20,7 @@ import haxe.Template;
 
 class TemplateHelper
 {
-	public static function copyTemplateFile(source:String, destination:String, onlyIfNewer : Bool = true) : Void 
+	public static function copyTemplateFile(source:String, destination:String, context:Dynamic, templateFunctions:Dynamic, onlyIfNewer : Bool = true) : Void
 	{	
 		if (FileHelper.isText(source))
 		{				
@@ -28,8 +28,7 @@ class TemplateHelper
 				
 			var fileContents:String = File.getContent(source);
 			var template:Template = new Template(fileContents);
-			var result:String = template.execute(Configuration.getData(), 
-												 Configuration.getData().TEMPLATE_FUNCTIONS);
+			var result:String = template.execute(context, templateFunctions);
 			
 			try {
 				
@@ -52,7 +51,7 @@ class TemplateHelper
 		}
 	}
 
-	public static function recursiveCopyTemplatedFiles(source:String, destination:String) 
+	public static function recursiveCopyTemplatedFiles(source:String, destination:String, context:Dynamic, templateFunctions:Dynamic)
 	{	
 		PathHelper.mkdir(destination);
 		
@@ -76,11 +75,11 @@ class TemplateHelper
 				
 				if (FileSystem.isDirectory(itemSource)) 
 				{
-					recursiveCopyTemplatedFiles(itemSource, itemDestination);
+					recursiveCopyTemplatedFiles(itemSource, itemDestination, context, templateFunctions);
 				} 
 				else 
 				{
-					copyTemplateFile(itemSource, itemDestination);
+					copyTemplateFile(itemSource, itemDestination, context, templateFunctions);
 				}
 				
 			}
