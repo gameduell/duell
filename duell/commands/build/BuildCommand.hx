@@ -56,7 +56,7 @@ class BuildCommand implements IGDCommand
 	    	LogHelper.info("------\x1b[0m");
 	    	LogHelper.info("");
 
-	    	determinePlatformToBuildForFromArguments();
+	    	determinePlatformToBuildFromArguments();
 
 	    	LogHelper.println("");
 
@@ -80,7 +80,7 @@ class BuildCommand implements IGDCommand
 	    return "success";
     }
 
-    private function determinePlatformToBuildForFromArguments()
+    private function determinePlatformToBuildFromArguments()
     {
     	if (arguments.length == 0)
     	{

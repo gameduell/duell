@@ -1,5 +1,6 @@
 package duell.processor;
 
+import duell.commands.create.CreateCommand;
 import duell.commands.setup.EnvironmentSetupCommand;
 import duell.helpers.DuellLibListHelper;
 import duell.commands.IGDCommand;
@@ -33,6 +34,8 @@ class CmdProcessor
         commands = new List();
 
         addCommand('build', BuildCommand.helpString, new BuildCommand());
+
+        addCommand('create', CreateCommand.helpString, new CreateCommand());
 
         addCommand('setup', EnvironmentSetupCommand.helpString, new EnvironmentSetupCommand());
 
@@ -88,7 +91,7 @@ class CmdProcessor
         ret += '\n\x1b[1mCommand explanation\x1b[0m\n';
         ret += '\n--------------------------\n';
         ret += '\nPlease run the tool with one of (' + commands.map(function(cmd) {return cmd.name;}).join(', ') + ') or help to show this message.\n';
-        ret += '\nAdditionally you can set common command parameters. Currently there are -verbose and -nocolor. Example: duell -verbose setup\n';
+        ret += '\nAdditionally you can set common command parameters. Currently there are -verbose and -nocolor. Example: duell -verbose setup mac\n';
 
         for (c in commands)
         {
