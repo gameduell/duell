@@ -27,7 +27,7 @@ class DuellLib
 	}
 
 	public static var duellLibCache : Map<String, Map<String, DuellLib> > = new Map<String, Map<String, DuellLib> >();
-	public static function getDuellLib(name : String, version : String = '')
+	public static function getDuellLib(name : String, version : String = '') : DuellLib
 	{
 		///add to the cache if it is not there
 		if (duellLibCache.exists(name))
