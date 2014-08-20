@@ -16,10 +16,28 @@ class HXCPPConfigXML
 	private var xml : Fast = null;
 
 	private var configPath : String;
-	public function new(configPath : String) : Void
+	private function new(configPath : String) : Void
 	{
 		this.configPath = configPath; 
 		xml = new Fast(Xml.parse(File.getContent(configPath)).firstElement());
+	}
+
+	private static var cache : HXCPPConfigXML;
+	public static function getConfig(configPath : String) : HXCPPConfigXML
+	{
+		if(cache == null)
+		{
+			cache = new HXCPPConfigXML(configPath);
+			return cache;
+		}
+
+		if(cache.configPath != configPath)
+		{
+			cache = new HXCPPConfigXML(configPath);
+			return cache;
+		}
+
+		return cache;
 	}
 
 	public function getDefines() :  Map<String, String>
