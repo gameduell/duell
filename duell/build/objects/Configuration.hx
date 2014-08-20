@@ -12,6 +12,7 @@ import duell.build.plugin.library.LibraryConfiguration;
 typedef ConfigurationData = {
 	APP : {
 		TITLE : String,
+		FILE : String,
 		VERSION : String,
 		PACKAGE : String,
 		COMPANY : String,
@@ -63,6 +64,7 @@ class Configuration
 
 			APP : {
 				TITLE : "Test Project",
+				FILE : "TestProject",
 				VERSION : "0.0.1",
 				PACKAGE : "com.test.proj",
 				COMPANY : "Test Company",
