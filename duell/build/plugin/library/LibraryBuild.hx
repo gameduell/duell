@@ -11,8 +11,9 @@ extern class LibraryBuild
 
 	public function new() : Void;
 
-	public function preParse(args : Array<String>) : Void;
-	public function postParse(args : Array<String>) : Void;
-	public function preBuild(args : Array<String>) : Void;
-	public function postBuild(args : Array<String>) : Void;
+//	public function preParse() : Void; // First we need to parse before we can get Library plugins
+	public function postParse() : Void;
+
+	public function preBuild() : Void;
+	public function postBuild() : Void;
 }

@@ -9,7 +9,11 @@ extern class PlatformBuild
 {
 	public var requiredSetups : Array<String>;
 
-	public function new() : Void;
-	public function build(args : Array<String>) : Void;
-	public function run(args : Array<String>) : Void;
+	public function new(args : Array<String>) : Void;
+
+    public function parse() : Void;
+    public function prepareBuild() : Void;
+	public function build() : Void;
+
+	public function run() : Void;
 }

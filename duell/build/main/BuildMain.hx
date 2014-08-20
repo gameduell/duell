@@ -5,6 +5,8 @@
  */
 package duell.build.main;
 
+import duell.build.objects.Configuration;
+import haxe.CallStack;
 import duell.build.plugin.platform.PlatformBuild;
 
 import duell.helpers.LogHelper;
@@ -19,7 +21,8 @@ class BuildMain
 
 		try 
 		{
-	 		var build = new PlatformBuild();
+	 		var build = new PlatformBuild(args);
+            var pluginHelper : LibraryPluginHelper = new LibraryPluginHelper();
 
 	 		var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 
@@ -31,7 +34,15 @@ class BuildMain
 		        }
 	 		}
 
-	 		build.build(args);
+            build.parse();
+            pluginHelper.resolveLibraryPlugins();
+            pluginHelper.postParse();
+
+            build.prepareBuild();
+
+            pluginHelper.preBuild();
+            build.build();
+            pluginHelper.postBuild();
 
 	 		if (Sys.args().indexOf("-run") != -1)
 	 		{
@@ -43,5 +54,67 @@ class BuildMain
     		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
     		LogHelper.error("An error occurred. Error: " + error);
     	}
+    }
+}
+
+class LibraryPluginHelper
+{
+    private var pluginArray : Array<Dynamic>;
+
+    public function new ()
+    {
+        pluginArray = new Array();
+    }
+
+    public function resolveLibraryPlugins()
+    {
+        for (duellLibDef in Configuration.getData().DEPENDENCIES.DUELLLIBS)
+        {
+            var name : String = duellLibDef.name;
+
+            var parserClass = Type.resolveClass('duell.build.plugin.library.$name.LibraryBuild');
+
+            if (parserClass != null)
+            {
+                var libraryPlugin : Dynamic = Type.createInstance(parserClass, []);
+                pluginArray.push(libraryPlugin);
+            }
+        }
+    }
+
+    public function postParse()
+    {
+        for (element in pluginArray)
+        {
+            var parseFunction : Dynamic = Reflect.field(element, "postParse");
+            if (parseFunction != null)
+            {
+                Reflect.callMethod(element, parseFunction, []);
+            }
+        }
+    }
+
+    public function preBuild()
+    {
+        for (element in pluginArray)
+        {
+            var parseFunction : Dynamic = Reflect.field(element, "preBuild");
+            if (parseFunction != null)
+            {
+                Reflect.callMethod(element, parseFunction, []);
+            }
+        }
+    }
+
+    public function postBuild()
+    {
+        for (element in pluginArray)
+        {
+            var parseFunction : Dynamic = Reflect.field(element, "postBuild");
+            if (parseFunction != null)
+            {
+                Reflect.callMethod(element, parseFunction, []);
+            }
+        }
     }
 }
