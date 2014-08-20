@@ -247,6 +247,15 @@ class DuellProjectXML
 			Configuration.getData().APP.TITLE = element.att.title;
 		}
 
+		if (element.has.file)
+		{
+			Configuration.getData().APP.FILE = element.att.file;
+
+			var checkFile = ~/^([0-9]|[A-Z]|[a-z]|_)+$/;
+			if (!checkFile.match(Configuration.getData().APP.FILE))
+				throw "app title can only have letters, numbers, and underscores, no spaces or other characters";
+		}
+
 		if (element.has.resolve("package")) ///package is a keyword
 		{
 			Configuration.getData().APP.PACKAGE = element.att.resolve("package");
