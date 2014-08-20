@@ -17,11 +17,9 @@ class BuildMain
 {
     public static function main()
     {
- 		var args = Sys.args();
-
 		try 
 		{
-	 		var build = new PlatformBuild(args);
+	 		var build = new PlatformBuild();
             var pluginHelper : LibraryPluginHelper = new LibraryPluginHelper();
 
 	 		var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
@@ -46,7 +44,7 @@ class BuildMain
 
 	 		if (Sys.args().indexOf("-run") != -1)
 	 		{
-	 			build.run(args);
+	 			build.run();
 	 		}
 		}
     	catch(error : Dynamic)
