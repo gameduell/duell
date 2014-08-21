@@ -124,8 +124,9 @@ class ToolSetupCommand implements IGDCommand
 		LogHelper.println("Checking haxelib setup... ");
 
     	/// we test with haxelib because haxe returns null for some reason.
-		var output : String = ProcessHelper.runProcess("", "haxelib", ["path"], true, true, true, false);
-		if(output.indexOf("This is the first time") != -1)
+		var output : String = ProcessHelper.runProcess("", "haxelib", ["config"], true, true, true, false);
+
+		if(output == null || output.indexOf("This is the first time") != -1)
 		{
 			LogHelper.println("It seems haxelib has not been setup.");
 
