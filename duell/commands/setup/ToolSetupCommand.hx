@@ -53,6 +53,10 @@ class ToolSetupCommand implements IGDCommand
 
 	    	LogHelper.println("");
 
+	    	setupHaxelib();
+
+	    	LogHelper.println("");
+
 	    	setupDuellSettingsDirectory();
 
 	    	LogHelper.println("");
@@ -115,6 +119,36 @@ class ToolSetupCommand implements IGDCommand
 		}
 	}
 
+	private function setupHaxelib()
+	{
+		LogHelper.println("Checking haxelib setup... ");
+
+    	/// we test with haxelib because haxe returns null for some reason.
+		var output : String = ProcessHelper.runProcess("", "haxelib", ["path"], true, true, true, false);
+		if(output.indexOf("This is the first time") != -1)
+		{
+			LogHelper.println("It seems haxelib has not been setup.");
+
+			var answer = AskHelper.askYesOrNo("Do you want to setup haxelib?");
+
+			if(answer)
+			{
+				var result = ProcessHelper.runCommand("", "haxelib", ["setup"]);
+				if (result != 0)
+					throw "An error occurred while setting up haxelib";
+			}
+			else
+			{
+				LogHelper.println("Rerun the script with 'haxelib setup' executed successfully.");
+				Sys.exit(0);
+			}
+		}
+		else
+		{
+    		LogHelper.println("Installed!");
+		}
+	}
+
 	private function setupDuellSettingsDirectory()
 	{
     	LogHelper.println("Checking duell settings... ");
@@ -141,22 +175,21 @@ class ToolSetupCommand implements IGDCommand
 
 		var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 		duellConfig.localLibraryPath = PathHelper.unescape(repoPath);
-		if(duellConfig.repoListURLs == null)
-		{
-			duellConfig.repoListURLs = new Array<String>();
-		}
-		else
-		{
-			LogHelper.println("There are already a repo list urs configured (" + duellConfig.repoListURLs.join(",") + ")");
-			var answer = AskHelper.askYesOrNo("Do you want to add the new url (answer yes), or override the current ones (answer no)?");
-			if(!answer)
-			{
-				duellConfig.repoListURLs = new Array<String>();
-			}
-		}
 
 		if(duellConfig.repoListURLs.indexOf(repoListURL) == -1)
+		{
+			if(duellConfig.repoListURLs.length > 0)
+			{
+				LogHelper.println("There are already a repo list urls configured (" + duellConfig.repoListURLs.join(",") + ")");
+				var answer = AskHelper.askYesOrNo("Do you want to add the new url (answer yes), or override the current ones (answer no)?");
+				if(!answer)
+				{
+					duellConfig.repoListURLs = [];
+				}
+			}
+
 			duellConfig.repoListURLs.push(repoListURL);
+		}
 
 		duellConfig.writeToConfig();
 
