@@ -69,6 +69,10 @@ class ToolSetupCommand implements IGDCommand
 
 	    	LogHelper.println("");
 
+	    	writeHXCPPDefinitions();
+
+	    	LogHelper.println("");
+
 	    	savingSetupDone();
 
 	    	LogHelper.info("\x1b[2m------");
@@ -229,41 +233,6 @@ class ToolSetupCommand implements IGDCommand
 				LogHelper.println("");
 			}
 		}
-		
-		if (PlatformHelper.hostPlatform == Platform.MAC) 
-		{
-	    	var hxcppConfigPath = HXCPPConfigXMLHelper.getProbableHXCPPConfigLocation();
-
-	    	if(hxcppConfigPath == null)
-	    	{
-				LogHelper.error("Could not find the home folder, no HOME variable is set. Can't find hxcpp_config.xml");
-	    	}
-
-			var hxcppXML = HXCPPConfigXML.getConfig(hxcppConfigPath);
-
-
-			var existingDefines : Map<String, String> = hxcppXML.getDefines();
-
-			var newDefines = new Map<String, String>();
-			newDefines.set("MAC_USE_CURRENT_SDK", "1");
-
-			LogHelper.println("\x1b[1mWriting new definitions to hxcpp config file:\x1b[0m");
-
-			for(def in newDefines.keys())
-			{
-				LogHelper.println("\x1b[1m" + def + "\x1b[0m:" + newDefines.get(def));
-			}
-
-			for(def in existingDefines.keys())
-			{
-				if(!newDefines.exists(def))
-				{
-					newDefines.set(def, existingDefines.get(def));
-				}
-			}
-
-			hxcppXML.writeDefines(newDefines);
-		}
 	}
 
 	private function setupHXCPP()
@@ -299,6 +268,44 @@ class ToolSetupCommand implements IGDCommand
 		LogHelper.println("Running once to make sure it is initialized...");
 		ProcessHelper.runProcess("", "haxelib", ["run", "hxcpp"], true, true);
 		LogHelper.println("Finished running hxcpp.");
+	}
+
+	private function writeHXCPPDefinitions()
+	{
+		if (PlatformHelper.hostPlatform == Platform.MAC) 
+		{
+	    	var hxcppConfigPath = HXCPPConfigXMLHelper.getProbableHXCPPConfigLocation();
+
+	    	if(hxcppConfigPath == null)
+	    	{
+				LogHelper.error("Could not find the home folder, no HOME variable is set. Can't find hxcpp_config.xml");
+	    	}
+
+			var hxcppXML = HXCPPConfigXML.getConfig(hxcppConfigPath);
+
+
+			var existingDefines : Map<String, String> = hxcppXML.getDefines();
+
+			var newDefines = new Map<String, String>();
+			newDefines.set("MAC_USE_CURRENT_SDK", "1");
+
+			LogHelper.println("\x1b[1mWriting new definitions to hxcpp config file:\x1b[0m");
+
+			for(def in newDefines.keys())
+			{
+				LogHelper.println("\x1b[1m" + def + "\x1b[0m:" + newDefines.get(def));
+			}
+
+			for(def in existingDefines.keys())
+			{
+				if(!newDefines.exists(def))
+				{
+					newDefines.set(def, existingDefines.get(def));
+				}
+			}
+
+			hxcppXML.writeDefines(newDefines);
+		}
 	}
 
 	public function savingSetupDone()
