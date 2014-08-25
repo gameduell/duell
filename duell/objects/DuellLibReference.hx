@@ -29,39 +29,6 @@ class DuellLibReference
 		this.destinationPath = destinationPath;
 	}
 
-    public function updateNeeded() : Bool
-    {
-        var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
-
-        LogHelper.println("Checking for updates on lib " + name + "===============================================");
-
-        var path = duellConfigJSON.localLibraryPath + "/" + destinationPath;
-
-        if (!FileSystem.exists(path))
-        {
-            LogHelper.error("library " + name + " not installed!");
-            return false;
-        }
-
-        return GitHelper.updateNeeded(path);
-    }
-
-	public function update()
-    {        
-        var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
-
-        LogHelper.println("Updating lib " + name + "===============================================");
-
-        var path = duellConfigJSON.localLibraryPath + "/" + destinationPath;
-
-        if (!FileSystem.exists(path))
-        {
-            LogHelper.error("library " + name + " not installed!");
-        }
-
-        GitHelper.pull(path);
-    }
-
     public function install()
     {
         var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
@@ -89,6 +56,8 @@ class DuellLibReference
         }
 
         LogHelper.println("Setting repo as haxelib dev");
+
+        trace(duellConfigJSON.localLibraryPath, libPath);
 
         ProcessHelper.runCommand(path, "haxelib", ["dev", name, duellConfigJSON.localLibraryPath + "/" + libPath]);
 

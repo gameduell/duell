@@ -11,6 +11,7 @@ import duell.helpers.DuellLibListHelper;
 
 import duell.objects.Haxelib;
 import duell.objects.DuellConfigJSON;
+import duell.objects.DuellLib;
 
 import haxe.CallStack;
 
@@ -75,17 +76,7 @@ class UpdateToolCommand implements IGDCommand
 
 	private function updateTheTool()
 	{
-		var duellLibList = DuellLibListHelper.getDuellLibReferenceList();
-
-		var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
-
-		if(!duellLibList.exists("duell"))
-		{
-			LogHelper.error("The duell tool is not defined in " + duellConfigJSON.repoListURLs.join(", "));
-		}
-
-		var duell = duellLibList.get("duell");
-		LogHelper.println("updating " + duellConfigJSON.localLibraryPath + "/" + duell.destinationPath);
+		var duell = DuellLib.getDuellLib("duell");
 		duell.update();
 	}
 }

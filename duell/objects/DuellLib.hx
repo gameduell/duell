@@ -7,8 +7,9 @@ package duell.objects;
 
 import duell.helpers.LogHelper;
 import duell.helpers.ProcessHelper;
-
+import duell.helpers.DuellConfigHelper;
 import duell.helpers.DuellLibListHelper;
+import duell.helpers.GitHelper;
 
 import sys.FileSystem;
 
@@ -150,31 +151,35 @@ class DuellLib
     	if (noUpdateEnabled)
     		return false;
 
-        var duellLibList = DuellLibListHelper.getDuellLibReferenceList();
+        var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 
-        if (duellLibList.exists(name))
+        LogHelper.println("Checking for updates on lib " + name + "===============================================");
+
+        var path = getPath();
+
+        if (!FileSystem.exists(path))
         {
-            return duellLibList.get(name).updateNeeded();
-        }
-        else
-        {
-            LogHelper.error('Couldn\'t find the Duell Library reference in the repo list for $name. Can\'t check for updates.');
+            LogHelper.error("library " + name + "'s path (" + path + ") is not accessible!");
             return false;
         }
+
+        return GitHelper.updateNeeded(path);
     }
 
     public function update()
     {
-        var duellLibList = DuellLibListHelper.getDuellLibReferenceList();
+        var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 
-        if (duellLibList.exists(name))
+        LogHelper.println("Updating lib " + name + "===============================================");
+
+        var path = getPath();
+
+        if (!FileSystem.exists(path))
         {
-            duellLibList.get(name).update();
+            LogHelper.error("library " + name + "'s path (" + path + ") is not accessible!");
         }
-        else
-        {
-            LogHelper.error('Couldn\'t find the Duell Library reference in the repo list for $name. Can\'t update it.');
-        }
+
+        GitHelper.pull(path);
     }
 
     public function install()

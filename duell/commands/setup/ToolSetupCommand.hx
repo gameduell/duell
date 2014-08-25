@@ -1,3 +1,6 @@
+
+
+
 /**
  * @autor rcam
  * @date 15.07.2014.
@@ -129,6 +132,10 @@ class ToolSetupCommand implements IGDCommand
 		if(output == null || output.indexOf("This is the first time") != -1)
 		{
 			var repoPath = AskHelper.askString("It seems haxelib has not been setup. Where do you want the setup folder?", DuellConfigHelper.getDuellConfigFolderLocation() + "/haxelib");
+			repoPath = PathHelper.unescape(repoPath);
+			PathHelper.mkdir(repoPath);
+
+			repoPath = FileSystem.fullPath(repoPath);
 
 			var result = ProcessHelper.runCommand("", "haxelib", ["setup", repoPath]);
 
@@ -169,7 +176,11 @@ class ToolSetupCommand implements IGDCommand
 		var repoListURL = AskHelper.askString("URL to repo list?", defaultRepoListURL);
 
 		var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+
 		duellConfig.localLibraryPath = PathHelper.unescape(repoPath);
+		PathHelper.mkdir(duellConfig.localLibraryPath);
+		
+		duellConfig.localLibraryPath = FileSystem.fullPath(duellConfig.localLibraryPath);
 
 		if(duellConfig.repoListURLs.indexOf(repoListURL) == -1)
 		{
