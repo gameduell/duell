@@ -128,17 +128,11 @@ class ToolSetupCommand implements IGDCommand
 
 		if(output == null || output.indexOf("This is the first time") != -1)
 		{
-			LogHelper.println("It seems haxelib has not been setup.");
+			var repoPath = AskHelper.askString("It seems haxelib has not been setup. Where do you want the setup folder?", DuellConfigHelper.getDuellConfigFolderLocation() + "/haxelib");
 
-			var answer = AskHelper.askYesOrNo("Do you want to setup haxelib?");
+			var result = ProcessHelper.runCommand("", "haxelib", ["setup", repoPath]);
 
-			if(answer)
-			{
-				var result = ProcessHelper.runCommand("", "haxelib", ["setup"]);
-				if (result != 0)
-					throw "An error occurred while setting up haxelib";
-			}
-			else
+			if(result != 0)
 			{
 				LogHelper.println("Rerun the script with 'haxelib setup' executed successfully.");
 				Sys.exit(0);
