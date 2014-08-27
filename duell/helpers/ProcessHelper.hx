@@ -89,20 +89,22 @@ class ProcessHelper
 		}
 	}
 
-	public static function openURL(url : String) : Void 
+	public static function openURL(url : String) : Int 
 	{
+		var result : Int = 0;
 		if(PlatformHelper.hostPlatform == Platform.WINDOWS) 
 		{
-			runCommand ("", "start", [url]);
+			result = runCommand ("", "start", [url]);
 		} 
 		else if (PlatformHelper.hostPlatform == Platform.MAC) 
 		{
-			runCommand ("", "/usr/bin/open", [url]);
+			result = runCommand ("", "/usr/bin/open", [url]);
 		} 
 		else 
 		{
-			runCommand ("", "/usr/bin/xdg-open", [url, "&"]);
+			result = runCommand ("", "/usr/bin/xdg-open", [url, "&"]);
 		}
+		return result;
 	}
 	
 	public static function runCommand(path : String, command : String, args : Array <String>, safeExecute : Bool = true, ignoreErrors : Bool = false, print : Bool = false) : Int 
