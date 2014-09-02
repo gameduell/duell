@@ -51,7 +51,6 @@ class FileHelper
 			while (numBytes < 512) 
 			{
 				var byte = input.readByte();
-				
 				numBytes++;
 				
 				if (byte == 0) 
@@ -60,7 +59,7 @@ class FileHelper
 					return false;
 				}
 				
-				if ((byte > 8 && byte < 16) || (byte > 32 && byte < 256) || byte > 287) 
+				if ((byte > 8 && byte < 16) || (byte >= 32 && byte < 256) || byte > 287) 
 				{
 					numChars++;
 				}
