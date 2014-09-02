@@ -173,7 +173,7 @@ class BuildCommand implements IGDCommand
 		}
 
 		buildArguments.push("-D");
-		buildArguments.push(platformName);
+		buildArguments.push("platform_" + platformName);
 
 		PathHelper.mkdir(outputFolder);
 
