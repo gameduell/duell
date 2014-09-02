@@ -32,6 +32,7 @@ class BuildCommand implements IGDCommand
 {
 	var libList : LibList = { duellLibs : new Array<DuellLib>(), haxelibs : new Array<Haxelib>() };
 	var buildLib : DuellLib = null;
+	var platformName : String;
 
 	var arguments : Array<String>;
 
@@ -87,7 +88,7 @@ class BuildCommand implements IGDCommand
     		LogHelper.error("Please specify a platform as a parameter. \"duell build <platform>\".");
     	}
 
-    	var platformName = arguments[0].toLowerCase();
+    	platformName = arguments[0].toLowerCase();
 
     	var platformNameCorrectnessCheck = ~/^[a-z0-9]+$/;
 
@@ -170,6 +171,9 @@ class BuildCommand implements IGDCommand
                 buildArguments.push('keep(\"duell.build.plugin.library.${duellLib.name}.LibraryBuild\")');
             }
 		}
+
+		buildArguments.push("-D");
+		buildArguments.push(platformName);
 
 		PathHelper.mkdir(outputFolder);
 

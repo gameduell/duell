@@ -45,53 +45,59 @@ typedef ConfigurationData = {
 
 class Configuration
 {
-	public static var _configuration : ConfigurationData = null;
+
+	private static var _configuration : ConfigurationData = null;
 	public static function getData() : ConfigurationData
 	{
 		if (_configuration == null)
-			initDefaultConfiguration();
+			_configuration = getDefaultConfig();
 		return _configuration;
 	}
 
+	private static var _parsingDefines : Array<String> = ["duell"];
 	public static function getConfigParsingDefines() : Array<String>
 	{
-		return ["duell"];
+		return _parsingDefines;
 	}
 
-	private static function initDefaultConfiguration()
+	public static function addParsingDefine(define : String) : Void
 	{
-		_configuration = {
+		_parsingDefines.push(define);
+	}
 
-			APP : {
-				TITLE : "Test Project",
-				FILE : "TestProject",
-				VERSION : "0.0.1",
-				PACKAGE : "com.test.proj",
-				COMPANY : "Test Company",
-				BUILD_NUMBER : "1"
-			},
-			HAXE_COMPILE_ARGS : [],
+	private static function getDefaultConfig() : ConfigurationData
+	{
+		return {
+					APP : {
+						TITLE : "Test Project",
+						FILE : "TestProject",
+						VERSION : "0.0.1",
+						PACKAGE : "com.test.proj",
+						COMPANY : "Test Company",
+						BUILD_NUMBER : "1"
+					},
+					HAXE_COMPILE_ARGS : [],
 
-			DEPENDENCIES : {
-				DUELLLIBS : [],
-				HAXELIBS : []
-			},
+					DEPENDENCIES : {
+						DUELLLIBS : [],
+						HAXELIBS : []
+					},
 
 
-			OUTPUT : haxe.io.Path.join([Sys.getCwd(), "Export"]),
-			SOURCES : [],
-			MAIN : "Main",
-			PLATFORM : PlatformConfiguration.getData(),
-			LIBRARY : [],
+					OUTPUT : haxe.io.Path.join([Sys.getCwd(), "Export"]),
+					SOURCES : [],
+					MAIN : "Main",
+					PLATFORM : PlatformConfiguration.getData(),
+					LIBRARY : [],
 
-			NDLLS : [],
+					NDLLS : [],
 
-			TEMPLATE_FUNCTIONS : 
-			{
-				toJSON: function(_, s) return haxe.Json.stringify(s),
-				upper: function (_, s) return s.toUpperCase (),
-				replace: function (_, s, sub, by) return StringTools.replace(s, sub, by)
-			}
+					TEMPLATE_FUNCTIONS : 
+					{
+						toJSON: function(_, s) return haxe.Json.stringify(s),
+						upper: function (_, s) return s.toUpperCase (),
+						replace: function (_, s, sub, by) return StringTools.replace(s, sub, by)
+					}
 		};
 	}
 }
