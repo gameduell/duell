@@ -106,7 +106,33 @@ class ProcessHelper
 		}
 		return result;
 	}
-	
+ 	public static function startBlockingProcess(process : Process) : Void 
+ 	{
+ 		if(process == null)
+ 			return;
+ 			
+ 			var buffer = new BytesOutput ();
+			var waiting = true;
+			while (waiting) {
+				
+				try  {
+					var current = process.stdout.readAll (1024);
+					buffer.write (current);
+					
+					if (current.length == 0) 
+					{						
+						waiting = false;
+					}
+					
+				} catch (e:Eof) 
+				{					
+					waiting = false;
+				}
+				
+			}
+			var result : Int = process.exitCode ();
+			process.close();
+ 	}
 	public static function runCommand(path : String, command : String, args : Array <String>, safeExecute : Bool = true, ignoreErrors : Bool = false, print : Bool = false) : Int 
 	{
 		if(print) 
