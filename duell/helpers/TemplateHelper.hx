@@ -448,7 +448,14 @@ class TemplateHelper
 			}
 		}
 	}
-
+	public static function copyFile(source : String, destination : String, onlyIfNewer : Bool = true) : Void
+	{
+	
+			if (!onlyIfNewer || FileHelper.isNewer(source, destination))
+			{
+				File.copy(source, destination);
+			}
+	}
 	public static function recursiveCopyTemplatedFiles(source:String, destination:String, context:Dynamic, templateFunctions:Dynamic)
 	{	
 		PathHelper.mkdir(destination);
