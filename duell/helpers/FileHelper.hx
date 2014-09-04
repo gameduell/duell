@@ -75,7 +75,14 @@ class FileHelper
 		
 		return false;
 	}
-
+	public static function copyFile(source : String, destination : String, onlyIfNewer : Bool = true) : Void
+	{
+	
+			if (!onlyIfNewer || FileHelper.isNewer(source, destination))
+			{
+				File.copy(source, destination);
+			}
+	}
 	public static function copyIfNewer(source:String, destination:String) : Void
 	{      
 		if(!isNewer(source, destination)) 
