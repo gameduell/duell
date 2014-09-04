@@ -23,6 +23,8 @@ import sys.FileSystem;
 
 import haxe.xml.Fast;
 
+import haxe.io.Path;
+
 import duell.commands.IGDCommand;
 
 
@@ -195,9 +197,21 @@ class BuildCommand implements IGDCommand
 	/// HELPERS
 	/// -------
 
+	private var currentXMLPath : Array<String> = []; /// used to resolve paths. Is used by all XML parsers (library and platform)
 	private function parseDependencies(path : String)
 	{		
+		parseXML(path);
+
+		for (duellLib in libList.duellLibs)
+		{
+			parseDependenciesOfDuelllib(duellLib);
+		}
+	}
+
+	private function parseXML(path : String):Void
+	{
 		var xml = new Fast(Xml.parse(File.getContent(path)).firstElement());
+		currentXMLPath.push(Path.directory(path));
 
 		for (element in xml.elements) 
 		{
@@ -274,13 +288,29 @@ class BuildCommand implements IGDCommand
 							libList.duellLibs.push(duellLib);
 						}
 					}
+
+				case 'include':
+					if (element.has.path)
+					{
+						var includePath = resolvePath(element.att.path);
+
+						parseXML(includePath);
+					}
+
 			}
 		}
 
-		for (duellLib in libList.duellLibs)
-		{
-			parseDependenciesOfDuelllib(duellLib);
-		}
+		currentXMLPath.pop();
+	}
+
+	private function resolvePath(path : String) : String
+	{
+		path = PathHelper.unescape(path);
+		
+		if (PathHelper.isPathRooted(path))
+			return path;
+
+		return Path.join([currentXMLPath[currentXMLPath.length - 1], path]);
 	}
 
 	private var dependenciesAlreadyParsed = new Array<DuellLib>();
