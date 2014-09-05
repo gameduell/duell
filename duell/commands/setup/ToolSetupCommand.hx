@@ -68,10 +68,6 @@ class ToolSetupCommand implements IGDCommand
 
 	    	LogHelper.println("");
 
-	    	installCommandLine();
-
-	    	LogHelper.println("");
-
 	    	setupHXCPP();
 
 	    	LogHelper.println("");
@@ -81,6 +77,10 @@ class ToolSetupCommand implements IGDCommand
 	    	LogHelper.println("");
 
 	    	savingSetupDone();
+	    	
+	    	LogHelper.println("");
+
+	    	installCommandLine();
 
 	    	LogHelper.info("\x1b[2m------");
 	    	LogHelper.info("end");
