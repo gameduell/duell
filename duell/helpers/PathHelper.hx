@@ -153,6 +153,41 @@ class PathHelper
 		
 	}
 
+	/// gathered file list, and prefix are is used in the recursion.
+	public static function getRecursiveFileListUnderFolder(folder : String, gatheredFileList : Array<String> = null, prefix : String = "") : Array<String>
+	{
+		if (gatheredFileList == null)
+			gatheredFileList = [];
+
+		var files = [];
+		try 
+		{
+			files = FileSystem.readDirectory(folder);
+		} 
+		catch (e:Dynamic) 
+		{
+			LogHelper.error("Could not find folder directory \"" + folder + "\"");
+		}
+		
+		for (file in files) 
+		{
+			if (file.substr(0, 1) != ".") /// hidden file
+			{
+				var fullPath = Path.join([folder, file]);
+				if (FileSystem.isDirectory(fullPath))
+				{
+					getRecursiveFileListUnderFolder(fullPath, gatheredFileList, haxe.io.Path.join([prefix, file]));
+				} 
+				else
+				{
+					gatheredFileList.push(haxe.io.Path.join([prefix, file]));
+				}
+			}
+		}
+
+		return gatheredFileList;
+	}
+
 	public static function getHomeFolder() : String
 	{
 		var env = Sys.environment();
