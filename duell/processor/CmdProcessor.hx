@@ -93,7 +93,6 @@ class CmdProcessor
 
         if (isMissingSelfSetup)
         {
-            LogHelper.error('You are missing the initial setup. Please run duell self_setup');
             var doSetup = AskHelper.askYesOrNo('You are missing the initial setup. Do you want to do it? ("self_setup" command)');
 
             if (!doSetup)
