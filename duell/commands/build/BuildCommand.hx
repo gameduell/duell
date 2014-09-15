@@ -110,10 +110,6 @@ class BuildCommand implements IGDCommand
                     buildLib.update();
                 }
             }
-            else
-            {
-                LogHelper.info("","No update needed");
-            }
         }
         else
         {
@@ -332,10 +328,6 @@ class BuildCommand implements IGDCommand
                 {
                     duellLib.update();
                 }
-            }
-            else
-            {
-                LogHelper.info("", "No update needed");
             }
         }
         else

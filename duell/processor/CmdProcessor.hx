@@ -13,6 +13,8 @@ import duell.commands.setup.ToolSetupCommand;
 import duell.commands.setup.UpdateToolCommand;
 import duell.commands.build.BuildCommand;
 import duell.helpers.LogHelper;
+import duell.helpers.AskHelper;
+import duell.objects.DuellLib;
 
 using Lambda;
 using StringTools;
@@ -92,6 +94,32 @@ class CmdProcessor
         if (isMissingSelfSetup)
         {
             LogHelper.error('You are missing the initial setup. Please run duell self_setup');
+            var doSetup = AskHelper.askYesOrNo('You are missing the initial setup. Do you want to do it? ("self_setup" command)');
+
+            if (!doSetup)
+            {
+                return "";
+            }
+            else
+            {
+                cmd = "self_setup";
+            }
+        }
+
+        /** Check if the tools needs to be updated **/
+
+        var duell = DuellLib.getDuellLib("duell");
+        if (duell.exists())
+        {
+            if (duell.updateNeeded() == true)
+            {
+                var answer = AskHelper.askYesOrNo('The library of the duell tool is not up to date on the master branch. Would you like to try to update it?');
+
+                if(answer)
+                {
+                    duell.update();
+                }
+            }
         }
 
         /** Other commands **/
