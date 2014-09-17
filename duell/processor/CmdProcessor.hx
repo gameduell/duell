@@ -107,16 +107,19 @@ class CmdProcessor
 
         /** Check if the tools needs to be updated **/
 
-        var duell = DuellLib.getDuellLib("duell");
-        if (duell.exists())
+        if (!isMissingSelfSetup)
         {
-            if (duell.updateNeeded() == true)
+            var duell = DuellLib.getDuellLib("duell");
+            if (duell.exists())
             {
-                var answer = AskHelper.askYesOrNo('The library of the duell tool is not up to date on the master branch. Would you like to try to update it?');
-
-                if(answer)
+                if (duell.updateNeeded() == true)
                 {
-                    duell.update();
+                    var answer = AskHelper.askYesOrNo('The library of the duell tool is not up to date on the master branch. Would you like to try to update it?');
+
+                    if(answer)
+                    {
+                        duell.update();
+                    }
                 }
             }
         }
