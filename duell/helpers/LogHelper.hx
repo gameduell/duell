@@ -15,7 +15,7 @@ import sys.io.Process;
 class LogHelper 
 {		
 	public static var enableColor : Bool = Sys.args().indexOf("-nocolor") == -1;
-	public static var mute : Bool = false;
+	public static var mute : Bool = Sys.args().indexOf("-mute") != -1;
 	public static var verbose : Bool = Sys.args().indexOf("-verbose") != -1;
 	
 	private static var colorCodes : EReg = ~/\x1b\[[^m]+m/g;
