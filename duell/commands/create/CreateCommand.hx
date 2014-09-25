@@ -106,7 +106,7 @@ class CreateCommand implements IGDCommand
     private function runPluginLib()
     {
         var outputFolder = haxe.io.Path.join([duell.helpers.DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"]);
-        var outputRun = haxe.io.Path.join(['$outputFolder", "run.n']);
+        var outputRun = haxe.io.Path.join(['$outputFolder', 'run.n']);
 
         var buildArguments = new Array<String>();
 

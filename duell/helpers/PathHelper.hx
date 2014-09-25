@@ -18,17 +18,21 @@ class PathHelper
 		directory = StringTools.replace(directory, "\\", "/");
 		var total = "";
 		
-		if (directory.substr(0, 1) != "/") 
+		if (!isPathRooted(directory))
 		{
 			total = Sys.getCwd();
 		}
 		else
 		{
-			total = "/";
+            if(PlatformHelper.hostPlatform != Platform.WINDOWS)
+			    total = "/";
 		}
 
-		var parts = directory.split("/");
-		if (parts[0] == "~") 
+
+        var parts;
+        parts = directory.split("/");
+
+		if (PlatformHelper.hostPlatform != Platform.WINDOWS && parts[0] == "~")
 		{
 			total += getHomeFolder();
 			parts.shift();

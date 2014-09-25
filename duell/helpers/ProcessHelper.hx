@@ -134,7 +134,7 @@ class ProcessHelper
 			var result : Int = process.exitCode ();
 			process.close();
  	}
-	public static function runCommand(path : String, command : String, args : Array <String>, safeExecute : Bool = true, ignoreErrors : Bool = false, print : Bool = false, commandIsLocal : Bool : true) : Int 
+	public static function runCommand(path : String, command : String, args : Array <String>, safeExecute : Bool = true, ignoreErrors : Bool = false, print : Bool = false, commandIsLocal : Bool = true) : Int 
 	{
 		if(print) 
 		{
@@ -160,7 +160,7 @@ class ProcessHelper
 		{
 			if(PlatformHelper.hostPlatform != Platform.WINDOWS)
 			{
-				commandIsLocal = "./" + command;
+				command = "./" + command;
 			}
 
 		}
@@ -250,7 +250,7 @@ class ProcessHelper
 	}
 	
 	
-	public static function runProcess(path : String, command : String, args : Array <String>, waitForOutput : Bool = true, safeExecute : Bool = true, ignoreErrors : Bool = false, print : Bool = false, commandIsLocal : Bool : true) : String {
+	public static function runProcess(path : String, command : String, args : Array <String>, waitForOutput : Bool = true, safeExecute : Bool = true, ignoreErrors : Bool = false, print : Bool = false, commandIsLocal : Bool = true) : String {
 		
 		if (print) 
 		{
@@ -279,7 +279,7 @@ class ProcessHelper
 		{
 			if(PlatformHelper.hostPlatform != Platform.WINDOWS)
 			{
-				commandIsLocal = "./" + command;
+				command = "./" + command;
 			}
 
 		}

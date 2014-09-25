@@ -8,6 +8,8 @@ package duell.helpers;
 
 import sys.FileSystem;
 
+import haxe.io.Path;
+
 class DuellConfigHelper
 {
 	public static function getDuellConfigFolderLocation() : String
@@ -29,7 +31,7 @@ class DuellConfigHelper
 			return null;
 		}
 		
-		return home + "/.duell";
+		return Path.join([home,".duell"]);
 	}
 
 	public static function getDuellConfigFileLocation() : String
