@@ -7,7 +7,6 @@
 package duell.helpers;
 
 import duell.helpers.PlatformHelper;
-import duell.helpers.PathHelper;
 
 import haxe.io.BytesOutput;
 import haxe.io.Eof;
@@ -134,7 +133,7 @@ class ProcessHelper
 			var result : Int = process.exitCode ();
 			process.close();
  	}
-	public static function runCommand(path : String, command : String, args : Array <String>, safeExecute : Bool = true, ignoreErrors : Bool = false, print : Bool = false, commandIsLocal : Bool = true) : Int 
+	public static function runCommand(path : String, command : String, args : Array <String>, safeExecute : Bool = true, ignoreErrors : Bool = false, print : Bool = false) : Int 
 	{
 		if(print) 
 		{
@@ -155,16 +154,7 @@ class ProcessHelper
 		}
 		
 		command = PathHelper.escape(command);
-
-		if(commandIsLocal)
-		{
-			if(PlatformHelper.hostPlatform != Platform.WINDOWS)
-			{
-				command = "./" + command;
-			}
-
-		}
-
+		
 		if(safeExecute) 
 		{
 			if(path != null && path != "" && !FileSystem.exists(FileSystem.fullPath (path)) && !FileSystem.exists(FileSystem.fullPath(new Path(path).dir))) 
@@ -250,7 +240,7 @@ class ProcessHelper
 	}
 	
 	
-	public static function runProcess(path : String, command : String, args : Array <String>, waitForOutput : Bool = true, safeExecute : Bool = true, ignoreErrors : Bool = false, print : Bool = false, commandIsLocal : Bool = true) : String {
+	public static function runProcess(path : String, command : String, args : Array <String>, waitForOutput : Bool = true, safeExecute : Bool = true, ignoreErrors : Bool = false, print : Bool = false) : String {
 		
 		if (print) 
 		{
@@ -273,16 +263,6 @@ class ProcessHelper
 		}
 		
 		command = PathHelper.escape(command);
-
-
-		if(commandIsLocal)
-		{
-			if(PlatformHelper.hostPlatform != Platform.WINDOWS)
-			{
-				command = "./" + command;
-			}
-
-		}
 		
 		if(safeExecute) 
 		{
@@ -511,7 +491,15 @@ class ProcessHelper
 			Lib.println(message);
 			Sys.command("chmod", ["755", path]);
 			
-			ProcessHelper.runCommand(Path.directory(path), Path.withoutDirectory(path), [], false);
+			if(path.substr(0, 1) == "/") 
+			{
+				ProcessHelper.runCommand("", path, [], false);
+			} 
+			else 
+			{
+				ProcessHelper.runCommand("", "./" + path, [], false);
+			}
+			
 			Lib.println ("Done");
 		}
 	}
