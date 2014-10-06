@@ -24,6 +24,7 @@ import neko.vm.Thread;
 
 class TestHelper
 {
+
 	public static function runListenerServer(timeout : Float, port : Int, resultOutputPath : String)
 	{
  	    var serverPrefix : String = "";
@@ -54,8 +55,7 @@ class TestHelper
 					try
 					{
 						var newMessage = testProcess.stdout.readLine();
-						trace("from thread:" + newMessage);
-						thread.sendMessage(newMessage);
+
 						if(newMessage.length == 0)
 						{
 							break;

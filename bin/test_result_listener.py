@@ -11,6 +11,7 @@ urls = ('(.*)', 'urlhandler')
 app = web.application(urls, globals())
 
 def rawRequest(env):
+
     raw_post_data = env['wsgi.input'].read(int(env['CONTENT_LENGTH']))
     post_data = None
     post_data = unquote(raw_post_data)
@@ -22,6 +23,7 @@ def rawRequest(env):
 
 
 class urlhandler:
+
     def OPTIONS(self, url):
         web.header('Access-Control-Allow-Origin',      '*')
         web.header('Access-Control-Allow-Credentials', 'true')
@@ -36,15 +38,22 @@ class urlhandler:
         web.header('Access-Control-Allow-Credentials', 'true')
 
         s = rawRequest(web.ctx.env)
-        if s == "===START===":
-            pass
-        elif s == "===END===":
+
+        if s == "===END===":
             app.stop()
         else:
-            print s
+            print "===MESSAGE===" + s
 
         return "OK"
 
+class LogCatcher(object):
+
+    def write(self, data):
+        if data.startswith("===MESSAGE==="):
+            sys.__stdout__.write(data[len("===MESSAGE==="):])
+
+
+
 if __name__ == '__main__':
-    print "Starting test listener..."
+    sys.stdout = LogCatcher()
     app.run()
