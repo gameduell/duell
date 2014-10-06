@@ -45,7 +45,11 @@ class BuildMain
 	 		if (Sys.args().indexOf("-run") != -1)
 	 		{
 	 			build.run();
-	 		}
+	 		} 
+            else if (Sys.args().indexOf("-test") != -1)
+            {
+                build.test();
+            }
 		}
     	catch(error : Dynamic)
     	{
