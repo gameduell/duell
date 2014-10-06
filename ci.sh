@@ -21,6 +21,7 @@ send \"\r\"
 expect \"Do you want to install the \\\"duell\\\" command?\"
 send \"n\r\"
 
+expect eof
 "
 
 expect -c "
@@ -30,8 +31,8 @@ set timeout -1
 expect \"A library for setup of mac environment is not currently installed.\"
 send \"y\r\"
 
+expect eof
 "
-
 expect -c "
 spawn haxelib run duell setup flash -verbose
 set timeout -1
@@ -140,3 +141,42 @@ expect {
 
 }
 "
+
+rm -rf test
+
+mkdir test
+
+cd test
+
+expect -c "
+spawn haxelib run duell create unitTestProject -verbose
+
+set timeout -1
+
+expect \"is not currently installed.\"
+send \"y\r\"
+
+expect eof
+"
+
+expect -c "
+spawn haxelib run duell build ios -test -verbose
+
+set timeout -1
+
+expect {
+	\"is not currently installed.\" {
+
+		send \"y\r\"
+
+		exp_continue
+	}
+	\"is missing,\" {
+
+		send \"y\r\"
+
+		exp_continue
+	}
+}
+"
+
