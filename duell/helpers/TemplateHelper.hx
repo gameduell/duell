@@ -465,7 +465,7 @@ class TemplateHelper
 		
 		for (file in files) 
 		{
-			if (file.substr(0, 1) != ".") /// hidden file
+			if (file != "." && file != "..")
 			{
 				var itemDestination:String = destination + "/" + file;
 				var itemSource:String = source + "/" + file;
@@ -478,9 +478,7 @@ class TemplateHelper
 				{
 					copyTemplateFile(itemSource, itemDestination, context, templateFunctions);
 				}
-				
 			}
-			
 		}
 		
 	}
