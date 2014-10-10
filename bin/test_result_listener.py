@@ -22,6 +22,7 @@ def rawRequest(env):
         return post_data
 
 
+
 class urlhandler:
 
     def OPTIONS(self, url):
@@ -31,14 +32,13 @@ class urlhandler:
                    'origin, content-type, ' +
                    'accept, Access-Control-Allow-Credentials, ' +
                    'Access-Control-Allow-Origin')
-        return ""
+        return "OK"
 
     def POST(self, url):
         web.header('Access-Control-Allow-Origin',      '*')
         web.header('Access-Control-Allow-Credentials', 'true')
 
         s = rawRequest(web.ctx.env)
-
         if s == "===END===":
             app.stop()
         else:
@@ -46,12 +46,21 @@ class urlhandler:
 
         return "OK"
 
+    def GET(self, url):
+
+        return '''<?xml version="1.0"?>
+<!DOCTYPE cross-domain-policy SYSTEM "http://www.adobe.com/xml/dtds/cross-domain-policy.dtd">
+<cross-domain-policy>
+    <allow-access-from domain="*"/>
+</cross-domain-policy>
+'''
+
 class LogCatcher(object):
 
     def write(self, data):
         if data.startswith("===MESSAGE==="):
             sys.__stdout__.write(data[len("===MESSAGE==="):])
-
+            sys.__stdout__.flush()
 
 
 if __name__ == '__main__':

@@ -5,10 +5,10 @@
  */
 package duell.helpers;
 
-import sys.io.Process;
-
 import duell.helpers.PlatformHelper;
 import duell.objects.DuellLib;
+
+import duell.objects.DuellProcess;
 
 import haxe.io.BytesOutput;
 import haxe.io.Path;
@@ -24,82 +24,38 @@ import neko.vm.Thread;
 
 class TestHelper
 {
-
 	public static function runListenerServer(timeout : Float, port : Int, resultOutputPath : String)
 	{
- 	    var serverPrefix : String = "";
- 	    var archPrefix : String = "";
-		var testProcess : Process;
-
 		var duellLibPath = DuellLib.getDuellLib("duell").getPath();
+		var testProcess = new DuellProcess(
+										Path.join([duellLibPath, "bin"]),
+										"python", 
+										["test_result_listener.py", "" + port], 
+										{
+											systemCommand : true, 
+											timeout : timeout, 
+											loggingPrefix : "[TestListener]",
+											logOnlyIfVerbose : true
+										});
 
- 		var testerDirectory : String = Path.join([duellLibPath, "bin", "test_result_listener.py"]);
- 		var args = [Path.join([duellLibPath, "bin", "test_result_listener.py"]), "" + port];
+		testProcess.blockUntilFinished();
 
- 		LogHelper.info("Launching test listener", 'Launching test listener with command "python ${args.join(" ")}"');
- 		testProcess = new Process("python", args);
-
-
-		var buffer = new BytesOutput();
-
-		var threadPoke = false; /// every time the thread lives it will "poke" this boolean
-		var threadFinished = false;
-		var continueToProcessThread = true;
-
-		var thread : Thread = null;
-		thread = Thread.create(
-			function()
-			{
-				while(continueToProcessThread)
-				{
-					try
-					{
-						var newMessage = testProcess.stdout.readLine();
-
-						if(newMessage.length == 0)
-						{
-							break;
-						}
-						else
-						{
-							buffer.writeString(newMessage + "\n");
-							threadPoke = true;
-						}
-					}
-					catch (e:Eof) 
-					{
-						break;
-					}
-				}
-
-				threadFinished = true;
-			}
-		);
-
-		while (!threadFinished) 
+		if (testProcess.exitCode() != 0)
 		{
-			threadPoke = false;
-			Sys.sleep(timeout);
-
-			if(!threadPoke)
+			if (testProcess.isTimedout())
 			{
-				continueToProcessThread = false;
-				testProcess.kill();
-				throw "Test listener timed out output so far was:\n" + buffer.getBytes();
+				throw "Test listener timedout, output:\n" + testProcess.getCompleteStdout() + "\nstderr:\n" + testProcess.getCompleteStderr();
+
 			}
-		}
-		
-		var result = testProcess.exitCode();
-		testProcess.close();
-
-		var bytes = buffer.getBytes();
-
-		if (result != 0)
-		{
-			throw "Test listener failed with error code:" + result + ", output:\n" + bytes;
+			else
+			{
+				throw "Test listener failed with error code:" + testProcess.exitCode() + ", output:\n" + testProcess.readCurrentStdout() + "\nstderr:\n" + testProcess.getCompleteStderr();
+			}
 		}
 		else
 		{
+			var bytes = testProcess.getCompleteStdout();
+			
 		    var fout = File.write(resultOutputPath, false );
 
 		    fout.write(bytes);
