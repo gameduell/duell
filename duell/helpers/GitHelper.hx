@@ -94,8 +94,13 @@ class GitHelper
                                             logOnlyIfVerbose : true
                                         });
         gitProcess.blockUntilFinished();
+        var output = gitProcess.getCompleteStdout().toString();
+        var stderr = gitProcess.getCompleteStderr().toString();
 
-        if (gitProcess.getCompleteStdout().toString().indexOf("behind") != -1)
+        trace(output);
+        trace(stderr);
+
+        if (output.indexOf("behind") != -1 || stderr.indexOf("behind") != -1)
         {
             return true;
         }
