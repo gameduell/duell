@@ -38,6 +38,9 @@ class DuellProcess
 	private var finished : Bool = false;
 	private var timedout : Bool = false;
 
+	private var stdoutFinished : Bool = false;
+	private var stderrFinished : Bool = false;
+
 	private var process : sys.io.Process;
 
 	public function new(path : String, command : String, args : Array<String>, options : ProcessOptions = null)
@@ -104,7 +107,7 @@ class DuellProcess
 						stdout.writeString(str);
 						totalStdout.writeString(str);
 						stdoutMutex.release();
-						
+
 						if(str == "\n")
 						{
 							var message = '\x1b[1m$loggingPrefix\x1b[0m ${stdoutLineBuffer.getBytes().toString()}';
@@ -124,6 +127,7 @@ class DuellProcess
 				catch (e:Eof) {}
 				catch (e:Dynamic) {LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));}
 				finished = true;
+				stdoutFinished = true;
 			}
 		);
 
@@ -165,6 +169,7 @@ class DuellProcess
 				catch (e:Dynamic) {LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));}
 
 				finished = true;
+				stderrFinished = true;
 			}
 		);
 
@@ -256,6 +261,8 @@ class DuellProcess
 		if (!finished)
 			return null;
 
+		while(!stdoutFinished) {};
+
 		stdoutMutex.acquire();
 
 		var bytes = totalStdout.getBytes();
@@ -269,6 +276,9 @@ class DuellProcess
 	{
 		if (!finished)
 			return null;
+
+		while(!stderrFinished) {};
+
 		stderrMutex.acquire();
 		
 		var bytes = totalStderr.getBytes();

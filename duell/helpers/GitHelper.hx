@@ -95,12 +95,8 @@ class GitHelper
                                         });
         gitProcess.blockUntilFinished();
         var output = gitProcess.getCompleteStdout().toString();
-        var stderr = gitProcess.getCompleteStderr().toString();
 
-        trace(output);
-        trace(stderr);
-
-        if (output.indexOf("behind") != -1 || stderr.indexOf("behind") != -1)
+        if (output.indexOf("behind") != -1)
         {
             return true;
         }
