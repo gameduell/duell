@@ -31,6 +31,7 @@ class DuellProcess
 	private var stderr : BytesOutput;
 	private var totalStderr : BytesOutput;
 	private var stderrMutex : Mutex;
+	private var stderrLineBuffer : BytesOutput;
 
 	private var exitCodeCache : Null<Int> = null;
 
@@ -127,6 +128,7 @@ class DuellProcess
 		stderr = new BytesOutput();
 		totalStderr = new BytesOutput();
 		stderrMutex = new Mutex();
+		stderrLineBuffer = new BytesOutput();
 		neko.vm.Thread.create(
 			function ()
 			{
@@ -134,10 +136,23 @@ class DuellProcess
 				{
 					while(!finished) /// something else can finish
 					{
-						var byte = process.stderr.readByte();
+						var str = process.stderr.readString(1);
 						stderrMutex.acquire();
-						stderr.writeByte(byte);
-						totalStderr.writeByte(byte);
+						stderr.writeString(str);
+						totalStderr.writeString(str);
+						if(str == "\n")
+						{
+							var message = '\x1b[1m$loggingPrefix\x1b[0m ${stderrLineBuffer.getBytes().toString()}';
+							if (logOnlyIfVerbose)
+								LogHelper.info("", message);
+							else
+								LogHelper.info(message, "");
+							stderrLineBuffer = new BytesOutput();
+						}
+						else
+						{
+							stderrLineBuffer.writeString(str);	
+						}
 						stderrMutex.release();
 						timeoutTicker = true;
 					}
