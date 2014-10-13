@@ -6,15 +6,25 @@
  
 package duell.helpers;
 
-import duell.helpers.ProcessHelper;
+import duell.objects.DuellProcess;
 
 class GitHelper
 {
 	static public function setRemoteURL(path : String, remoteName : String, url : String) : Int
 	{
-		var result = ProcessHelper.runCommand(path, "git", ["remote", "set-url", remoteName, url]);
+        var gitProcess = new DuellProcess(
+                                        path,
+                                        "git", 
+                                        ["remote", "set-url", remoteName, url], 
+                                        {
+                                            systemCommand : true, 
+                                            timeout : 0, 
+                                            loggingPrefix : "[Git]",
+                                            logOnlyIfVerbose : true
+                                        });
+        gitProcess.blockUntilFinished();
 
-		return result;
+		return gitProcess.exitCode();
 	}
 
     static public function clone(gitURL : String, path : String) : Int
@@ -25,29 +35,67 @@ class GitHelper
 		var folder = pathComponents.pop();
 		path = pathComponents.join("/");
 
-		var result = ProcessHelper.runCommand(path, "git", ["clone", gitURL, folder]);
+        var gitProcess = new DuellProcess(
+                                        path,
+                                        "git", 
+                                        ["clone", gitURL, folder], 
+                                        {
+                                            systemCommand : true, 
+                                            timeout : 0, 
+                                            loggingPrefix : "[Git]",
+                                            logOnlyIfVerbose : true
+                                        });
+        gitProcess.blockUntilFinished();
 
-        return result;
+        return gitProcess.exitCode();
     }
 
     static public function pull(destination : String) : Int
     {
-        var result : Int = 0;
+        var gitProcess = new DuellProcess(
+                                        destination,
+                                        "git", 
+                                        ["pull"], 
+                                        {
+                                            systemCommand : true, 
+                                            timeout : 0, 
+                                            loggingPrefix : "[Git]",
+                                            logOnlyIfVerbose : true
+                                        });
+        gitProcess.blockUntilFinished();
 
-        result = ProcessHelper.runCommand(destination, "git", ["pull"]);
-        return result;
+        return gitProcess.exitCode();
     }
 
     static public function updateNeeded(destination : String) : Bool
     {
         var result : String = "";
 
-        ProcessHelper.runCommand(destination, "git", ["remote", "update"]);
-        ProcessHelper.runCommand(destination, "git", ["status", "-b", "master", "--porcelain"]);
+        var gitProcess = new DuellProcess(
+                                        destination,
+                                        "git", 
+                                        ["remote", "update"], 
+                                        {
+                                            systemCommand : true, 
+                                            timeout : 0, 
+                                            loggingPrefix : "[Git]",
+                                            logOnlyIfVerbose : true
+                                        });
+        gitProcess.blockUntilFinished();
 
-        result = ProcessHelper.runProcess(destination, "git", ["status", "-b", "master", "--porcelain"]);
+        gitProcess = new DuellProcess(
+                                        destination,
+                                        "git", 
+                                        ["status", "-b", "master", "--porcelain"], 
+                                        {
+                                            systemCommand : true, 
+                                            timeout : 0, 
+                                            loggingPrefix : "[Git]",
+                                            logOnlyIfVerbose : true
+                                        });
+        gitProcess.blockUntilFinished();
 
-        if (result.indexOf("behind") != -1)
+        if (gitProcess.getCompleteStdout().toString().indexOf("behind") != -1)
         {
             return true;
         }

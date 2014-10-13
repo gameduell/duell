@@ -121,6 +121,7 @@ class DuellProcess
 					}
 				}
 				catch (e:Eof) {}
+				catch (e:Dynamic) {LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));}
 				finished = true;
 			}
 		);
@@ -158,6 +159,8 @@ class DuellProcess
 					}
 				}
 				catch (e:Eof) {}
+				catch (e:Dynamic) {LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));}
+
 				finished = true;
 			}
 		);
@@ -250,14 +253,26 @@ class DuellProcess
 		if (!finished)
 			return null;
 
-		return totalStdout.getBytes();
+		stdoutMutex.acquire();
+
+		var bytes = totalStdout.getBytes();
+		totalStdout = new haxe.io.BytesOutput();
+
+		stdoutMutex.release();
+		return bytes;
 	}
 
 	public function getCompleteStderr() : Bytes
 	{
 		if (!finished)
 			return null;
-		return totalStderr.getBytes();
+		stderrMutex.acquire();
+		
+		var bytes = totalStderr.getBytes();
+		totalStderr = new haxe.io.BytesOutput();
+
+		stderrMutex.release();
+		return bytes;
 	}
 
 	public function exitCode() : Int
