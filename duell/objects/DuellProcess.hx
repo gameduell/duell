@@ -100,7 +100,7 @@ class DuellProcess
 			{
 				try
 				{
-					while(!finished) /// something else can finish
+					while(true)
 					{
 						var str = process.stdout.readString(1);
 						stdoutMutex.acquire();
@@ -140,7 +140,7 @@ class DuellProcess
 			{
 				try
 				{
-					while(!finished) /// something else can finish
+					while(true)
 					{
 						var str = process.stderr.readString(1);
 
