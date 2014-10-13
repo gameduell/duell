@@ -103,6 +103,8 @@ class DuellProcess
 						stdoutMutex.acquire();
 						stdout.writeString(str);
 						totalStdout.writeString(str);
+						stdoutMutex.release();
+						
 						if(str == "\n")
 						{
 							var message = '\x1b[1m$loggingPrefix\x1b[0m ${stdoutLineBuffer.getBytes().toString()}';
@@ -116,7 +118,6 @@ class DuellProcess
 						{
 							stdoutLineBuffer.writeString(str);	
 						}
-						stdoutMutex.release();
 						timeoutTicker = true;
 					}
 				}
@@ -138,9 +139,12 @@ class DuellProcess
 					while(!finished) /// something else can finish
 					{
 						var str = process.stderr.readString(1);
+
 						stderrMutex.acquire();
 						stderr.writeString(str);
 						totalStderr.writeString(str);
+						stderrMutex.release();
+
 						if(str == "\n")
 						{
 							var message = '\x1b[1m$loggingPrefix\x1b[0m ${stderrLineBuffer.getBytes().toString()}';
@@ -154,7 +158,6 @@ class DuellProcess
 						{
 							stderrLineBuffer.writeString(str);	
 						}
-						stderrMutex.release();
 						timeoutTicker = true;
 					}
 				}
