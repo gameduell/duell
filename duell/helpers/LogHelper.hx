@@ -44,7 +44,7 @@ class LogHelper
 			Lib.rethrow(e);	
 		}
 		
-		Sys.exit (1);
+		Sys.exit(-1);
 	}
 	
 	public static function info(message : String, verboseMessage : String = "") : Void 
