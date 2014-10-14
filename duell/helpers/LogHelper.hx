@@ -39,11 +39,6 @@ class LogHelper
 			Sys.stderr().write(Bytes.ofString(stripColor(output)));
 		}
 		
-		if(verbose && e != null) 
-		{
-			Lib.rethrow(e);	
-		}
-		
 		Sys.exit(-1);
 	}
 	
