@@ -114,10 +114,12 @@ class LogHelper
 			}
 			
 		}
-		
+
+
 		if (enableColor && colorSupported) 
 			return output;
 		else 
-			return colorCodes.replace (output, "");
+			return output;
+			//return colorCodes.replace(output, "");
 	}
 }
