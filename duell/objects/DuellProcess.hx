@@ -91,6 +91,18 @@ class DuellProcess
 			Sys.setCwd (oldPath);
 		}
 
+
+		var log : String->Void = function(logMessage : String) 
+		{
+			if (logMessage == "")
+				return;
+			var message = '\x1b[1m$loggingPrefix\x1b[0m ${logMessage}';
+			if (logOnlyIfVerbose)
+				LogHelper.info("", message);
+			else
+				LogHelper.info(message, "");
+		}
+
 		stdout = new BytesOutput();
 		totalStdout = new BytesOutput();
 		stdoutMutex = new Mutex();
@@ -110,11 +122,7 @@ class DuellProcess
 
 						if(str == "\n")
 						{
-							var message = '\x1b[1m$loggingPrefix\x1b[0m ${stdoutLineBuffer.getBytes().toString()}';
-							if (logOnlyIfVerbose)
-								LogHelper.info("", message);
-							else
-								LogHelper.info(message, "");
+							log(stdoutLineBuffer.getBytes().toString());
 							stdoutLineBuffer = new BytesOutput();
 						}
 						else
@@ -126,6 +134,8 @@ class DuellProcess
 				}
 				catch (e:Eof) {}
 				catch (e:Dynamic) {LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));}
+
+				log(stdoutLineBuffer.getBytes().toString());
 				finished = true;
 				stdoutFinished = true;
 			}
@@ -151,11 +161,7 @@ class DuellProcess
 
 						if(str == "\n")
 						{
-							var message = '\x1b[1m$loggingPrefix\x1b[0m ${stderrLineBuffer.getBytes().toString()}';
-							if (logOnlyIfVerbose)
-								LogHelper.info("", message);
-							else
-								LogHelper.info(message, "");
+							log(stderrLineBuffer.getBytes().toString());
 							stderrLineBuffer = new BytesOutput();
 						}
 						else
@@ -168,6 +174,7 @@ class DuellProcess
 				catch (e:Eof) {}
 				catch (e:Dynamic) {LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));}
 
+				log(stderrLineBuffer.getBytes().toString());
 				finished = true;
 				stderrFinished = true;
 			}
