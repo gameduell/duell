@@ -34,8 +34,7 @@ class TestHelper
 										{
 											systemCommand : true, 
 											timeout : timeout, 
-											loggingPrefix : "[TestListener]",
-											logOnlyIfVerbose : true
+											loggingPrefix : "[TestListener]"
 										});
 
 		testProcess.blockUntilFinished();

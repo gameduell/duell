@@ -15,10 +15,10 @@ import duell.helpers.PlatformHelper;
 
 typedef ProcessOptions = 
 {
-	loggingPrefix : String, /// defaults to ""
-	logOnlyIfVerbose : Bool, /// defaults to true
-	systemCommand : Bool, /// defaults to false. 
-	timeout : Float /// defaults to 0 (no timeout)
+	?loggingPrefix : String, /// defaults to ""
+	?logOnlyIfVerbose : Bool, /// defaults to true
+	?systemCommand : Bool, /// defaults to false. 
+	?timeout : Float /// defaults to 0 (no timeout)
 }
 
 class DuellProcess

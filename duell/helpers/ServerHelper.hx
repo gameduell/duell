@@ -58,10 +58,7 @@ class ServerHelper
 
 		serverProcess = new DuellProcess(Path.join([buildPath,"bin","node"]), "node-"+serverPrefix+archPrefix, args,
 										{
-											systemCommand : false, 
-											timeout : 0, 
-											loggingPrefix : "[HTTP SERVER]",
-											logOnlyIfVerbose : true
+											loggingPrefix : "[HTTP SERVER]"
 										});
 
 		return serverProcess;

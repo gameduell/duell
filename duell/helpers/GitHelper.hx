@@ -18,9 +18,7 @@ class GitHelper
                                         ["remote", "set-url", remoteName, url], 
                                         {
                                             systemCommand : true, 
-                                            timeout : 0, 
-                                            loggingPrefix : "[Git]",
-                                            logOnlyIfVerbose : true
+                                            loggingPrefix : "[Git]"
                                         });
         gitProcess.blockUntilFinished();
 
@@ -41,9 +39,7 @@ class GitHelper
                                         ["clone", gitURL, folder], 
                                         {
                                             systemCommand : true, 
-                                            timeout : 0, 
-                                            loggingPrefix : "[Git]",
-                                            logOnlyIfVerbose : true
+                                            loggingPrefix : "[Git]"
                                         });
         gitProcess.blockUntilFinished();
 
@@ -58,9 +54,7 @@ class GitHelper
                                         ["pull"], 
                                         {
                                             systemCommand : true, 
-                                            timeout : 0, 
-                                            loggingPrefix : "[Git]",
-                                            logOnlyIfVerbose : true
+                                            loggingPrefix : "[Git]"
                                         });
         gitProcess.blockUntilFinished();
 
@@ -76,10 +70,8 @@ class GitHelper
                                         "git", 
                                         ["remote", "update"], 
                                         {
-                                            systemCommand : true, 
-                                            timeout : 0, 
-                                            loggingPrefix : "[Git]",
-                                            logOnlyIfVerbose : true
+                                            systemCommand : true,
+                                            loggingPrefix : "[Git]"
                                         });
         gitProcess.blockUntilFinished();
 
@@ -88,10 +80,8 @@ class GitHelper
                                         "git", 
                                         ["status", "-b", "master", "--porcelain"], 
                                         {
-                                            systemCommand : true, 
-                                            timeout : 0, 
-                                            loggingPrefix : "[Git]",
-                                            logOnlyIfVerbose : true
+                                            systemCommand : true,
+                                            loggingPrefix : "[Git]"
                                         });
         gitProcess.blockUntilFinished();
         var output = gitProcess.getCompleteStdout().toString();
