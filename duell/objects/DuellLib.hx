@@ -55,7 +55,7 @@ class DuellLib
 
 	public function exists() : Bool
 	{
-		if (existsCache != null)
+		if (existsCache != null && existsCache) /// if it didn't exist before, we always try again.
 			return existsCache;
 
 		var output = '';
@@ -64,8 +64,7 @@ class DuellLib
 
 		if (output.indexOf('is not installed') != -1)
 			existsCache = false;
-
- 		if (version == "")
+ 		else if (version == "")
  			existsCache = true;
 
  		/// TODO
