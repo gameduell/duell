@@ -59,6 +59,12 @@ class BuildCommand implements IGDCommand
 	    	LogHelper.info("------\x1b[0m");
 	    	LogHelper.info("");
 
+	    	LogHelper.println("");
+
+	    	checkIfItIsAProjectFolder();
+
+	    	LogHelper.println("");
+
 	    	determinePlatformToBuildFromArguments();
 
 	    	LogHelper.println("");
@@ -83,6 +89,14 @@ class BuildCommand implements IGDCommand
     	}
 	    
 	    return "success";
+    }
+
+    private function checkIfItIsAProjectFolder()
+    {
+    	if (!FileSystem.exists(DuellDefines.PROJECT_CONFIG_FILENAME))
+    	{
+    		LogHelper.error('Running from a folder without a project file ${DuellDefines.PROJECT_CONFIG_FILENAME}');
+    	}
     }
 
     private function determinePlatformToBuildFromArguments()

@@ -19,11 +19,14 @@ class DuellLib
 {
 	public var name(default, null) : String;
 	public var version(default, null) : String;
-	private var path : String = null; ///use getters
+	private var pathCache : String = null; ///use getters
+	private var existsCache : Null<Bool> = null; ///use getters
 
 	private function new(name : String, version : String = '')
 	{
 		this.name = name;
+		if (version == null)
+			version = "";
 		this.version = version;
 	}
 
@@ -50,76 +53,61 @@ class DuellLib
 		return duellLibCache.get(name).get(version);
 	}
 
-	public function setPath(path : String)
+	public function exists() : Bool
 	{
-		this.path = path;
-	}
+		if (existsCache != null)
+			return existsCache;
 
-	public function exists()
-	{
 		var output = '';
-		
-		var prevVerbose = LogHelper.verbose;
-		LogHelper.verbose = false;
-		try 
-		{
-			var nameToTry = name;
-			if(version != '')
-				nameToTry += ':' + version;
-			output = ProcessHelper.runProcess(Sys.getEnv ('HAXEPATH'), 'haxelib', ['path', nameToTry], true, true, true);
-		} 
-		catch (e:Dynamic) { }
-		LogHelper.verbose = prevVerbose;
+	
+		output = ProcessHelper.runProcess(Sys.getEnv ('HAXEPATH'), 'haxelib', ['path', name], true, true, true);
 
-		if(output.indexOf('is not installed') != -1)
-			return false;
-		else
-			return true;
+		if (output.indexOf('is not installed') != -1)
+			existsCache = false;
+
+ 		if (version == "")
+ 			existsCache = true;
+
+ 		/// TODO
+ 		if (existsCache == null)
+ 			existsCache = false;
+ 		/// /TODO
+
+ 		return existsCache;
 	}
 
 	public function getPath() : String
 	{
-		if(path != null)
-			return path;
+		if(pathCache != null)
+			return pathCache;
 
-		if(!exists())
+		if (!exists())
 		{
-			if (version != '') 
-			{
-				LogHelper.error ('Could not find duellLib \'' + name + '\' version \'' + version + '\', does it need to be installed?');
-			} 
-			else 
-			{
-				LogHelper.error ('Could not find duellLib \'' + name + '\', does it need to be installed?');
-			}
+			LogHelper.error ('Could not find duellLib \'' + name + '\'.');
 		}
 
-		var prevVerbose = LogHelper.verbose;
-		LogHelper.verbose = false;
-		var output = '';
-		try 
-		{
-			var nameToTry = name;
-			if(version != '')
-				nameToTry += ':' + version;
-			output = ProcessHelper.runProcess(Sys.getEnv('HAXEPATH'), 'haxelib', ['path', nameToTry], true, true, true);
-		} 
-		catch (e:Dynamic) { }
-		
-		LogHelper.verbose = prevVerbose;
+		return _getPath();
 			
+	}
+
+	public function _getPath() : String
+	{
+		if(pathCache != null)
+			return pathCache;
+
+		var output = ProcessHelper.runProcess(Sys.getEnv ('HAXEPATH'), 'haxelib', ['path', name], true, true, true);
 		var lines = output.split ('\n');
 			
 		for (i in 1...lines.length) {
 			
 			if (lines[i].trim() == '-D ' + name) 
 			{
-				path = lines[i - 1].trim();
+				pathCache = lines[i - 1].trim();
 			}
 			
 		}
 
-		if (path == '') 
+		if (pathCache == '') 
 		{
 			try {
 				for (line in lines) 
@@ -128,7 +116,7 @@ class DuellLib
 					{
 						if (FileSystem.exists(line)) 
 						{
-							path = line;
+							pathCache = line;
 							break;
 						}
 					}
@@ -137,18 +125,17 @@ class DuellLib
 			
 		}
 		
-		return path;
+		return pathCache;
 	}
 
-	public static var noUpdateEnabled : Bool = null;
+	public function isRepoOnCorrectVersion()
+	{
+		/// get current branch / tag
+	}
+
     public function updateNeeded() : Bool
     {
-    	if (noUpdateEnabled == null)
-    	{
-    		noUpdateEnabled = Sys.args().indexOf("-noupdate") != -1;
-    	}
-
-    	if (noUpdateEnabled)
+    	if (Sys.args().indexOf("-noupdate") != -1)
     		return false;
 
         var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
