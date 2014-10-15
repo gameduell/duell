@@ -251,6 +251,12 @@ class DuellProcess
 		catch (e : Dynamic) {
 			exitCodeCache = -1;
 		}
+
+		/// WAIT FOR THE STDOUT TO FINISH COMPLETELY
+		while(!stdoutFinished) {};
+		/// WAIT FOR THE STDERR TO FINISH COMPLETELY
+		while(!stderrFinished) {};
+
 		finished = true;
 	}
 	
@@ -344,8 +350,13 @@ class DuellProcess
 		if (exitCodeCache == null)
 		{
 			exitCodeCache = process.exitCode();
-		}
 
+			/// WAIT FOR THE STDOUT TO FINISH COMPLETELY
+			while(!stdoutFinished) {};
+			/// WAIT FOR THE STDERR TO FINISH COMPLETELY
+			while(!stderrFinished) {};
+		}
+		
 		return exitCodeCache;
 	}
 
