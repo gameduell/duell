@@ -21,6 +21,9 @@ class Haxelib
 	private function new(name : String, version : String = "")
 	{
 		this.name = name;
+
+		if (version == null)
+			version = "";
 		this.version = version;
 	}
 
@@ -144,6 +147,9 @@ class Haxelib
 
     public function install()
     {
-        ProcessHelper.runCommand("", "haxelib", ["install", name]);
+    	var args = ["install", name];
+    	if (version != "")
+    		args.push(version);
+        ProcessHelper.runCommand("", "haxelib", args);
     }
 }

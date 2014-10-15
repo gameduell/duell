@@ -67,6 +67,8 @@ class BuildCommand implements IGDCommand
 
 	    	LogHelper.println("");
 
+
+
 	    	buildNewExecutableWithBuildLibAndDependencies();
 
 	    	LogHelper.println("");
@@ -233,8 +235,10 @@ class BuildCommand implements IGDCommand
 						if (libList.haxelibs.indexOf(haxelib) == -1)
 						{
 							if (!haxelib.exists())
-							{
-								var answer = AskHelper.askYesOrNo('Haxelib ${haxelib.name} is missing, would you like to install it?');
+							{	
+
+								var haxelibMessagePart = haxelib.name + (haxelib.version != "" ? " with version " + haxelib.version : "");
+								var answer = AskHelper.askYesOrNo('Haxelib $haxelibMessagePart is missing, would you like to install it?');
 
 								if (answer)
 									haxelib.install();

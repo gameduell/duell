@@ -186,6 +186,10 @@ class DuellProjectXML
 		{
 			version = lib.att.version;
 		}
+		else
+		{
+			version = "";
+		}
 
 		if (name != null && name != '')
 		{
@@ -218,6 +222,10 @@ class DuellProjectXML
 		if(lib.has.version)
 		{
 			version = lib.att.version;
+		}
+		else
+		{
+			version = "";
 		}
 
 
