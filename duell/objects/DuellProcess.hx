@@ -23,86 +23,120 @@ typedef ProcessOptions =
 
 class DuellProcess
 {
+	/// STDIN TO POST STUFF
 	public var stdin : Output;
+
+	/// STDOUT LISTENING
 	private var stdoutLineBuffer : BytesOutput;
 	private var stdout : BytesOutput;
 	private var totalStdout : BytesOutput;
 	private var stdoutMutex : Mutex;
+
+	/// STDERR LISTENING
 	private var stderr : BytesOutput;
 	private var totalStderr : BytesOutput;
 	private var stderrMutex : Mutex;
 	private var stderrLineBuffer : BytesOutput;
 
-	private var exitCodeCache : Null<Int> = null;
+	/// TIMEOUT
+	private var timeoutTicker : Bool;
 
+	/// EXIT VARS
+	private var exitCodeCache : Null<Int> = null;
 	private var finished : Bool = false;
 	private var timedout : Bool = false;
-
 	private var stdoutFinished : Bool = false;
 	private var stderrFinished : Bool = false;
 
+	/// HAXE PROCESS
 	private var process : sys.io.Process;
 
-	public function new(path : String, command : String, args : Array<String>, options : ProcessOptions = null)
+	/// PARAMETERS
+	private var systemCommand : Bool;
+	private var loggingPrefix : String;
+	private var logOnlyIfVerbose : Bool;
+	private var timeout : Float;
+	private var command : String;
+	private var args : Array<String>;
+
+	public function new(path : String, comm : String, args : Array<String>, options : ProcessOptions = null)
 	{	
-		command = PathHelper.escape(command);
+		/// PROCESS ARGUMENTS
+		command = PathHelper.escape(comm);
+		this.args = args;
 
-		var systemCommand = options != null && options.systemCommand != null ? options.systemCommand : false;
-		var loggingPrefix = options != null && options.loggingPrefix != null ? options.loggingPrefix : "";
-		var logOnlyIfVerbose = options != null && options.logOnlyIfVerbose != null ? options.logOnlyIfVerbose : true;
-		var timeout = options != null && options.timeout != null ? options.timeout : 0.0;
+		systemCommand = options != null && options.systemCommand != null ? options.systemCommand : false;
+		loggingPrefix = options != null && options.loggingPrefix != null ? options.loggingPrefix : "";
+		logOnlyIfVerbose = options != null && options.logOnlyIfVerbose != null ? options.logOnlyIfVerbose : true;
+		timeout = options != null && options.timeout != null ? options.timeout : 0.0;
 
+		/// CHECK FOR LOCAL COMMAND
 		if (!systemCommand && PlatformHelper.hostPlatform != Platform.WINDOWS)
 		{
 			command = "./" + command;
 		}
 
+		/// CHANGE DIRECTORY
 		var oldPath:String = "";
 		if (path != null && path != "") {
 			
-			LogHelper.info ("", " - \x1b[1mChanging directory:\x1b[0m " + path + "");
+			LogHelper.info ("", " - \x1b[1mChanging directory for running the process:\x1b[0m " + path + "");
 			
 			oldPath = Sys.getCwd ();
 			Sys.setCwd (path);
 			
 		}
 
+		/// FANCY PRINT
 		var argString = "";
 		
-		for (arg in args) {
-			
-			if (arg.indexOf (" ") > -1) {
-				
+		for (arg in args) 
+		{
+			if (arg.indexOf (" ") > -1) 
+			{
 				argString += " \"" + arg + "\"";
-				
-			} else {
-				
+			} 
+			else 
+			{
 				argString += " " + arg;
-				
 			}
-			
 		}
 		LogHelper.info ("", " - \x1b[1mRunning process:\x1b[0m " + command + argString);
 
-		var timeoutTicker : Bool = true;
+		/// RUN THE PROCESS AND THE LISTENERS
+		timeoutTicker = true;
 		process = new sys.io.Process(command, args);
+
+		stdin = process.stdin;
+
+		startStdOutListener();
+		startStdErrListener();
+		startTimeoutListener();
+
+		/// SET THE PATH BACK
 		if (oldPath != "") 
 		{
 			Sys.setCwd (oldPath);
 		}
+	}
 
-
-		var log : String->Void = function(logMessage : String) 
+	private function log(logMessage : String) : Void
+	{
+		if (logMessage == "")
+			return;
+		var message = '\x1b[1m$loggingPrefix\x1b[0m $logMessage';
+		if (logOnlyIfVerbose)
 		{
-			if (logMessage == "")
-				return;
-			var message = '\x1b[1m$loggingPrefix\x1b[0m ${logMessage}';
-			if (logOnlyIfVerbose)
-				LogHelper.info("", message);
-			else
-				LogHelper.info(message, "");
+			LogHelper.info("", message);
 		}
+		else
+		{
+			LogHelper.info(message, "");
+		}
+	}
 
+	private function startStdOutListener()
+	{
 		stdout = new BytesOutput();
 		totalStdout = new BytesOutput();
 		stdoutMutex = new Mutex();
@@ -140,7 +174,10 @@ class DuellProcess
 				stdoutFinished = true;
 			}
 		);
+	}
 
+	private function startStdErrListener()
+	{
 		stderr = new BytesOutput();
 		totalStderr = new BytesOutput();
 		stderrMutex = new Mutex();
@@ -179,10 +216,12 @@ class DuellProcess
 				stderrFinished = true;
 			}
 		);
+	}
 
+	private function startTimeoutListener()
+	{
 		if (timeout != 0)
 		{
-
 			neko.vm.Thread.create(
 				function ()
 				{
@@ -202,8 +241,6 @@ class DuellProcess
 				}
 			);
 		}
-
-		stdin = process.stdin;
 	}
 
 	public function blockUntilFinished()
@@ -238,6 +275,7 @@ class DuellProcess
 	{
 		if (stdout.length == 0)
 			return null;
+
 		stdoutMutex.acquire();
 
 		var bytes = stdout.getBytes();
@@ -268,6 +306,7 @@ class DuellProcess
 		if (!finished)
 			return null;
 
+		/// WAIT FOR THE STDOUT TO FINISH COMPLETELY
 		while(!stdoutFinished) {};
 
 		stdoutMutex.acquire();
@@ -284,6 +323,7 @@ class DuellProcess
 		if (!finished)
 			return null;
 
+		/// WAIT FOR THE STDERR TO FINISH COMPLETELY
 		while(!stderrFinished) {};
 
 		stderrMutex.acquire();
@@ -300,6 +340,7 @@ class DuellProcess
 		if (!finished)
 			return 0;
 
+		/// ONLY ONE CALL TO EXIT CODE IS POSSIBLE, SO WE CACHE IT.
 		if (exitCodeCache == null)
 		{
 			exitCodeCache = process.exitCode();
