@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-haxelib dev duell .
-
 rm -rf test
 mkdir test
 
