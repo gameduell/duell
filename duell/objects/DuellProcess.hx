@@ -18,7 +18,10 @@ typedef ProcessOptions =
 	?loggingPrefix : String, /// defaults to ""
 	?logOnlyIfVerbose : Bool, /// defaults to true
 	?systemCommand : Bool, /// defaults to false. 
-	?timeout : Float /// defaults to 0 (no timeout)
+	?timeout : Float, /// defaults to 0 (no timeout)
+	?block : Bool, /// defaults to false
+	?shutdownOnError : Bool, /// default to false, on timeout, exception or exitcode != 0
+	?processDocumentingName : String /// default to "", a simple name that is printed when something goes wrong
 }
 
 class DuellProcess
@@ -42,6 +45,7 @@ class DuellProcess
 	private var timeoutTicker : Bool;
 
 	/// EXIT VARS
+	private var exitCodeMutex : Mutex;
 	private var exitCodeCache : Null<Int> = null;
 	private var finished : Bool = false;
 	private var timedout : Bool = false;
@@ -56,6 +60,9 @@ class DuellProcess
 	private var loggingPrefix : String;
 	private var logOnlyIfVerbose : Bool;
 	private var timeout : Float;
+	private var block : Bool;
+	private var shutdownOnError : Bool;
+	private var processDocumentingName : String;
 	private var command : String;
 	private var args : Array<String>;
 
@@ -65,10 +72,15 @@ class DuellProcess
 		command = PathHelper.escape(comm);
 		this.args = args;
 
+		exitCodeMutex = new Mutex();
+
 		systemCommand = options != null && options.systemCommand != null ? options.systemCommand : false;
 		loggingPrefix = options != null && options.loggingPrefix != null ? options.loggingPrefix : "";
 		logOnlyIfVerbose = options != null && options.logOnlyIfVerbose != null ? options.logOnlyIfVerbose : true;
 		timeout = options != null && options.timeout != null ? options.timeout : 0.0;
+		block = options != null && options.block != null ? options.block : false;
+		shutdownOnError = options != null && options.shutdownOnError != null ? options.shutdownOnError : false;
+		processDocumentingName = options != null && options.processDocumentingName != null ? options.processDocumentingName : "";
 
 		/// CHECK FOR LOCAL COMMAND
 		if (!systemCommand && PlatformHelper.hostPlatform != Platform.WINDOWS)
@@ -117,6 +129,11 @@ class DuellProcess
 		if (oldPath != "") 
 		{
 			Sys.setCwd (oldPath);
+		}
+
+		if (block)
+		{
+			blockUntilFinished();
 		}
 	}
 
@@ -172,6 +189,9 @@ class DuellProcess
 				log(stdoutLineBuffer.getBytes().toString());
 				finished = true;
 				stdoutFinished = true;
+
+				/// checks for failure
+				exitCodeBlocking();
 			}
 		);
 	}
@@ -214,6 +234,9 @@ class DuellProcess
 				log(stderrLineBuffer.getBytes().toString());
 				finished = true;
 				stderrFinished = true;
+
+				/// checks for failure
+				exitCodeBlocking();
 			}
 		);
 	}
@@ -238,6 +261,9 @@ class DuellProcess
 						timeoutTicker = false;
 						Sys.sleep(timeout);
 					}
+
+					/// checks for failure
+					exitCodeBlocking();
 				}
 			);
 		}
@@ -245,17 +271,7 @@ class DuellProcess
 
 	public function blockUntilFinished()
 	{
-		try {
-			exitCodeCache = process.exitCode();
-		}
-		catch (e : Dynamic) {
-			exitCodeCache = -1;
-		}
-
-		/// WAIT FOR THE STDOUT TO FINISH COMPLETELY
-		while(!stdoutFinished) {};
-		/// WAIT FOR THE STDERR TO FINISH COMPLETELY
-		while(!stderrFinished) {};
+		exitCodeBlocking();
 
 		finished = true;
 	}
@@ -344,19 +360,54 @@ class DuellProcess
 	public function exitCode() : Int
 	{
 		if (!finished)
-			return 0;
+			throw "Duell Process exitCode() called without the process having ended. Please call blockUntilFinished, before retrieving the exitCode";
 
+		/// won't block because it finished
+		return exitCodeBlocking();
+	}
+
+	private function exitCodeBlocking() : Int
+	{
+		exitCodeMutex.acquire();
 		/// ONLY ONE CALL TO EXIT CODE IS POSSIBLE, SO WE CACHE IT.
 		if (exitCodeCache == null)
 		{
-			exitCodeCache = process.exitCode();
+			while(!finished) {}
+
+			if (timedout)
+				exitCodeCache = 1;
+			else
+				exitCodeCache = process.exitCode();
+
 
 			/// WAIT FOR THE STDOUT TO FINISH COMPLETELY
 			while(!stdoutFinished) {};
 			/// WAIT FOR THE STDERR TO FINISH COMPLETELY
 			while(!stderrFinished) {};
+
+			if (shutdownOnError && (timedout || exitCodeCache != 0))
+			{
+				var prefix = "";
+				if (processDocumentingName != "")
+				{
+					prefix = processDocumentingName + ": ";
+				}
+				var str = "";
+				if (timedout)
+				{
+					str = prefix + 'Process "$command ${args.join(" ")}" timed out.';
+				}
+				else
+				{
+					str = prefix + 'Process "$command ${args.join(" ")}" failed with exit code $exitCodeCache.';	
+				}
+
+				exitCodeMutex.release();
+				LogHelper.error(str, str, str);
+			}
 		}
-		
+		exitCodeMutex.release();
+
 		return exitCodeCache;
 	}
 

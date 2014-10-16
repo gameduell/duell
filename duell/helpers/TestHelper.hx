@@ -34,10 +34,9 @@ class TestHelper
 										{
 											systemCommand : true, 
 											timeout : timeout, 
-											loggingPrefix : "[TestListener]"
+											loggingPrefix : "[TestListener]",
+											block : true
 										});
-
-		testProcess.blockUntilFinished();
 
 		if (testProcess.exitCode() != 0)
 		{
@@ -54,8 +53,11 @@ class TestHelper
 		else
 		{
 			var bytes = testProcess.getCompleteStdout();
+
+			var testResults = "test results:\n" + bytes.toString();
+			LogHelper.info(testResults, "");
 			
-		    var fout = File.write(resultOutputPath, false );
+		    var fout = File.write(resultOutputPath, false);
 
 		    fout.write(bytes);
 
