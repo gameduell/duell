@@ -48,6 +48,8 @@ class DuellProcess
 	private var exitCodeMutex : Mutex;
 	private var exitCodeCache : Null<Int> = null;
 	private var finished : Bool = false;
+	private var killed : Bool = false;
+	private var closed : Bool = false;
 	private var timedout : Bool = false;
 	private var stdoutFinished : Bool = false;
 	private var stderrFinished : Bool = false;
@@ -165,7 +167,8 @@ class DuellProcess
 				{
 					while(true)
 					{
-						var str = process.stdout.readString(1);
+						var str = process.stdout.readString(1);	
+
 						stdoutMutex.acquire();
 						stdout.writeString(str);
 						totalStdout.writeString(str);
@@ -184,7 +187,11 @@ class DuellProcess
 					}
 				}
 				catch (e:Eof) {}
-				catch (e:Dynamic) {LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));}
+				catch (e:Dynamic) 
+				{
+					LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));
+				}
+
 
 				log(stdoutLineBuffer.getBytes().toString());
 				finished = true;
@@ -229,7 +236,10 @@ class DuellProcess
 					}
 				}
 				catch (e:Eof) {}
-				catch (e:Dynamic) {LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));}
+				catch (e:Dynamic) 
+				{
+					LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));
+				}
 
 				log(stderrLineBuffer.getBytes().toString());
 				finished = true;
@@ -272,20 +282,17 @@ class DuellProcess
 	public function blockUntilFinished()
 	{
 		exitCodeBlocking();
-
-		finished = true;
 	}
 	
-	public function close()
-	{
-		if(!finished)
-			process.close();
-	}
-
 	public function kill()
 	{
-		if(!finished)
+		if(!finished && !killed)
+		{
+			killed = true;
 			process.kill();
+			process.close();
+			exitCodeBlocking();
+		}
 	}
 
 	public function hasFinished() : Bool
@@ -374,16 +381,20 @@ class DuellProcess
 		{
 			while(!finished) {}
 
-			if (timedout)
+			/// WAIT FOR THE STDOUT TO FINISH COMPLETELY
+			while(!stdoutFinished) {};
+
+			/// WAIT FOR THE STDERR TO FINISH COMPLETELY
+			while(!stderrFinished) {};
+
+			if (killed)
+				exitCodeCache = 0;
+			else if (closed)
+				exitCodeCache = 0;
+			else if (timedout)
 				exitCodeCache = 1;
 			else
 				exitCodeCache = process.exitCode();
-
-
-			/// WAIT FOR THE STDOUT TO FINISH COMPLETELY
-			while(!stdoutFinished) {};
-			/// WAIT FOR THE STDERR TO FINISH COMPLETELY
-			while(!stderrFinished) {};
 
 			if (shutdownOnError && (timedout || exitCodeCache != 0))
 			{
