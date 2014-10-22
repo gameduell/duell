@@ -109,8 +109,8 @@ class CmdProcessor
 
         if (!isMissingSelfSetup)
         {
-            var duell = DuellLib.getDuellLib("duell");
-            if (duell.exists())
+            var duell = DuellLib.getDuellLib("duell", "master");
+            if (duell.isInstalled())
             {
                 if (duell.updateNeeded() == true)
                 {

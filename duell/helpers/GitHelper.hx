@@ -8,6 +8,8 @@ package duell.helpers;
 
 import duell.objects.DuellProcess;
 
+using StringTools;
+
 class GitHelper
 {
 	static public function setRemoteURL(path : String, remoteName : String, url : String) : Int
@@ -18,7 +20,8 @@ class GitHelper
                                         ["remote", "set-url", remoteName, url], 
                                         {
                                             systemCommand : true, 
-                                            loggingPrefix : "[Git]"
+                                            loggingPrefix : "[Git]",
+                                            block : true,
                                         });
         gitProcess.blockUntilFinished();
 
@@ -39,7 +42,8 @@ class GitHelper
                                         ["clone", gitURL, folder], 
                                         {
                                             systemCommand : true, 
-                                            loggingPrefix : "[Git]"
+                                            loggingPrefix : "[Git]",
+                                            block : true
                                         });
         gitProcess.blockUntilFinished();
 
@@ -54,7 +58,8 @@ class GitHelper
                                         ["pull"], 
                                         {
                                             systemCommand : true, 
-                                            loggingPrefix : "[Git]"
+                                            loggingPrefix : "[Git]",
+                                            block : true
                                         });
         gitProcess.blockUntilFinished();
 
@@ -71,22 +76,25 @@ class GitHelper
                                         ["remote", "update"], 
                                         {
                                             systemCommand : true,
-                                            loggingPrefix : "[Git]"
+                                            loggingPrefix : "[Git]",
+                                            block : true,
+                                            shutdownOnError : true
                                         });
-        gitProcess.blockUntilFinished();
 
         gitProcess = new DuellProcess(
                                         destination,
                                         "git", 
-                                        ["status", "-b", "master", "--porcelain"], 
+                                        ["status", "-b", "--porcelain"], 
                                         {
                                             systemCommand : true,
-                                            loggingPrefix : "[Git]"
+                                            loggingPrefix : "[Git]",
+                                            block : true,
+                                            shutdownOnError : true
                                         });
-        gitProcess.blockUntilFinished();
+
         var output = gitProcess.getCompleteStdout().toString();
 
-        if (output.indexOf("behind") != -1)
+        if (output.indexOf("[behind") != -1)
         {
             return true;
         }
@@ -94,5 +102,202 @@ class GitHelper
         {
             return false;
         }
+    }
+
+    static public function isRepoWithoutLocalChanges(destination : String) : Bool
+    {
+        var gitProcess = new DuellProcess(
+                                        destination,
+                                        "git", 
+                                        ["status", "-s", "--porcelain"], 
+                                        {
+                                            systemCommand : true,
+                                            loggingPrefix : "[Git]",
+                                            block : true,
+                                            shutdownOnError : true
+                                        });
+
+        var output = gitProcess.getCompleteStdout().toString();
+
+        var changesListStrings = output.split("\n");
+        var changesListArray = changesListStrings.map(function(str : String) : Array<String> return str.split(" "));
+        changesListArray = changesListArray.map(function(array : Array<String>) : Array<String> return array.map(function(str : String) return str.trim()));
+        changesListArray = changesListArray.map(function(array : Array<String>) : Array<String> return array.filter(function(str : String) return str != ""));
+        changesListArray = changesListArray.filter(function(array : Array<String>) : Bool return array.length > 0);
+
+        for (array in changesListArray)
+        {
+            if(array[0] != "??")
+                return false;
+        }
+
+        return true;
+    }
+
+    static public function fetch(destination : String)
+    {
+        new DuellProcess(
+                            destination,
+                            "git", 
+                            ["fetch"], 
+                            {
+                                systemCommand : true,
+                                loggingPrefix : "[Git]",
+                                block : true,
+                                shutdownOnError : true
+                            });
+    }
+
+    static public function getCurrentBranch(destination : String) : String
+    {
+        var gitProcess = new DuellProcess(
+                                        destination,
+                                        "git", 
+                                        ["rev-parse", "--verify", "--abbrev-ref", "HEAD"], 
+                                        {
+                                            systemCommand : true,
+                                            loggingPrefix : "[Git]",
+                                            block : true,
+                                            shutdownOnError : true
+                                        });
+
+        var output = gitProcess.getCompleteStdout().toString();
+
+        return output.split("\n")[0];
+    }
+
+    static public function getCurrentCommit(destination : String) : String
+    {
+        var gitProcess = new DuellProcess(
+                                        destination,
+                                        "git", 
+                                        ["rev-parse", "--verify", "HEAD"], 
+                                        {
+                                            systemCommand : true,
+                                            loggingPrefix : "[Git]",
+                                            block : true,
+                                            shutdownOnError : true
+                                        });
+
+        var output = gitProcess.getCompleteStdout().toString();
+
+        return output.split("\n")[0];
+    }
+
+    static public function getCommitForTag(destination : String, tag : String) : String
+    {
+        var gitProcess = new DuellProcess(
+                                        destination,
+                                        "git", 
+                                        ["rev-parse", tag + "~0"], 
+                                        {
+                                            systemCommand : true,
+                                            loggingPrefix : "[Git]",
+                                            block : true,
+                                            shutdownOnError : true
+                                        });
+
+        var output = gitProcess.getCompleteStdout().toString();
+
+        return output.split("\n")[0];
+    }
+
+    static public function listBranches(destination : String) : Array<String>
+    {
+        var gitProcess = new DuellProcess(
+                                        destination,
+                                        "git", 
+                                        ["branch", "-a"], 
+                                        {
+                                            systemCommand : true,
+                                            loggingPrefix : "[Git]",
+                                            block : true,
+                                            shutdownOnError : true
+                                        });
+
+        var outputAllBranches = gitProcess.getCompleteStdout().toString();
+
+        var outputList : Array<String> = outputAllBranches.split("\n");
+        var returnedList : Array<String> = [];
+
+        for (line in outputList)
+        {
+            var branch = null;
+            var remote = null;
+
+            if (line.charAt(0) == "*")
+                line = line.substr(1);
+
+            line = line.trim();
+
+            if (line.startsWith("remotes/"))
+            {
+                line = line.substr("remotes/".length);
+                remote = line.substr(0, line.indexOf("/"));
+
+                branch = line.substr(line.indexOf("/") + 1);
+
+                if (returnedList.indexOf(branch) == -1)
+                    returnedList.push(branch);
+            }
+            else
+            {
+                branch = line;
+                returnedList.push(branch);
+            }
+        }
+
+        return returnedList;
+    }
+
+
+    static public function listTags(destination : String) : Array<String>
+    {
+        var gitProcess = new DuellProcess(
+                                        destination,
+                                        "git", 
+                                        ["tag"], 
+                                        {
+                                            systemCommand : true,
+                                            loggingPrefix : "[Git]",
+                                            block : true,
+                                            shutdownOnError : true
+                                        });
+
+        var output = gitProcess.getCompleteStdout().toString();
+
+        return output.split("\n");
+    }
+
+    static public function checkoutBranch(destination : String, branch : String) : Int
+    {
+        var gitProcess = new DuellProcess(
+                                        destination,
+                                        "git", 
+                                        ["checkout", branch], 
+                                        {
+                                            systemCommand : true,
+                                            loggingPrefix : "[Git]",
+                                            block : true,
+                                            shutdownOnError : true
+                                        });
+
+        return gitProcess.exitCode();
+    }
+
+    static public function checkoutCommit(destination : String, commit : String) : Int
+    {
+        var gitProcess = new DuellProcess(
+                                        destination,
+                                        "git", 
+                                        ["checkout", commit], 
+                                        {
+                                            systemCommand : true,
+                                            loggingPrefix : "[Git]",
+                                            block : true,
+                                            shutdownOnError : true
+                                        });
+
+        return gitProcess.exitCode();
     }
 }

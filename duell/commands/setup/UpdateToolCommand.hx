@@ -53,7 +53,7 @@ class UpdateToolCommand implements IGDCommand
     	catch(error : Dynamic)
     	{
     		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-    		LogHelper.error("An error occurred, do you need admin permissions to run the script? Check if you have permissions to write on the paths you specify. Error:" + error);
+    		LogHelper.error(error);
     	}
 	    
 	    return "success";

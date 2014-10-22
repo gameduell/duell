@@ -52,7 +52,7 @@ class EnvironmentSetupCommand implements IGDCommand
         catch(error : Dynamic)
         {
             LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-            LogHelper.error("An error occurred. Error: " + error);
+            LogHelper.error(error);
         }
 
         return "success";
@@ -74,7 +74,7 @@ class EnvironmentSetupCommand implements IGDCommand
 
         setupLib = DuellLib.getDuellLib("duellsetup" + platformName);
 
-        if (setupLib.exists())
+        if (setupLib.isInstalled())
         {
             if (setupLib.updateNeeded() == true)
             {

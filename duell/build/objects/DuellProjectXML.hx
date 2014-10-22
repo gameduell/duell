@@ -147,12 +147,6 @@ class DuellProjectXML
 
 				var duellLib = DuellLib.getDuellLib(duellLibDef.name, duellLibDef.version);
 
-				if (!duellLib.exists())
-				{ 
-					/// should never happen because the build command checks this before.
-					continue;
-				}
-
 				var xmlPath = duellLib.getPath() + '/' + DuellDefines.LIB_CONFIG_FILENAME;
 
 				if (!FileSystem.exists(xmlPath))
@@ -227,7 +221,6 @@ class DuellProjectXML
 		{
 			version = "";
 		}
-
 
 		if (name != null && name != '')
 		{

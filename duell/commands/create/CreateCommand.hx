@@ -49,7 +49,7 @@ class CreateCommand implements IGDCommand
         catch(error : Dynamic)
         {
             LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-            LogHelper.error("An error occurred. Error: " + error);
+            LogHelper.error(error);
         }
 
         return "success";
@@ -71,7 +71,7 @@ class CreateCommand implements IGDCommand
 
         setupLib = DuellLib.getDuellLib("duellcreate" + pluginName);
 
-        if (setupLib.exists())
+        if (setupLib.isInstalled())
         {
             if (setupLib.updateNeeded() == true)
             {

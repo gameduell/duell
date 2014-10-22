@@ -54,7 +54,7 @@ class BuildMain
     	catch(error : Dynamic)
     	{
     		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-    		LogHelper.error("An error occurred. Error: " + error);
+    		LogHelper.error(error);
     	}
     }
 }

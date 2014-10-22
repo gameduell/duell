@@ -85,7 +85,7 @@ class BuildCommand implements IGDCommand
     	catch(error : Dynamic)
     	{
     		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-    		LogHelper.error("An error occurred. Error: " + error);
+    		LogHelper.error(error);
     	}
 	    
 	    return "success";
@@ -115,7 +115,7 @@ class BuildCommand implements IGDCommand
 
     	buildLib = DuellLib.getDuellLib("duellbuild" + platformName);
 
-    	if (buildLib.exists())
+    	if (buildLib.isInstalled())
     	{
             if (buildLib.updateNeeded() == true)
             {
@@ -170,6 +170,7 @@ class BuildCommand implements IGDCommand
 
 		for (duellLib in libList.duellLibs)
 		{
+			trace(duellLib.name + " " + duellLib.version + " " + duellLib.actualVersion);
 			buildArguments.push("-cp");
 			buildArguments.push(duellLib.getPath());
 
@@ -216,7 +217,7 @@ class BuildCommand implements IGDCommand
 
 		for (duellLib in libList.duellLibs)
 		{
-			parseDependenciesOfDuelllib(duellLib);
+			checkIfInstalledAndParseDependenciesOfDuelllib(duellLib);
 		}
 	}
 
@@ -224,6 +225,7 @@ class BuildCommand implements IGDCommand
 	{
 		var xml = new Fast(Xml.parse(File.getContent(path)).firstElement());
 		currentXMLPath.push(Path.directory(path));
+
 
 		for (element in xml.elements) 
 		{
@@ -275,31 +277,49 @@ class BuildCommand implements IGDCommand
 				case 'duelllib':
 					var name = null;
 					var version = null;
-					if(element.has.name)
+
+					if (!element.has.version || element.att.version == "")
 					{
-						name = element.att.name;
+						throw "DuellLib dependencies must always specify a version. File: " + path;
 					}
 
-					if(element.has.version)
-					{
-						version = element.att.version;
-					}
+					name = element.att.name;
+
+					version = element.att.version;
 
 					if (name != null && name != '')
 					{
-						var duellLib = DuellLib.getDuellLib(name, version);
+						var newDuellLib = DuellLib.getDuellLib(name, version);
 
-						if (libList.duellLibs.indexOf(duellLib) == -1)
+						if (libList.duellLibs.indexOf(newDuellLib) == -1)
 						{
-							for (duellLib in libList.duellLibs)
+							var found = false;
+							for (currentDuellLib in libList.duellLibs)
 							{
-								if(duellLib.name == name && duellLib.version != version) /// version doesn't need to be checked
+								if(currentDuellLib.name == newDuellLib.name)
 								{
-									LogHelper.error('Tried to compile with two versions ($version and ${duellLib.version}) of the same library $name');
+									found = true;
+
+									if (currentDuellLib.version != newDuellLib.version)
+									{
+										if (!currentDuellLib.resolveConflict(newDuellLib))
+										{
+											LogHelper.error('Tried to compile with two incompatible versions "${newDuellLib.version}" and "${currentDuellLib.version}" of the same library $name');
+										}
+
+										LogHelper.info('Library $name had a version conflict with version "${newDuellLib.version}" and "${currentDuellLib.version}". Resolving to version "${currentDuellLib.version}".');
+
+										/// invalidate parsed cache
+										dependenciesAlreadyParsed.remove(currentDuellLib);
+									}
 								}
 							}
 
-							libList.duellLibs.push(duellLib);
+							if (!found)
+							{	
+								libList.duellLibs.push(newDuellLib);
+							}
+
 						}
 					}
 
@@ -328,28 +348,15 @@ class BuildCommand implements IGDCommand
 	}
 
 	private var dependenciesAlreadyParsed = new Array<DuellLib>();
-	public function parseDependenciesOfDuelllib(duellLib : DuellLib)
+	public function checkIfInstalledAndParseDependenciesOfDuelllib(duellLib : DuellLib)
 	{
 		if (dependenciesAlreadyParsed.indexOf(duellLib) != -1)
 			return;
 
 		dependenciesAlreadyParsed.push(duellLib);
 
-		if (duellLib.exists())
+		if (!duellLib.isInstalled())
 		{
-            if (duellLib.updateNeeded() == true)
-            {
-                var libraryName:String = duellLib.name;
-                var answer = AskHelper.askYesOrNo('The library of $libraryName is not up to date on the master branch. Would you like to try to update it?');
-
-                if(answer)
-                {
-                    duellLib.update();
-                }
-            }
-        }
-        else
-        {
 			var answer = AskHelper.askYesOrNo('DuellLib ${duellLib.name} is missing, would you like to install it?');
 
 			if (answer)
@@ -357,6 +364,86 @@ class BuildCommand implements IGDCommand
 			else
 				LogHelper.error('Cannot continue with an uninstalled lib.');
 		}
+
+		if (!duellLib.isPathValid())
+		{
+			LogHelper.error('DuellLib ${duellLib.name} has an invalid path - ${duellLib.getPath()} - check your "haxelib list"');
+		}
+
+		if (!duellLib.isRepoOnCorrectBranch())
+		{
+			if (!duellLib.isRepoWithoutLocalChanges())
+			{
+				LogHelper.error(
+					'The library "${duellLib.name}"" is not on the correct version "${duellLib.version}", ' +
+					'and it contains local changes or new files, so we can\'t shift automatically. ' +
+					'Please check your repository and save the changes, or set the version to be the branch you are on.');
+			}
+
+			if (!duellLib.isPossibleToShiftToTheCorrectBranch())
+			{
+            	var answer = AskHelper.askYesOrNo('The library of ${duellLib.name} does not have the branch for version ${duellLib.version}. Would you like to try to update it?');
+
+	            if(answer)
+	            {
+	                duellLib.update();
+
+					if (!duellLib.isPossibleToShiftToTheCorrectBranch())
+					{
+						LogHelper.error('After the update, the version ${duellLib.version} could not be found.');
+					}
+	            }
+	            else
+	            {
+					LogHelper.error('Cannot continue with an unupdated lib. If you do not want to update please for a specific branch with "-overridebranch <branch>".');
+	            }
+			}
+
+			duellLib.shiftRepoToCorrectBranch();
+		}
+
+		if (!duellLib.isRepoOnCorrectCommit())
+		{
+			if (!duellLib.isRepoWithoutLocalChanges())
+			{
+				LogHelper.error(
+					'The library "${duellLib.name}"" is not on the correct version "${duellLib.version}", ' +
+					'and it contains local changes or new files, so we can\'t shift automatically. ' +
+					'Please check your repository and save the changes, or set the version to be the branch you are on.');
+			}
+
+			if (!duellLib.isPossibleToShiftToTheCorrectCommit())
+			{
+            	var answer = AskHelper.askYesOrNo('The library of ${duellLib.name} does not have the version ${duellLib.version}. Would you like to try to update it?');
+
+	            if(answer)
+	            {
+	                duellLib.update();
+
+					if (!duellLib.isPossibleToShiftToTheCorrectCommit())
+					{
+						LogHelper.error('After the update, the version ${duellLib.version} could not be found.');
+					}
+	            }
+	            else
+	            {
+					LogHelper.error('Cannot continue with an unupdated lib. If you do not want to update please for a specific branch with "-overridebranch <branch>".');
+	            }
+			}
+
+			duellLib.shiftRepoToCorrectCommit();
+		}
+
+        if (duellLib.updateNeeded() == true)
+        {
+            var libraryName:String = duellLib.name;
+            var answer = AskHelper.askYesOrNo('The library of $libraryName is not up to date on the branch. Would you like to try to update it?');
+
+            if(answer)
+            {
+                duellLib.update();
+            }
+        }
 
 		if (!FileSystem.exists(duellLib.getPath() + '/' + DuellDefines.LIB_CONFIG_FILENAME))
 		{
