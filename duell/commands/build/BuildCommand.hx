@@ -71,9 +71,16 @@ class BuildCommand implements IGDCommand
 
 	    	determineAndValidateDependenciesAndDefines();
 
+	    	LogHelper.info("\x1b[2m------");
+			LogHelper.info("", "Dependencies:");
+	    	LogHelper.info("------\x1b[0m");
+			for (duellLib in libList.duellLibs)
+			{
+				LogHelper.info("", "\x1b[1m" + duellLib.name + "\x1b[0m - requested: " + duellLib.version + " - actual: " + duellLib.actualVersion);
+			}
+	    	LogHelper.info("\x1b[2m------\x1b[0m");
+
 	    	LogHelper.println("");
-
-
 
 	    	buildNewExecutableWithBuildLibAndDependencies();
 
@@ -170,7 +177,6 @@ class BuildCommand implements IGDCommand
 
 		for (duellLib in libList.duellLibs)
 		{
-			trace(duellLib.name + " " + duellLib.version + " " + duellLib.actualVersion);
 			buildArguments.push("-cp");
 			buildArguments.push(duellLib.getPath());
 
