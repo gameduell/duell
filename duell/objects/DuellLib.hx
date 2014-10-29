@@ -39,6 +39,7 @@ class DuellLib
 	private var commitForVersionCache : String = null;
 	private var branchesInRepoCache : Array<String> = null;
 	private var compatibleTagCache : String = null;
+	private var haxelibPathOutputCache : String = null;
 
 	private var versionType : VersionType = null;
 
@@ -137,11 +138,12 @@ class DuellLib
 		if (existsCache != null && existsCache) /// if it didn't exist before, we always try again.
 			return existsCache;
 
-		var output = '';
-	
-		output = ProcessHelper.runProcess(Sys.getEnv ('HAXEPATH'), 'haxelib', ['path', name], true, true, true);
+		if (haxelibPathOutputCache == null)
+		{
+			haxelibPathOutputCache = ProcessHelper.runProcess(Sys.getEnv ('HAXEPATH'), 'haxelib', ['path', name], true, true, true);
+		}
 
-		if (output.indexOf('is not installed') != -1)
+		if (haxelibPathOutputCache.indexOf('is not installed') != -1)
 			existsCache = false;
  		else 
  			existsCache = true;
@@ -173,8 +175,12 @@ class DuellLib
 		if(pathCache != null)
 			return pathCache;
 
-		var output = ProcessHelper.runProcess(Sys.getEnv ('HAXEPATH'), 'haxelib', ['path', name], true, true, true);
-		var lines = output.split ('\n');
+		if (haxelibPathOutputCache == null)
+		{
+			haxelibPathOutputCache = ProcessHelper.runProcess(Sys.getEnv ('HAXEPATH'), 'haxelib', ['path', name], true, true, true);
+		}
+
+		var lines = haxelibPathOutputCache.split ('\n');
 			
 		for (i in 1...lines.length) {
 			
@@ -405,6 +411,8 @@ class DuellLib
 
     public function install()
     {
+    	haxelibPathOutputCache = null;
+
         var duellLibList = DuellLibListHelper.getDuellLibReferenceList();
 
         if (duellLibList.exists(name))
