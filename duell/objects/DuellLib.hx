@@ -381,9 +381,6 @@ class DuellLib
 
     public function updateNeeded() : Bool
     {
-    	if (Arguments.isSet("-noupdate"))
-    		return false;
-
     	if (!isRepoOnCorrectCommit())
     	{
     		throw "updateNeeded called on a bad state. This should never happen, contact the developers.";

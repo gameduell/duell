@@ -11,6 +11,7 @@ import duell.helpers.LogHelper;
 import duell.commands.IGDCommand;
 
 import duell.objects.Arguments;
+import haxe.io.Path;
 class EnvironmentSetupCommand implements IGDCommand
 {
 
@@ -116,6 +117,9 @@ class EnvironmentSetupCommand implements IGDCommand
 
         buildArguments.push("-D");
         buildArguments.push("plugin");
+
+        buildArguments.push("-resource");
+        buildArguments.push(Path.join([DuellLib.getDuellLib("duell").getPath(), Arguments.CONFIG_XML_FILE]) + "@generalArguments");
 
         PathHelper.mkdir(outputFolder);
 

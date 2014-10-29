@@ -145,7 +145,8 @@ class Arguments
 			{
 				var path = duellLib.getPath();
 				path = Path.join([path, PLUGIN_XML_FILE]);
-				parsePlugin(File.getContent(path));
+				if (sys.FileSystem.exists(path))
+					parsePlugin(File.getContent(path));
 			}
 		}
 
@@ -328,13 +329,13 @@ class Arguments
 
 	public static function isSet(argument: String): Bool
 	{
-		if (generalArgumentSpecs.exists(argument))
+		if (generalArgumentSpecs != null && generalArgumentSpecs.exists(argument))
 			return generalArgumentSpecs.get(argument).set;
 
-		if (selectedCommand != null && selectedCommand.arguments.exists(argument))
+		if (selectedCommand != null && selectedCommand.arguments != null && selectedCommand.arguments.exists(argument))
 			return selectedCommand.arguments.get(argument).set;
 
-		if (pluginArgumentSpecs.exists(argument))
+		if (pluginArgumentSpecs != null && pluginArgumentSpecs.exists(argument))
 			return pluginArgumentSpecs.get(argument).set;
 
 		throw "Unknown argument " + argument;
@@ -342,13 +343,13 @@ class Arguments
 
 	public static function get(argument: String): Dynamic
 	{
-		if (generalArgumentSpecs.exists(argument))
+		if (generalArgumentSpecs != null && generalArgumentSpecs.exists(argument))
 			return generalArgumentSpecs.get(argument).value;
 
-		if (selectedCommand != null && selectedCommand.arguments.exists(argument))
+		if (selectedCommand != null && selectedCommand.arguments != null && selectedCommand.arguments.exists(argument))
 			return selectedCommand.arguments.get(argument).value;
 
-		if (pluginArgumentSpecs.exists(argument))
+		if (pluginArgumentSpecs != null && pluginArgumentSpecs.exists(argument))
 			return pluginArgumentSpecs.get(argument).value;
 
 		throw "Unknown argument " + argument;

@@ -29,6 +29,18 @@
         </documentation>
     </arg>
 
+    <arg name="-fast" type="void" >
+        <documentation>
+            This is used in the build command. Use this command if you are just iterating haxe code, and want to quickly build and run the app. In order to be able to use it, just build and run once normally on any platform, and then run with "-fast" afterwards.
+        </documentation>
+    </arg>
+
+    <arg name="-overridebranch" type="string">
+        <documentation>
+            This argument is used in the versioning. Check https://confluence.gameduell.de/display/SGF/Duell+Tool+versioning
+        </documentation>
+    </arg>
+
 	<command name="create" class="CreateCommand" hasPlugin="true">
     	<documentation> 
     		Can be used for creating a default project in current folder like: duell create emptyProject.
@@ -82,24 +94,6 @@
     				Launches a server listening to a configured port and then runs the application. It expects that a result of the app is posted to the port, e.g. Unitest results. After the results come in, the application ends. To create a unittest project use "duell create unitTestProject".
     			</documentation>
     		</arg>
-
-    		<arg name="-fast" type="void" >
-    			<documentation>
-    				Use this command if you are just iterating haxe code, and want to quickly build and run the app. In order to be able to use it, just build and run once normally on any platform, and then run with "-fast" afterwards.
-    			</documentation>
-    		</arg>
-
-            <arg name="-overridebranch" type="string">
-                <documentation>
-                    This argument is used in the versioning. Check https://confluence.gameduell.de/display/SGF/Duell+Tool+versioning
-                </documentation>
-            </arg>
-
-            <arg name="-noupdate" type="void">
-                <documentation>
-                    If the versioning system resolves a library to be a branch which is out of date locally, then the tool will download the update automatically. Use this argument to disable this.
-                </documentation>
-            </arg>
 
     	</args>
     </command>

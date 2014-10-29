@@ -6,10 +6,10 @@ class SetupMain
 {
     public static function main()
     {
-        var args = Sys.args();
+    	duell.objects.Arguments.validateArguments();
 
         var environment = new EnvironmentSetup();
-        environment.setup(args);
+        environment.setup();
     }
 
 }
