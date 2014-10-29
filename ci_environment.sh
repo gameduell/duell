@@ -6,7 +6,7 @@ rm -rf ~/.duell
 haxelib setup ~/.duell/haxelib
 
 expect -c "
-spawn neko run.n -verbose  
+spawn neko run.n self_setup -verbose  
 set timeout -1
 
 expect \"You are missing the initial setup.\"
