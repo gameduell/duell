@@ -7,6 +7,7 @@
 package duell.helpers;
 
 import duell.helpers.PlatformHelper;
+import duell.objects.Arguments;
 
 import neko.Lib;
 import haxe.io.Bytes;
@@ -14,13 +15,34 @@ import sys.io.Process;
 
 class LogHelper 
 {		
-	public static var enableColor : Bool = Sys.args().indexOf("-nocolor") == -1;
-	public static var mute : Bool = Sys.args().indexOf("-mute") != -1;
-	public static var verbose : Bool = Sys.args().indexOf("-verbose") != -1;
+	public static var enableColor(get, null): Bool;
+	public static var mute(get, null): Bool;
+	public static var verbose(get, null): Bool;
 	
 	private static var colorCodes : EReg = ~/\x1b\[[^m]+m/g;
 	private static var colorSupported : Null<Bool>;
 	private static var sentWarnings : Map<String, Bool> = new Map<String, Bool>();
+
+	public static inline var RED = "\x1b[31;1m";
+	public static inline var YELLOW = "\x1b[33;1m";
+	public static inline var NORMAL = "\x1b[0m";
+	public static inline var BOLD = "\x1b[30;1m";
+	public static inline var UNDERLINE = "\x1b[30;4m";
+
+	public static function get_enableColor(): Bool
+	{
+		return Arguments.isSet("-nocolor");
+	}
+
+	public static function get_mute(): Bool
+	{
+		return Arguments.isSet("-mute");
+	}
+
+	public static function get_verbose(): Bool
+	{
+		return Arguments.isSet("-verbose");
+	}
 	
 	public static function error(message : String, verboseMessage : String = "", e : Dynamic = null) : Void 
 	{	

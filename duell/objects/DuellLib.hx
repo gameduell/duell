@@ -12,6 +12,8 @@ import duell.helpers.DuellLibListHelper;
 import duell.helpers.GitHelper;
 import duell.objects.SemVer;
 
+import duell.objects.Arguments;
+
 import sys.FileSystem;
 
 using StringTools;
@@ -56,10 +58,9 @@ class DuellLib
 
 		if (overrideBranch == null)
 		{
-			var overrideBranchIndex = Sys.args().indexOf("-overridebranch");
-			if (overrideBranchIndex != -1 && overrideBranchIndex + 1 < Sys.args().length)
+			if (Arguments.isSet("-overridebranch"))
 			{
-				overrideBranch = Sys.args()[overrideBranchIndex + 1];
+				overrideBranch = Arguments.get("-overridebranch");
 
 			}
 			else
@@ -361,6 +362,9 @@ class DuellLib
 
 	public function get_actualVersion() : String
 	{
+		if (Arguments.isSet("-ignoreversioning"))
+			return "local";
+
 		switch (getVersionType())
 		{
 			case (Version):
@@ -377,7 +381,7 @@ class DuellLib
 
     public function updateNeeded() : Bool
     {
-    	if (Sys.args().indexOf("-noupdate") != -1)
+    	if (Arguments.isSet("-noupdate"))
     		return false;
 
     	if (!isRepoOnCorrectCommit())

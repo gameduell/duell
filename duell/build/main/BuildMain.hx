@@ -10,6 +10,9 @@ import haxe.CallStack;
 import duell.build.plugin.platform.PlatformBuild;
 
 import duell.helpers.LogHelper;
+
+import duell.objects.Arguments;
+
 import duell.helpers.DuellConfigHelper;
 import duell.objects.DuellConfigJSON;
 
@@ -17,8 +20,9 @@ class BuildMain
 {
     public static function main()
     {
+        Arguments.validateArguments();
 		try 
-		{
+        {
 	 		var build = new PlatformBuild();
             var pluginHelper : LibraryPluginHelper = new LibraryPluginHelper();
 
@@ -32,24 +36,42 @@ class BuildMain
 		        }
 	 		}
 
+            if (Arguments.isSet("-fast"))
+            {
+                pluginHelper.fast();
+                build.fast();
+                return;
+            }
+
             build.parse();
+
             pluginHelper.resolveLibraryPlugins();
             pluginHelper.postParse();
 
-            build.prepareBuild();
+            if (!Arguments.isSet("-noprebuild"))
+            {
+                build.prepareBuild();
+            }
 
-            pluginHelper.preBuild();
-            build.build();
-            pluginHelper.postBuild();
+            if (!Arguments.isSet("-nobuild"))
+            {
+                pluginHelper.preBuild();
+                build.build();
+                pluginHelper.postBuild();
+            }
 
-	 		if (Sys.args().indexOf("-run") != -1)
-	 		{
-	 			build.run();
-	 		} 
-            else if (Sys.args().indexOf("-test") != -1)
+            if (Arguments.isSet("-publish"))
+            {
+                build.publish();
+            }
+            else if (Arguments.isSet("-test"))
             {
                 build.test();
             }
+            else if (!Arguments.isSet("-norun"))
+	 		{
+	 			build.run();
+	 		}
 		}
     	catch(error : Dynamic)
     	{
@@ -113,6 +135,18 @@ class LibraryPluginHelper
         for (element in pluginArray)
         {
             var parseFunction : Dynamic = Reflect.field(element, "postBuild");
+            if (parseFunction != null)
+            {
+                Reflect.callMethod(element, parseFunction, []);
+            }
+        }
+    }
+
+    public function fast()
+    {
+        for (element in pluginArray)
+        {
+            var parseFunction : Dynamic = Reflect.field(element, "fast");
             if (parseFunction != null)
             {
                 Reflect.callMethod(element, parseFunction, []);

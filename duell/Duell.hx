@@ -1,7 +1,19 @@
 package duell;
 
-import duell.processor.CmdProcessor;
 import duell.helpers.LogHelper;
+
+import duell.objects.Arguments;
+
+import duell.helpers.DuellConfigHelper;
+import duell.objects.DuellConfigJSON;
+import duell.helpers.AskHelper;
+import duell.objects.DuellLib;
+
+import duell.commands.BuildCommand;
+import duell.commands.CreateCommand;
+import duell.commands.EnvironmentSetupCommand;
+import duell.commands.ToolSetupCommand;
+
 
 
 /**
@@ -11,21 +23,15 @@ import duell.helpers.LogHelper;
  */
 class Duell 
 {
-    public static var VERSION = "0.4.0";
-
-    /** **/
-    private var processor:CmdProcessor;
-
+    public static var VERSION = "1.0.1";
 
     /**start the interpreter **/
     public static function main()
     {
-        var interpreter = new Duell();
-        interpreter.run();
+        new Duell().run();
     }
     public function new()
     {
-        processor = new CmdProcessor();
     }
 
     /**
@@ -34,46 +40,67 @@ class Duell
     **/
     public function run()
     {
-        var commandAndArgs = parseArgumentsAndGetCommand();
+        if (!Arguments.validateArguments()) 
+            return;
+
+        /// check for missing initial setup
+        var isMissingSelfSetup = false;
+
+        if (!sys.FileSystem.exists(DuellConfigHelper.getDuellConfigFileLocation()))
+        {
+            isMissingSelfSetup = true;
+        }
+        else
+        {
+            var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+
+            if (duellConfig.setupsCompleted.indexOf("self") == -1)
+            {
+                isMissingSelfSetup = true;
+            }
+        }
+
+        if (isMissingSelfSetup)
+        {
+            var doSetup = AskHelper.askYesOrNo('You are missing the initial setup. Do you want to do it? ("self_setup" command)');
+
+            if (!doSetup)
+            {
+                return;
+            }
+        }
+
 
         printBanner();
 
-        try
+        if (!isMissingSelfSetup && !Arguments.isSet("-fast") && !Arguments.isSet("-ignoreversioning"))
         {
-            var ret = processor.process(commandAndArgs.command, commandAndArgs.args);
-
-            if (ret != null)
-                LogHelper.println(ret + "\n");
-        }
-        catch (ex:CmdError)
-        {
-            LogHelper.error("Unknown Command");
-        }
-    }
-
-    private function parseArgumentsAndGetCommand() : {command : String, args : Array<String>}
-    {
-        var args = Sys.args();
-
-        if(Sys.getEnv("HAXELIB_RUN") == "1")
-        {
-            Sys.setCwd(args.pop());
-        }
-
-        var command = "";
-
-        args = args.filter(function(arg) 
-        {
-            if(arg.charAt(0) != "-" && command == "")
+            var duell = DuellLib.getDuellLib("duell");
+            if (duell.isInstalled())
             {
-                command = arg;
-                return false;
+                if (duell.updateNeeded() == true)
+                {
+                    var answer = AskHelper.askYesOrNo('The library of the duell tool is not up to date on the master branch. Would you like to try to update it?');
+
+                    if(answer)
+                    {
+                        duell.update();
+                    }
+                }
             }
+        }
 
-            return true;
-        });
-
-        return {command:command, args:args};
+        if (isMissingSelfSetup)
+        {
+            new ToolSetupCommand().execute();
+        }
+        else
+        {
+            var currentTime = Date.now().getTime();
+            Arguments.getSelectedCommand().commandHandler.execute();
+            LogHelper.println(' Time passed '+((Date.now().getTime()-currentTime)/1000)+' sec for command "${Arguments.getSelectedCommand().name}"');
+        }
+        return;
     }
 
     private function printBanner()

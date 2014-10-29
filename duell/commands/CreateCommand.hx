@@ -1,4 +1,4 @@
-package duell.commands.create;
+package duell.commands;
 
 import duell.helpers.ProcessHelper;
 import duell.helpers.PathHelper;
@@ -8,24 +8,15 @@ import haxe.CallStack;
 import duell.helpers.LogHelper;
 import duell.commands.IGDCommand;
 
+import duell.objects.Arguments;
 class CreateCommand implements IGDCommand
 {
-    public static var helpString : String = '   \x1b[1mcreate <plugin_name>\x1b[0m\n' +
-                                            '\n' +
-                                            'Generic running of plugins from duell libs. \n' +
-                                            'Can be used for creating a default project in current folder like: duell create emptyProject . \n';
-
     var setupLib : DuellLib = null;
-    var arguments : Array<String>;
 
-    public function new()
+    public function new() {}
+
+    public function execute() : String
     {
-
-    }
-
-    public function execute(cmdStr : String, args : Array<String>) : String
-    {
-        arguments = args;
 
         try
         {
@@ -35,7 +26,7 @@ class CreateCommand implements IGDCommand
             LogHelper.info("------\x1b[0m");
             LogHelper.info("");
 
-            determineDuellLibraryFromArguments(args);
+            determineDuellLibraryFromArguments();
 
             LogHelper.println("");
 
@@ -55,14 +46,9 @@ class CreateCommand implements IGDCommand
         return "success";
     }
 
-    private function determineDuellLibraryFromArguments(args : Array<String>)
+    private function determineDuellLibraryFromArguments()
     {
-        if (args.length == 0)
-        {
-            LogHelper.error("Please specify a plugin as a parameter. \"duell create <plugin_name>\". (helloWorld, emptyProject, help, ...)");
-        }
-
-        var pluginName = args[0];
+        var pluginName = Arguments.getSelectedPlugin();
 
         var pluginNameCorrectnessCheck = ~/^[A-Za-z0-9]+$/;
 
@@ -122,6 +108,9 @@ class CreateCommand implements IGDCommand
         buildArguments.push("-cp");
         buildArguments.push(setupLib.getPath());
 
+        buildArguments.push("-D");
+        buildArguments.push("plugin");
+
         PathHelper.mkdir(outputFolder);
 
         var result = duell.helpers.ProcessHelper.runCommand("", "haxe", buildArguments);
@@ -130,7 +119,7 @@ class CreateCommand implements IGDCommand
             LogHelper.error("An error occured while compiling the plugin");
 
         var runArguments = [outputRun];
-        runArguments.concat(arguments);
+        runArguments = runArguments.concat(Arguments.getRawArguments());
 
         result = duell.helpers.ProcessHelper.runCommand("", "neko", runArguments);
 

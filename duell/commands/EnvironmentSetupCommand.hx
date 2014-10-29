@@ -1,4 +1,4 @@
-package duell.commands.setup;
+package duell.commands;
 
 import duell.helpers.ProcessHelper;
 import duell.helpers.PathHelper;
@@ -10,26 +10,20 @@ import haxe.CallStack;
 import duell.helpers.LogHelper;
 import duell.commands.IGDCommand;
 
+import duell.objects.Arguments;
 class EnvironmentSetupCommand implements IGDCommand
 {
-    public static var helpString : String = '   \x1b[1msetup <platform>\x1b[0m\n' +
-                                            '\n' +
-                                            'Setup for the specified environment.\n' +
-                                            '(mac, android, flash)\n';
 
     var setupLib : DuellLib = null;
     var platformName : String;
-    var arguments : Array<String>;
 
     public function new()
     {
 
     }
 
-    public function execute(cmdStr : String, args : Array<String>) : String
+    public function execute() : String
     {
-        arguments = args;
-
         try
         {
             LogHelper.info("");
@@ -38,7 +32,7 @@ class EnvironmentSetupCommand implements IGDCommand
             LogHelper.info("------\x1b[0m");
             LogHelper.info("");
 
-            determinePlatformToSetupFromArguments(args);
+            determinePlatformToSetupFromArguments();
 
             LogHelper.println("");
 
@@ -58,14 +52,9 @@ class EnvironmentSetupCommand implements IGDCommand
         return "success";
     }
 
-    private function determinePlatformToSetupFromArguments(args : Array<String>)
+    private function determinePlatformToSetupFromArguments()
     {
-        if (args.length == 0)
-        {
-            LogHelper.error("Please specify a platform as a parameter. \"duell setup <platform>\". (android, flash, mac)");
-        }
-
-        platformName = args[0].toLowerCase();
+        platformName = Arguments.getSelectedPlugin();
 
         var platformNameCorrectnessCheck = ~/^[a-z0-9]+$/;
 
@@ -125,6 +114,9 @@ class EnvironmentSetupCommand implements IGDCommand
         buildArguments.push("-cp");
         buildArguments.push(setupLib.getPath());
 
+        buildArguments.push("-D");
+        buildArguments.push("plugin");
+
         PathHelper.mkdir(outputFolder);
 
         var result = duell.helpers.ProcessHelper.runCommand("", "haxe", buildArguments);
@@ -133,7 +125,7 @@ class EnvironmentSetupCommand implements IGDCommand
             LogHelper.error("An error occured while compiling the environment tool");
 
         var runArguments = [outputRun];
-        runArguments.concat(arguments);
+        runArguments = runArguments.concat(Arguments.getRawArguments());
 
         result = duell.helpers.ProcessHelper.runCommand("", "neko", runArguments);
 

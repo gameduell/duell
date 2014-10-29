@@ -43,7 +43,7 @@ class DuellLibListHelper
         /// we remove because if the user changes lib lists urls, the result will be very undefined. This way is a bit slower but cleaner.
         if(FileSystem.exists(libListFolder))
         {    
-            LogHelper.info("Cleaning up existing lib lists...");
+            LogHelper.info("", "Cleaning up existing lib lists...");
 
             PathHelper.removeDirectory(libListFolder);
         }

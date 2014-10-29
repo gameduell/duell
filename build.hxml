@@ -1,2 +1,3 @@
 -main duell.Duell
 -neko run.n
+-resource config.xml@generalArguments

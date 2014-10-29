@@ -16,4 +16,6 @@ extern class LibraryBuild
 
 	public function preBuild() : Void;
 	public function postBuild() : Void;
+
+	public function fast() : Void;
 }

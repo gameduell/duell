@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<args>
+    <documentation>
+  The Duell Tool is a command line tool for setting up, building and running applications on any platform. 
+  It can also be used for other general tasks within app development. It is made in a modular way via plugins, and each plugin is a separate from the tool itself. The tool merges the needed plugin on execution. 
+  The execution of the tool is always "duell" followed by a command such as "build" or "setup" and then a plugin name like "ios" or "emptyProject". For example, "duell build ios" will run the command "build" with the "ios" plugin. For a listing of the possible commands, look below. You can also pass additional parameters to execution by prefixing with "-", e.g. "duell build ios -verbose". Look below for a list of arguments that are general to any command or plugin.
+    </documentation>
+	<arg name="-nocolor" type="void">
+		<documentation>
+			Color markup will be stripped out of the output. Use this if your terminal does not support colors.
+		</documentation>
+	</arg>
+
+	<arg name="-mute" type="void">
+		<documentation>
+			No output will be printed at all.
+		</documentation>
+	</arg>
+
+	<arg name="-verbose" type="void">
+		<documentation>
+			Every possible logging information will be shown...
+		</documentation>
+	</arg>
+
+    <arg name="-ignoreversioning" type="void">
+        <documentation>
+            No versions for anything will be checked, repos will be used as is.
+        </documentation>
+    </arg>
+
+	<command name="create" class="CreateCommand" hasPlugin="true">
+    	<documentation> 
+    		Can be used for creating a default project in current folder like: duell create emptyProject.
+    	</documentation>
+	</command>
+
+	<command name="setup" class="EnvironmentSetupCommand" hasPlugin="true" >
+    	<documentation>
+    		Runs a specified setup. This is usually and environment setup that needs to be run once for a specified platform. Such as, setup android to be able to build for android. 
+    	</documentation>
+	</command>
+
+	<command name="self_setup" class="ToolSetupCommand" hasPlugin="false" >
+    	<documentation> 
+            Basic setup for the duell tool. It checks/creates a folder .duell in your home folder. Inside that folder a config file is created and the tool itself is downloaded, installed into haxelib and 'duell' command installed into the command line environment.
+    	</documentation>
+	</command>
+
+    <command name="build" class="BuildCommand" hasPlugin="true">
+    	<documentation>
+    		To be run inside a project that has a duell_project.xml. Will build the specified platform.
+    	</documentation>
+
+    	<args>
+    		<arg name="-noprebuild" type="void" >
+    			<documentation>
+    				Does not parse the configuration, meaning the changes to the .xml files are not processed. Also, does not process the template, meaning that files to do not get recopied, e.g. asset files. Requires that  a command for this platform with prebuild enabled was previously successful.
+    			</documentation>
+    		</arg>
+
+    		<arg name="-nobuild" type="void" >
+    			<documentation>
+    				Does not build. Haxe code does not get recompiled, and target platform app packages are not remade.Good for checking the prebuild step, or if you just want to run again without qbuilding.
+    			</documentation>
+    		</arg>
+
+    		<arg name="-norun" type="void" >
+    			<documentation>
+    				The application won't run. Use this if you just want to check the prebuild or build steps.
+    			</documentation>
+    		</arg>
+
+    		<arg name="-publish" type="void" >
+    			<documentation>
+    				Works differently in each platform, but basically each platform plugin should output a releasable package. E.g. ios should sign the .app and compile in release without debugging information.
+    			</documentation>
+    		</arg>
+
+    		<arg name="-test" type="void" >
+    			<documentation>
+    				Launches a server listening to a configured port and then runs the application. It expects that a result of the app is posted to the port, e.g. Unitest results. After the results come in, the application ends. To create a unittest project use "duell create unitTestProject".
+    			</documentation>
+    		</arg>
+
+    		<arg name="-fast" type="void" >
+    			<documentation>
+    				Use this command if you are just iterating haxe code, and want to quickly build and run the app. In order to be able to use it, just build and run once normally on any platform, and then run with "-fast" afterwards.
+    			</documentation>
+    		</arg>
+
+            <arg name="-overridebranch" type="string">
+                <documentation>
+                    This argument is used in the versioning. Check https://confluence.gameduell.de/display/SGF/Duell+Tool+versioning
+                </documentation>
+            </arg>
+
+            <arg name="-noupdate" type="void">
+                <documentation>
+                    If the versioning system resolves a library to be a branch which is out of date locally, then the tool will download the update automatically. Use this argument to disable this.
+                </documentation>
+            </arg>
+
+    	</args>
+    </command>
+</args>

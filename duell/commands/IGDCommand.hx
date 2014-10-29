@@ -8,5 +8,5 @@ package duell.commands;
 
 interface IGDCommand
 {
-    function execute(cmdStr : String, args : Array<String>):String;
+    function execute():String;
 }

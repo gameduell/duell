@@ -18,4 +18,8 @@ extern class PlatformBuild
 	public function run() : Void;
 
 	public function test() : Void;
+
+	public function publish() : Void;
+
+	public function fast() : Void
 }

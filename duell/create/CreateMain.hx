@@ -2,16 +2,18 @@ package duell.create;
 
 import duell.helpers.LogHelper;
 
+import duell.objects.Arguments;
+
 class CreateMain
 {
     public static function main()
     {
-        var args = Sys.args();
 
         try
         {
+            Arguments.validateArguments();
             var pluginLib = new PluginCreate();
-            pluginLib.run(args);
+            pluginLib.run();
         }
         catch(error : Dynamic)
         {

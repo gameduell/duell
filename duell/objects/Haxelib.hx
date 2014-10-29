@@ -59,8 +59,6 @@ class Haxelib
 	{
 		var output = "";
 		
-		var prevVerbose = LogHelper.verbose;
-		LogHelper.verbose = false;
 		try 
 		{
 			var nameToTry = name;
@@ -69,7 +67,6 @@ class Haxelib
 			output = ProcessHelper.runProcess(Sys.getEnv ("HAXEPATH"), "haxelib", ["path", nameToTry], true, true, true);
 		} 
 		catch (e:Dynamic) { }
-		LogHelper.verbose = prevVerbose;
 
 		if(output.indexOf("is not installed") != -1)
 			return false;
@@ -94,8 +91,6 @@ class Haxelib
 			}
 		}
 
-		var prevVerbose = LogHelper.verbose;
-		LogHelper.verbose = false;
 		var output = "";
 		try 
 		{
@@ -105,8 +100,6 @@ class Haxelib
 			output = ProcessHelper.runProcess(Sys.getEnv("HAXEPATH"), "haxelib", ["path", nameToTry], true, true, true);
 		} 
 		catch (e:Dynamic) { }
-		
-		LogHelper.verbose = prevVerbose;
 			
 		var lines = output.split ("\n");
 			
