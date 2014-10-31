@@ -161,15 +161,15 @@ class Arguments
 			var argString = args[index++];
 
 			var argSpec = null;
-			if (generalArgumentSpecs.exists(argString))
+			if (generalArgumentSpecs != null && generalArgumentSpecs.exists(argString))
 			{
 				argSpec = generalArgumentSpecs.get(argString);
 			}
-			else if (selectedCommand.arguments.exists(argString))
+			else if (selectedCommand.arguments != null && selectedCommand.arguments.exists(argString))
 			{
 				argSpec = selectedCommand.arguments.get(argString);
 			}
-			else if (pluginArgumentSpecs.exists(argString))
+			else if (pluginArgumentSpecs != null && pluginArgumentSpecs.exists(argString))
 			{
 				argSpec = pluginArgumentSpecs.get(argString);
 			}
