@@ -184,7 +184,7 @@ class DuellLib
 			
 		for (i in 1...lines.length) {
 			
-			if (lines[i].trim() == '-D ' + name) 
+			if (lines[i].trim().startsWith('-D')) 
 			{
 				pathCache = lines[i - 1].trim();
 			}

@@ -20,6 +20,7 @@ import duell.helpers.DuellLibListHelper;
 import duell.objects.HXCPPConfigXML;
 import duell.objects.Haxelib;
 import duell.objects.DuellConfigJSON;
+import duell.objects.DuellLib;
 
 import haxe.CallStack;
 import sys.io.File;
@@ -250,7 +251,7 @@ class ToolSetupCommand implements IGDCommand
 			if (answer) 
 			{
 				try {
-					ProcessHelper.runCommand("", "sudo", [ "cp", "-f", Haxelib.getHaxelib("duell").getPath() + "/bin/duell.sh", "/usr/bin/duell" ], false);
+					ProcessHelper.runCommand("", "sudo", [ "cp", "-f", DuellLib.getDuellLib("duell").getPath() + "/bin/duell.sh", "/usr/bin/duell" ], false);
 					ProcessHelper.runCommand("", "sudo", [ "chmod", "755", "/usr/bin/duell" ], false);
 					installedCommand = true;
 				} catch (e:Dynamic) {}

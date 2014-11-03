@@ -1,0 +1,11 @@
+{
+  "name": "duell",
+  "license": "closed",
+  "tags": ["duell", "tool"],
+  "description":
+      "This is a tool used for cross platform environment setup, building and sample creation in the Duell ecosystem.",
+  "version": "1.0.0",
+  "contributors": [],
+  "dependencies": {
+  }
+}
