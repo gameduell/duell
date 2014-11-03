@@ -3,6 +3,8 @@ set -e
 
 rm -rf ~/.duell
 
+mkdir ~/.duell
+mkdir ~/.duell/haxelib
 haxelib setup ~/.duell/haxelib
 
 expect -c "
