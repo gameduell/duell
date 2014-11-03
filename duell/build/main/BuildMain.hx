@@ -5,15 +5,16 @@
  */
 package duell.build.main;
 
-import duell.build.objects.Configuration;
 import haxe.CallStack;
+
+import duell.build.objects.Configuration;
 import duell.build.plugin.platform.PlatformBuild;
 
 import duell.helpers.LogHelper;
+import duell.helpers.PlatformHelper;
+import duell.helpers.DuellConfigHelper;
 
 import duell.objects.Arguments;
-
-import duell.helpers.DuellConfigHelper;
 import duell.objects.DuellConfigJSON;
 
 class BuildMain 
@@ -27,6 +28,11 @@ class BuildMain
             var pluginHelper : LibraryPluginHelper = new LibraryPluginHelper();
 
 	 		var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+
+            if (build.supportedHostPlatforms.indexOf(PlatformHelper.hostPlatform) == -1)
+            {
+                LogHelper.error("The current host platform '" + PlatformHelper.hostPlatform + "' is not supported for this build.");
+            }
 
 	 		for (requiredSetup in build.requiredSetups)
 	 		{
