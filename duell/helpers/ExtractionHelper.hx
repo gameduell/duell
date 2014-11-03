@@ -237,7 +237,11 @@ class ExtractionHelper
 				}
 				
 				ProcessHelper.runCommand("", "tar", [ arguments, sourceZIP ], false);
-				ProcessHelper.runCommand("", "cp", [ "-R", ignoreRootFolder + "/*", targetPath ], false);
+
+				for (file in FileSystem.readDirectory(ignoreRootFolder))
+				{
+					ProcessHelper.runCommand("", "cp", [ "-R", Path.join([ignoreRootFolder, file]), targetPath], false);
+				}
 				Sys.command("rm", [ "-r", ignoreRootFolder ]);
 				
 			} 
