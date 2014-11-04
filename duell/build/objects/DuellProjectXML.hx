@@ -379,7 +379,8 @@ class DuellProjectXML
 		if (PathHelper.isPathRooted(path))
 			return path;
 
-		return Path.join([currentXMLPath[currentXMLPath.length - 1], path]);
+		path = Path.join([currentXMLPath[currentXMLPath.length - 1], path]);
+		return path;
 	}
 
 	private function processXML(xml : String) : String

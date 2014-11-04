@@ -105,7 +105,7 @@ class Haxelib
 			
 		for (i in 1...lines.length) {
 			
-			if (lines[i].trim() == "-D " + name) 
+			if (lines[i].trim().startsWith('-D')) 
 			{
 				path = lines[i - 1].trim();
 			}
