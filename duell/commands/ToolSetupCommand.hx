@@ -12,7 +12,7 @@ import duell.helpers.PlatformHelper;
 import duell.helpers.AskHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.LogHelper;
-import duell.helpers.ProcessHelper;
+import duell.helpers.CommandHelper;
 import duell.helpers.HXCPPConfigXMLHelper;
 import duell.helpers.DuellConfigHelper;
 import duell.helpers.DuellLibListHelper;
@@ -20,7 +20,11 @@ import duell.helpers.DuellLibListHelper;
 import duell.objects.HXCPPConfigXML;
 import duell.objects.Haxelib;
 import duell.objects.DuellConfigJSON;
+<<<<<<< Updated upstream
 import duell.objects.DuellLib;
+=======
+import duell.objects.DuellProcess;
+>>>>>>> Stashed changes
 
 import haxe.CallStack;
 import sys.io.File;
@@ -97,7 +101,9 @@ class ToolSetupCommand implements IGDCommand
     	LogHelper.println("Checking haxe installation... ");
 
     	/// we test with haxelib because haxe returns null for some reason.
-		var output : String = ProcessHelper.runProcess("", "haxelib", [], true, true, true, false);
+    	var haxePath = Sys.getEnv("HAXEPATH");
+    	var systemCommand = haxePath != null && haxePath != "" ? false : true;
+		var output : String = new DuellProcess(haxePath, "haxelib", [], {block: true, systemCommand: systemCommand}).getCompleteStdout().toString();
 		if(output.indexOf("Haxe Library Manager") == -1)
 		{
 			LogHelper.println("not found.");
@@ -107,7 +113,7 @@ class ToolSetupCommand implements IGDCommand
 
 			if(answer)
 			{
-				ProcessHelper.openURL(haxeURL);
+				CommandHelper.openURL(haxeURL);
 			}
 
 			LogHelper.println("Rerun the script with haxe installed.");
@@ -125,7 +131,9 @@ class ToolSetupCommand implements IGDCommand
 		LogHelper.println("Checking haxelib setup... ");
 
     	/// we test with haxelib because haxe returns null for some reason.
-		var output : String = ProcessHelper.runProcess("", "haxelib", ["config"], true, true, true, false);
+    	var haxePath = Sys.getEnv("HAXEPATH");
+    	var systemCommand = haxePath != null && haxePath != "" ? false : true;
+		var output : String = new DuellProcess(haxePath, "haxelib", ["config"], {block: true, systemCommand: systemCommand}).getCompleteStdout().toString();
 
 		if(output == null || output.indexOf("This is the first time") != -1)
 		{
@@ -135,7 +143,7 @@ class ToolSetupCommand implements IGDCommand
 
 			repoPath = FileSystem.fullPath(repoPath);
 
-			var result = ProcessHelper.runCommand("", "haxelib", ["setup", repoPath]);
+			var result = CommandHelper.runCommand("", "haxelib", ["setup", repoPath]);
 
 			if(result != 0)
 			{
@@ -250,11 +258,9 @@ class ToolSetupCommand implements IGDCommand
 			
 			if (answer) 
 			{
-				try {
-					ProcessHelper.runCommand("", "sudo", [ "cp", "-f", DuellLib.getDuellLib("duell").getPath() + "/bin/duell.sh", "/usr/bin/duell" ], false);
-					ProcessHelper.runCommand("", "sudo", [ "chmod", "755", "/usr/bin/duell" ], false);
-					installedCommand = true;
-				} catch (e:Dynamic) {}
+				CommandHelper.runCommand("", "sudo", [ "cp", "-f", DuellLib.getDuellLib("duell").getPath() + "/bin/duell.sh", "/usr/bin/duell" ], false);
+				CommandHelper.runCommand("", "sudo", [ "chmod", "755", "/usr/bin/duell" ], false);
+				installedCommand = true;
 			}
 			
 			if (!installedCommand) 
@@ -282,7 +288,8 @@ class ToolSetupCommand implements IGDCommand
 		{
 			LogHelper.println("not found");
 			LogHelper.println("Installing hxcpp...");
-			ProcessHelper.runProcess("", "haxelib", ["install", "hxcpp"], true, true);
+			CommandHelper.runCommand(Sys.getEnv("HAXEPATH"), "haxelib", ["install", "hxcpp"]);
+
 
     		LogHelper.println("Rechecking hxcpp installation... ");
 
@@ -303,7 +310,7 @@ class ToolSetupCommand implements IGDCommand
 
 
 		LogHelper.println("Running once to make sure it is initialized...");
-		ProcessHelper.runProcess("", "haxelib", ["run", "hxcpp"], true, true);
+		CommandHelper.runCommand(Sys.getEnv("HAXEPATH"), "haxelib", ["run", "hxcpp"]);
 		LogHelper.println("Finished running hxcpp.");
 	}
 

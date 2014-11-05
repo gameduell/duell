@@ -6,7 +6,8 @@
 package duell.objects;
 
 import duell.helpers.LogHelper;
-import duell.helpers.ProcessHelper;
+import duell.helpers.CommandHelper;
+import duell.objects.DuellProcess;
 
 import sys.FileSystem;
 
@@ -57,16 +58,7 @@ class Haxelib
 
 	public function exists()
 	{
-		var output = "";
-		
-		try 
-		{
-			var nameToTry = name;
-			if(version != "")
-				nameToTry += ":" + version;
-			output = ProcessHelper.runProcess(Sys.getEnv ("HAXEPATH"), "haxelib", ["path", nameToTry], true, true, true);
-		} 
-		catch (e:Dynamic) { }
+		var output = getHaxelibPathOutput();
 
 		if(output.indexOf("is not installed") != -1)
 			return false;
@@ -91,15 +83,7 @@ class Haxelib
 			}
 		}
 
-		var output = "";
-		try 
-		{
-			var nameToTry = name;
-			if(version != "")
-				nameToTry += ":" + version;
-			output = ProcessHelper.runProcess(Sys.getEnv("HAXEPATH"), "haxelib", ["path", nameToTry], true, true, true);
-		} 
-		catch (e:Dynamic) { }
+		var output = getHaxelibPathOutput();
 			
 		var lines = output.split ("\n");
 			
@@ -133,9 +117,20 @@ class Haxelib
 		return path;
 	}
 
+	private function getHaxelibPathOutput(): String
+	{
+		var nameToTry = name;
+		if(version != "")
+			nameToTry += ":" + version;
+		var proc = new DuellProcess(Sys.getEnv("HAXEPATH"), "haxelib", ["path", nameToTry], {block: true});
+		var output = proc.getCompleteStdout();
+
+		return output.toString();
+	}
+
     public function update()
     {
-        ProcessHelper.runCommand("", "haxelib", ["update", name]);
+        CommandHelper.runCommand("", "haxelib", ["update", name]);
     }
 
     public function install()
@@ -143,6 +138,6 @@ class Haxelib
     	var args = ["install", name];
     	if (version != "")
     		args.push(version);
-        ProcessHelper.runCommand("", "haxelib", args);
+        CommandHelper.runCommand("", "haxelib", args);
     }
 }

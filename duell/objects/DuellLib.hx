@@ -6,7 +6,7 @@
 package duell.objects;
 
 import duell.helpers.LogHelper;
-import duell.helpers.ProcessHelper;
+import duell.helpers.CommandHelper;
 import duell.helpers.DuellConfigHelper;
 import duell.helpers.DuellLibListHelper;
 import duell.helpers.GitHelper;
@@ -140,7 +140,7 @@ class DuellLib
 
 		if (haxelibPathOutputCache == null)
 		{
-			haxelibPathOutputCache = ProcessHelper.runProcess(Sys.getEnv ('HAXEPATH'), 'haxelib', ['path', name], true, true, true);
+			haxelibPathOutputCache = getHaxelibPathOutput();
 		}
 
 		if (haxelibPathOutputCache.indexOf('is not installed') != -1)
@@ -149,6 +149,14 @@ class DuellLib
  			existsCache = true;
 
  		return existsCache;
+	}
+
+	private function getHaxelibPathOutput(): String
+	{
+		var proc = new DuellProcess(Sys.getEnv ("HAXEPATH"), "haxelib", ["path", name], {block: true});
+		var output = proc.getCompleteStdout();
+
+		return output.toString();
 	}
 
 	public function isPathValid() : Bool
@@ -177,7 +185,7 @@ class DuellLib
 
 		if (haxelibPathOutputCache == null)
 		{
-			haxelibPathOutputCache = ProcessHelper.runProcess(Sys.getEnv ('HAXEPATH'), 'haxelib', ['path', name], true, true, true);
+			haxelibPathOutputCache = getHaxelibPathOutput();
 		}
 
 		var lines = haxelibPathOutputCache.split ('\n');

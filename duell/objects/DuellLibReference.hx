@@ -8,7 +8,7 @@ package duell.objects;
 import duell.helpers.DuellConfigHelper;
 import duell.helpers.LogHelper;
 import duell.helpers.GitHelper;
-import duell.helpers.ProcessHelper;
+import duell.helpers.CommandHelper;
 
 import sys.FileSystem;
 
@@ -57,7 +57,7 @@ class DuellLibReference
 
         LogHelper.println("Setting repo as haxelib dev");
 
-        ProcessHelper.runCommand(path, "haxelib", ["dev", name, duellConfigJSON.localLibraryPath + "/" + libPath]);
+        CommandHelper.runCommand(path, "haxelib", ["dev", name, duellConfigJSON.localLibraryPath + "/" + libPath]);
 
         LogHelper.info("Done Installing lib " + name +" ==========================================");
     }

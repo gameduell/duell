@@ -1,6 +1,6 @@
 package duell.commands;
 
-import duell.helpers.ProcessHelper;
+import duell.helpers.CommandHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.AskHelper;
 import duell.objects.DuellLib;
@@ -117,7 +117,7 @@ class CreateCommand implements IGDCommand
 
         PathHelper.mkdir(outputFolder);
 
-        var result = duell.helpers.ProcessHelper.runCommand("", "haxe", buildArguments);
+        var result = duell.helpers.CommandHelper.runCommand("", "haxe", buildArguments);
 
         if (result != 0)
             LogHelper.error("An error occured while compiling the plugin");
@@ -125,7 +125,7 @@ class CreateCommand implements IGDCommand
         var runArguments = [outputRun];
         runArguments = runArguments.concat(Arguments.getRawArguments());
 
-        result = duell.helpers.ProcessHelper.runCommand("", "neko", runArguments);
+        result = duell.helpers.CommandHelper.runCommand("", "neko", runArguments);
 
         if (result != 0)
             LogHelper.error("An error occured while running the plugin");

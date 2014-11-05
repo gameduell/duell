@@ -8,6 +8,7 @@ import haxe.io.Eof;
 import haxe.io.Bytes;
 import haxe.io.Path;
 import sys.io.Process;
+import sys.FileSystem;
 
 import duell.helpers.LogHelper;
 import duell.helpers.PathHelper;
@@ -96,9 +97,12 @@ class DuellProcess
 			
 			LogHelper.info ("", " - \x1b[1mChanging directory for running the process:\x1b[0m " + path + "");
 			
+			if(!FileSystem.exists(path)) 
+			{
+				LogHelper.error("The path \"" + path + "\" does not exist");
+			}
 			oldPath = Sys.getCwd ();
 			Sys.setCwd (path);
-			
 		}
 
 		/// FANCY PRINT

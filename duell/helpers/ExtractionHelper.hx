@@ -236,18 +236,18 @@ class ExtractionHelper
 					}
 				}
 				
-				ProcessHelper.runCommand("", "tar", [ arguments, sourceZIP ], false);
+				CommandHelper.runCommand("", "tar", [ arguments, sourceZIP ], false);
 
 				for (file in FileSystem.readDirectory(ignoreRootFolder))
 				{
-					ProcessHelper.runCommand("", "cp", [ "-R", Path.join([ignoreRootFolder, file]), targetPath], false);
+					CommandHelper.runCommand("", "cp", [ "-R", Path.join([ignoreRootFolder, file]), targetPath], false);
 				}
-				Sys.command("rm", [ "-r", ignoreRootFolder ]);
 				
+				Sys.command("rm", [ "-r", ignoreRootFolder ]);
 			} 
 			else 
 			{
-				ProcessHelper.runCommand("", "tar", [ arguments, sourceZIP, "-C", targetPath ], false);
+				CommandHelper.runCommand("", "tar", [ arguments, sourceZIP, "-C", targetPath ], false);
 			}
 			
 			Sys.command ("chmod", [ "-R", "755", targetPath ]);

@@ -5,7 +5,7 @@
  */
 package duell.commands;
 
-import duell.helpers.ProcessHelper;
+import duell.helpers.CommandHelper;
 import haxe.CallStack;
 import Sys;
 
@@ -205,7 +205,7 @@ class BuildCommand implements IGDCommand
 
 		PathHelper.mkdir(outputFolder);
 
-		var result = duell.helpers.ProcessHelper.runCommand("", "haxe", buildArguments);
+		var result = duell.helpers.CommandHelper.runCommand("", "haxe", buildArguments);
 
 		if (result != 0)
 			LogHelper.error("An error occured while compiling the build tool");
@@ -217,7 +217,7 @@ class BuildCommand implements IGDCommand
 		serializer.serialize(runArguments);
 		File.write(outputRunArguments, true).writeString(serializer.toString());
 
-		result = duell.helpers.ProcessHelper.runCommand("", "neko", runArguments);
+		result = duell.helpers.CommandHelper.runCommand("", "neko", runArguments);
 
 		if (result != 0)
 			LogHelper.error("An error occured while running the build tool");
@@ -243,7 +243,7 @@ class BuildCommand implements IGDCommand
 
 		runArguments.push("-fast");
 
-		var result = duell.helpers.ProcessHelper.runCommand("", "neko", runArguments);
+		var result = duell.helpers.CommandHelper.runCommand("", "neko", runArguments);
 
 		if (result != 0)
 			LogHelper.error("An error occured while running the build tool");
