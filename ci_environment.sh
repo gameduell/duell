@@ -11,9 +11,6 @@ expect -c "
 spawn neko run.n self_setup -verbose  
 set timeout -1
 
-expect \"You are missing the initial setup.\"
-send \"y\r\"
-
 expect \"Path to store repos from libraries?\"
 send \"\r\"
 
