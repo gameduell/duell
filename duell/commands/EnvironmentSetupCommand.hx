@@ -123,19 +123,14 @@ class EnvironmentSetupCommand implements IGDCommand
 
         PathHelper.mkdir(outputFolder);
 
-        var result = duell.helpers.CommandHelper.runCommand("", "haxe", buildArguments);
-
-        if (result != 0)
-            LogHelper.error("An error occured while compiling the environment tool");
+        CommandHelper.runHaxe("", buildArguments, {errorMessage: "building the plugin"});
 
         var runArguments = [outputRun];
         runArguments = runArguments.concat(Arguments.getRawArguments());
 
-        result = duell.helpers.CommandHelper.runCommand("", "neko", runArguments);
-
+        var result = CommandHelper.runNeko("", runArguments, {errorMessage: "running the plugin", exitOnError: false});
         if (result != 0)
-            LogHelper.error("An error occured while running the environment tool");
-
+            Sys.exit(result);
 
         LogHelper.println("Saving Setup Done Marker... ");
         var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());

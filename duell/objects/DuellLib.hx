@@ -153,7 +153,9 @@ class DuellLib
 
 	private function getHaxelibPathOutput(): String
 	{
-		var proc = new DuellProcess(Sys.getEnv ("HAXEPATH"), "haxelib", ["path", name], {block: true});
+    	var haxePath = Sys.getEnv("HAXEPATH");
+    	var systemCommand = haxePath != null && haxePath != "" ? false : true;
+		var proc = new DuellProcess(haxePath, "haxelib", ["path", name], {block: true, systemCommand: systemCommand, errorMessage: "getting path of library"});
 		var output = proc.getCompleteStdout();
 
 		return output.toString();

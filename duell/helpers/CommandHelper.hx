@@ -18,13 +18,12 @@ import sys.io.Process;
 import sys.FileSystem;
 import neko.Lib;
 
-
-
 typedef CommandOptions = 
 {
 	?logOnlyIfVerbose : Bool, /// defaults to true
 	?systemCommand : Bool, /// defaults to true
-	?exitOnError : Bool /// defaults to true
+	?exitOnError : Bool, /// defaults to true
+	?errorMessage : String /// defaults to nothing
 }
 
 class CommandHelper 
@@ -118,10 +117,6 @@ class CommandHelper
 	{
 		command = PathHelper.escape(command);
 
-		var systemCommand = options != null && options.systemCommand != null ? options.systemCommand : true;
-		var logOnlyIfVerbose = options != null && options.logOnlyIfVerbose != null ? options.logOnlyIfVerbose : true;
-		var exitOnError = options != null && options.exitOnError != null ? options.exitOnError : true;
-
 		var argString = "";
 		
 		for (arg in args) 
@@ -137,6 +132,12 @@ class CommandHelper
 		}
 
 		var commandString = command + argString;
+
+		var systemCommand = options != null && options.systemCommand != null ? options.systemCommand : true;
+		var logOnlyIfVerbose = options != null && options.logOnlyIfVerbose != null ? options.logOnlyIfVerbose : true;
+		var exitOnError = options != null && options.exitOnError != null ? options.exitOnError : true;
+		var errorMessage = options != null && options.errorMessage != null ? options.errorMessage : null;
+
 		var message = " - Running command: " + LogHelper.BOLD + commandString + LogHelper.NORMAL + (path != null && path != "" ? " - in path: " + path : "");
 
 		if (logOnlyIfVerbose)
@@ -183,7 +184,9 @@ class CommandHelper
 
 		if (result != 0 && exitOnError)
 		{
-			LogHelper.error("Failed to run command " + LogHelper.BOLD + commandString + LogHelper.NORMAL + " " + (path != null && path != "" ? " - in path: " + path : "") + " -  Exit code:" + result);
+			var pathString = path != null && path != "" ? " - in path: " + path : "";
+			var additionalMessage = errorMessage != null ? " - Action was: " + errorMessage : "";
+			LogHelper.error("Failed to run command " + LogHelper.BOLD + commandString + LogHelper.NORMAL + " " + pathString + " -  Exit code:" + result + additionalMessage);
 		}
 		
 		/// RESET WORKING DIRECTORY
@@ -194,4 +197,47 @@ class CommandHelper
 
 		return result;
 	}
+
+	public static function runNeko(path: String, args : Array <String>, ?options: CommandOptions) : Int 
+	{
+    	var haxePath = Sys.getEnv("HAXEPATH");
+    	if (options == null)
+    	{
+    		options = {systemCommand: true};
+    	}
+    	else
+    	{
+    		options.systemCommand = true;
+    	}
+		return CommandHelper.runCommand(path, Path.join([haxePath, "neko"]), args, options);
+	}
+
+	public static function runHaxe(path: String, args : Array <String>, ?options: CommandOptions) : Int 
+	{
+    	var haxePath = Sys.getEnv("HAXEPATH");
+    	if (options == null)
+    	{
+    		options = {systemCommand: true};
+    	}
+    	else
+    	{
+    		options.systemCommand = true;
+    	}
+		return CommandHelper.runCommand(path, Path.join([haxePath, "haxe"]), args, options);
+	}
+
+	public static function runHaxelib(path: String, args : Array <String>, ?options: CommandOptions) : Int 
+	{
+    	var haxePath = Sys.getEnv("HAXEPATH");
+    	if (options == null)
+    	{
+    		options = {systemCommand: true};
+    	}
+    	else
+    	{
+    		options.systemCommand = true;
+    	}
+		return CommandHelper.runCommand(path, Path.join([haxePath, "haxelib"]), args, options);
+	}
+
 }

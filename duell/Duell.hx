@@ -60,14 +60,9 @@ class Duell
             }
         }
 
-        if (isMissingSelfSetup)
+        if (isMissingSelfSetup && Arguments.getSelectedCommand().name != "self_setup")
         {
-            var doSetup = AskHelper.askYesOrNo('You are missing the initial setup. Do you want to do it? ("self_setup" command)');
-
-            if (!doSetup)
-            {
-                return;
-            }
+            LogHelper.error('You are missing the initial setup. Please run the "self_setup" command. For more info run with "-help".');
         }
 
 

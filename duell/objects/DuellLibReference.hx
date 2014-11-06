@@ -57,7 +57,7 @@ class DuellLibReference
 
         LogHelper.println("Setting repo as haxelib dev");
 
-        CommandHelper.runCommand(path, "haxelib", ["dev", name, duellConfigJSON.localLibraryPath + "/" + libPath]);
+        CommandHelper.runHaxelib("", ["dev", name, duellConfigJSON.localLibraryPath + "/" + libPath], {errorMessage: "configuring 'haxelib dev' on the downloaded library"});
 
         LogHelper.info("Done Installing lib " + name +" ==========================================");
     }

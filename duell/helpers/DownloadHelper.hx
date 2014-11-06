@@ -105,7 +105,6 @@ class DownloadHelper
 		
 		h.onError = function (e) {
 
-			trace("Error!", e);
 			progress.close();
 			FileSystem.deleteFile(localPath);
 			throw e;

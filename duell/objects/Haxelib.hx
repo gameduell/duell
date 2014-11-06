@@ -122,7 +122,11 @@ class Haxelib
 		var nameToTry = name;
 		if(version != "")
 			nameToTry += ":" + version;
-		var proc = new DuellProcess(Sys.getEnv("HAXEPATH"), "haxelib", ["path", nameToTry], {block: true});
+
+    	var haxePath = Sys.getEnv("HAXEPATH");
+    	var systemCommand = haxePath != null && haxePath != "" ? false : true;
+		var proc = new DuellProcess(haxePath, "haxelib", ["path", nameToTry], {block: true, systemCommand: true, errorMessage: "getting path of library"});
+
 		var output = proc.getCompleteStdout();
 
 		return output.toString();
@@ -130,7 +134,7 @@ class Haxelib
 
     public function update()
     {
-        CommandHelper.runCommand("", "haxelib", ["update", name]);
+        CommandHelper.runHaxelib("", ["update", name], {errorMessage: 'updating the library "$name"'});
     }
 
     public function install()
@@ -138,6 +142,6 @@ class Haxelib
     	var args = ["install", name];
     	if (version != "")
     		args.push(version);
-        CommandHelper.runCommand("", "haxelib", args);
+        CommandHelper.runHaxelib("", args, {errorMessage: 'installing the library "$name"'});
     }
 }

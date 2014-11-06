@@ -22,7 +22,8 @@ typedef ProcessOptions =
 	?timeout : Float, /// defaults to 0 (no timeout)
 	?block : Bool, /// defaults to false
 	?shutdownOnError : Bool, /// default to false, on timeout, exception or exitcode != 0
-	?processDocumentingName : String /// default to "", a simple name that is printed when something goes wrong
+	?mute : Bool, ///defaults to false, don't log anything from the process
+	?errorMessage : String /// message printing when something goes wrong
 }
 
 class DuellProcess
@@ -64,16 +65,20 @@ class DuellProcess
 	private var logOnlyIfVerbose : Bool;
 	private var timeout : Float;
 	private var block : Bool;
+	private var mute : Bool;
 	private var shutdownOnError : Bool;
-	private var processDocumentingName : String;
+	private var errorMessage : String;
 	private var command : String;
+	private var path : String;
 	private var args : Array<String>;
+	private var argString : String;
 
 	public function new(path : String, comm : String, args : Array<String>, options : ProcessOptions = null)
 	{	
 		/// PROCESS ARGUMENTS
 		command = PathHelper.escape(comm);
 		this.args = args;
+		this.path = path == null ? "" : path;
 
 		exitCodeMutex = new Mutex();
 
@@ -83,7 +88,8 @@ class DuellProcess
 		timeout = options != null && options.timeout != null ? options.timeout : 0.0;
 		block = options != null && options.block != null ? options.block : false;
 		shutdownOnError = options != null && options.shutdownOnError != null ? options.shutdownOnError : false;
-		processDocumentingName = options != null && options.processDocumentingName != null ? options.processDocumentingName : "";
+		errorMessage = options != null && options.errorMessage != null ? options.errorMessage : "";
+		mute = options != null && options.mute != null ? options.mute : false;
 
 		/// CHECK FOR LOCAL COMMAND
 		if (!systemCommand && PlatformHelper.hostPlatform != Platform.WINDOWS)
@@ -93,8 +99,8 @@ class DuellProcess
 
 		/// CHANGE DIRECTORY
 		var oldPath:String = "";
-		if (path != null && path != "") {
-			
+		if (path != null && path != "") 
+		{
 			LogHelper.info ("", " - \x1b[1mChanging directory for running the process:\x1b[0m " + path + "");
 			
 			if(!FileSystem.exists(path)) 
@@ -106,7 +112,7 @@ class DuellProcess
 		}
 
 		/// FANCY PRINT
-		var argString = "";
+		argString = "";
 		
 		for (arg in args) 
 		{
@@ -146,6 +152,9 @@ class DuellProcess
 	private function log(logMessage : String) : Void
 	{
 		if (logMessage == "")
+			return;
+
+		if (mute)
 			return;
 		var message = '\x1b[1m$loggingPrefix\x1b[0m $logMessage';
 		if (logOnlyIfVerbose)
@@ -402,23 +411,23 @@ class DuellProcess
 
 			if (shutdownOnError && (timedout || exitCodeCache != 0))
 			{
-				var prefix = "";
-				if (processDocumentingName != "")
-				{
-					prefix = processDocumentingName + ": ";
-				}
-				var str = "";
+				var failureType = ' - Exit code: $exitCodeCache';
 				if (timedout)
 				{
-					str = prefix + 'Process "$command ${args.join(" ")}" timed out.';
-				}
-				else
-				{
-					str = prefix + 'Process "$command ${args.join(" ")}" failed with exit code $exitCodeCache.';	
+					failureType = " - timedout";
 				}
 
+				var postfix = "";
+				if (errorMessage != null && errorMessage != "")
+				{
+					postfix = " - Action was: " + errorMessage;	
+				}
+
+				var commandString = command + " " + argString;
+				var pathString = path != "" ? " - in path: " + path : "";
+
 				exitCodeMutex.release();
-				LogHelper.error(str, str, str);
+				LogHelper.error('Process ${LogHelper.BOLD} $commandString ${LogHelper.NORMAL} $pathString $failureType $postfix');
 			}
 		}
 		exitCodeMutex.release();

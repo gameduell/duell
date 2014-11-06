@@ -236,21 +236,21 @@ class ExtractionHelper
 					}
 				}
 				
-				CommandHelper.runCommand("", "tar", [ arguments, sourceZIP ], false);
+				CommandHelper.runCommand("", "tar", [arguments, sourceZIP], {errorMessage: "extracting file"});
 
 				for (file in FileSystem.readDirectory(ignoreRootFolder))
 				{
-					CommandHelper.runCommand("", "cp", [ "-R", Path.join([ignoreRootFolder, file]), targetPath], false);
+					CommandHelper.runCommand("", "cp", [ "-R", Path.join([ignoreRootFolder, file]), targetPath], {errorMessage: "copying files to the target directory of the extraction"});
 				}
 				
 				Sys.command("rm", [ "-r", ignoreRootFolder ]);
 			} 
 			else 
 			{
-				CommandHelper.runCommand("", "tar", [ arguments, sourceZIP, "-C", targetPath ], false);
+				CommandHelper.runCommand("", "tar", [arguments, sourceZIP, "-C", targetPath], {errorMessage: "extracting file"});
 			}
 			
-			Sys.command ("chmod", [ "-R", "755", targetPath ]);
+			CommandHelper.runCommand("", "chmod", ["-R", "755", targetPath], {errorMessage: "setting permissions"});
 			
 		} 
 		else 

@@ -22,6 +22,7 @@ class GitHelper
                                             systemCommand : true, 
                                             loggingPrefix : "[Git]",
                                             block : true,
+                                            errorMessage: "setting git remote url"
                                         });
         gitProcess.blockUntilFinished();
 
@@ -43,7 +44,8 @@ class GitHelper
                                         {
                                             systemCommand : true, 
                                             loggingPrefix : "[Git]",
-                                            block : true
+                                            block : true,
+                                            errorMessage: "cloning git"
                                         });
         gitProcess.blockUntilFinished();
 
@@ -59,7 +61,8 @@ class GitHelper
                                         {
                                             systemCommand : true, 
                                             loggingPrefix : "[Git]",
-                                            block : true
+                                            block : true,
+                                            errorMessage: "pulling git"
                                         });
         gitProcess.blockUntilFinished();
 
@@ -78,7 +81,8 @@ class GitHelper
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
                                             block : true,
-                                            shutdownOnError : true
+                                            shutdownOnError : true,
+                                            errorMessage: "checking for update on git"
                                         });
 
         gitProcess = new DuellProcess(
@@ -89,7 +93,8 @@ class GitHelper
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
                                             block : true,
-                                            shutdownOnError : true
+                                            shutdownOnError : true,
+                                            errorMessage: "checking for update on git"
                                         });
 
         var output = gitProcess.getCompleteStdout().toString();
@@ -114,7 +119,8 @@ class GitHelper
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
                                             block : true,
-                                            shutdownOnError : true
+                                            shutdownOnError : true,
+                                            errorMessage: "checking for local changes on git"
                                         });
 
         var output = gitProcess.getCompleteStdout().toString();
@@ -144,7 +150,8 @@ class GitHelper
                                 systemCommand : true,
                                 loggingPrefix : "[Git]",
                                 block : true,
-                                shutdownOnError : true
+                                shutdownOnError : true,
+                                errorMessage: "fetching git"
                             });
     }
 
@@ -158,7 +165,8 @@ class GitHelper
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
                                             block : true,
-                                            shutdownOnError : true
+                                            shutdownOnError : true,
+                                            errorMessage: "getting current branch on git"
                                         });
 
         var output = gitProcess.getCompleteStdout().toString();
@@ -176,7 +184,8 @@ class GitHelper
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
                                             block : true,
-                                            shutdownOnError : true
+                                            shutdownOnError : true,
+                                            errorMessage: "getting current commit on git"
                                         });
 
         var output = gitProcess.getCompleteStdout().toString();
@@ -194,7 +203,8 @@ class GitHelper
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
                                             block : true,
-                                            shutdownOnError : true
+                                            shutdownOnError : true,
+                                            errorMessage: "getting commit for tag on git"
                                         });
 
         var output = gitProcess.getCompleteStdout().toString();
@@ -212,7 +222,8 @@ class GitHelper
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
                                             block : true,
-                                            shutdownOnError : true
+                                            shutdownOnError : true,
+                                            errorMessage: "listing branches on git"
                                         });
 
         var outputAllBranches = gitProcess.getCompleteStdout().toString();
@@ -261,7 +272,8 @@ class GitHelper
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
                                             block : true,
-                                            shutdownOnError : true
+                                            shutdownOnError : true,
+                                            errorMessage: "listing tags on git"
                                         });
 
         var output = gitProcess.getCompleteStdout().toString();
@@ -279,7 +291,8 @@ class GitHelper
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
                                             block : true,
-                                            shutdownOnError : true
+                                            shutdownOnError : true,
+                                            errorMessage: "checking out branch on git"
                                         });
 
         return gitProcess.exitCode();
@@ -295,7 +308,8 @@ class GitHelper
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
                                             block : true,
-                                            shutdownOnError : true
+                                            shutdownOnError : true,
+                                            errorMessage: "checking out commit on git"
                                         });
 
         return gitProcess.exitCode();

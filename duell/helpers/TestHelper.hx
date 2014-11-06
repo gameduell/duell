@@ -35,7 +35,8 @@ class TestHelper
 											systemCommand : true, 
 											timeout : timeout, 
 											loggingPrefix : "[TestListener]",
-											block : true
+											block : true,
+                                            errorMessage: "running test listener server"
 										});
 
 		if (testProcess.exitCode() != 0)

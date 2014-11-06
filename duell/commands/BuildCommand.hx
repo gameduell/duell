@@ -17,6 +17,7 @@ import duell.objects.Haxelib;
 import duell.helpers.LogHelper;
 import duell.helpers.AskHelper;
 import duell.helpers.PathHelper;
+import duell.helpers.CommandHelper;
 
 import sys.io.File;
 import sys.FileSystem;
@@ -205,10 +206,7 @@ class BuildCommand implements IGDCommand
 
 		PathHelper.mkdir(outputFolder);
 
-		var result = duell.helpers.CommandHelper.runCommand("", "haxe", buildArguments);
-
-		if (result != 0)
-			LogHelper.error("An error occured while compiling the build tool");
+		CommandHelper.runHaxe("", buildArguments, {errorMessage: "building the plugin"});
 
 		var runArguments = [outputRun];
 		runArguments = runArguments.concat(Arguments.getRawArguments());
@@ -217,10 +215,9 @@ class BuildCommand implements IGDCommand
 		serializer.serialize(runArguments);
 		File.write(outputRunArguments, true).writeString(serializer.toString());
 
-		result = duell.helpers.CommandHelper.runCommand("", "neko", runArguments);
-
+		var result = CommandHelper.runNeko("", runArguments, {errorMessage: "running the plugin", exitOnError: false});
 		if (result != 0)
-			LogHelper.error("An error occured while running the build tool");
+			Sys.exit(result);
 	}
 
 	private function runFast(): Void
@@ -243,10 +240,9 @@ class BuildCommand implements IGDCommand
 
 		runArguments.push("-fast");
 
-		var result = duell.helpers.CommandHelper.runCommand("", "neko", runArguments);
-
+		var result = CommandHelper.runNeko("", runArguments, {errorMessage: "running the plugin", exitOnError: false});
 		if (result != 0)
-			LogHelper.error("An error occured while running the build tool");
+			Sys.exit(result);
 	}
 
 	/// -------
