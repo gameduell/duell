@@ -7,9 +7,13 @@
 package duell.helpers;
 
 import duell.helpers.PlatformHelper;
+import duell.helpers.CommandHelper;
+import duell.helpers.LogHelper;
 import sys.FileSystem;
 
 import haxe.io.Path;
+
+using StringTools;
 
 class PathHelper
 {
@@ -36,6 +40,11 @@ class PathHelper
 		{
 			total += getHomeFolder();
 			parts.shift();
+		}
+
+		if (PlatformHelper.hostPlatform == Platform.WINDOWS && parts[0].length == 2 && parts[0].charAt(1) == ":")
+		{
+			total += parts.shift();
 		}
 
 		var oldPath = "";
@@ -76,11 +85,6 @@ class PathHelper
 			path = StringTools.replace (path, " ", "\\ ");
 			path = StringTools.replace (path, "\\'", "'");
 			path = StringTools.replace (path, "'", "\\'");
-		} 
-		else 
-		{
-			path = StringTools.replace (path, "^,", ",");
-			path = StringTools.replace (path, ",", "^,");
 		}
 		
 		return expand(path);
@@ -124,25 +128,42 @@ class PathHelper
 			} 
 			catch(e : Dynamic) 
 			{
-				return;
+				duell.helpers.LogHelper.error("An error occurred while deleting the directory " + directory);
 			}
 			
 			for (file in FileSystem.readDirectory(directory)) 
 			{
 				var path = Path.join([directory, file]);
 				
-				try 
-				{
+				try {
+
 					if (FileSystem.isDirectory(path)) 
 					{
 						removeDirectory(path);
 					} 
 					else 
 					{
-						FileSystem.deleteFile(path);
+						try 
+						{
+							FileSystem.deleteFile(path);
+						}
+						catch (e:Dynamic)
+						{
+							if (PlatformHelper.hostPlatform == Platform.WINDOWS)
+							{
+								CommandHelper.runCommand("", "del", [path.replace("/", "\\"), "/f", "/q"]);
+							}
+							else
+							{
+								CommandHelper.runCommand("", "rm", ["-f", path]);
+							}
+						}
 					}
-				} 
-				catch (e:Dynamic) {}
+				}
+				catch (e:Dynamic) 
+				{
+					duell.helpers.LogHelper.error("An error occurred while deleting the directory " + directory);
+				}
 			}
 			
 			LogHelper.info("", " - \x1b[1mRemoving directory:\x1b[0m " + directory);
@@ -151,7 +172,10 @@ class PathHelper
 			{
 				FileSystem.deleteDirectory (directory);
 			} 
-			catch (e:Dynamic) {}
+			catch (e:Dynamic) 
+			{
+				duell.helpers.LogHelper.error("An error occurred while deleting the directory " + directory);
+			}
 			
 		}
 		

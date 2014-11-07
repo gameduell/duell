@@ -20,7 +20,7 @@ class LogHelper
 	public static var verbose(get, null): Bool;
 	
 	private static var colorCodes : EReg = ~/\x1b\[[^m]+m/g;
-	private static var colorSupported : Null<Bool>;
+	private static var colorSupported : Null<Bool> = null;
 	private static var sentWarnings : Map<String, Bool> = new Map<String, Bool>();
 
 	public static inline var RED = "\x1b[31;1m";
@@ -141,7 +141,7 @@ class LogHelper
 		if (enableColor && colorSupported) 
 			return output;
 		else 
-			return output;
-			//return colorCodes.replace(output, "");
+			//return output;
+			return colorCodes.replace(output, "");
 	}
 }

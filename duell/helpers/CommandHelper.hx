@@ -18,6 +18,8 @@ import sys.io.Process;
 import sys.FileSystem;
 import neko.Lib;
 
+using StringTools;
+
 typedef CommandOptions = 
 {
 	?logOnlyIfVerbose : Bool, /// defaults to true
@@ -200,7 +202,7 @@ class CommandHelper
 
 	public static function runNeko(path: String, args : Array <String>, ?options: CommandOptions) : Int 
 	{
-    	var haxePath = Sys.getEnv("HAXEPATH");
+    	var haxePath = Sys.getEnv("NEKO_INSTPATH");
     	if (options == null)
     	{
     		options = {systemCommand: true};
