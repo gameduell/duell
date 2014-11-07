@@ -8,6 +8,7 @@ package duell.helpers;
 
 import duell.helpers.PlatformHelper;
 import duell.helpers.LogHelper;
+import duell.helpers.DuellConfigHelper;
 
 import duell.objects.DuellProcess;
 
@@ -16,6 +17,8 @@ import haxe.io.Eof;
 import haxe.io.Path;
 import sys.io.Process;
 import sys.FileSystem;
+import sys.io.FileOutput;
+import sys.io.File;
 import neko.Lib;
 
 using StringTools;
@@ -225,7 +228,22 @@ class CommandHelper
     	{
     		options.systemCommand = true;
     	}
-		return CommandHelper.runCommand(path, Path.join([haxePath, "haxe"]), args, options);
+
+    	if (FileSystem.exists(duell.helpers.DuellConfigHelper.getDuellConfigFolderLocation()))
+    	{
+			var outputFolder = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"]);
+			var outputFile = Path.join([outputFolder, "commandHelperHaxeExec.hxml"]);
+
+			var file: FileOutput = File.write(outputFile, true);
+			file.writeString(args.join("\n"));
+			file.close();
+
+			return CommandHelper.runCommand(path, Path.join([haxePath, "haxe"]), [outputFile], options);
+    	}
+    	else
+    	{
+			return CommandHelper.runCommand(path, Path.join([haxePath, "haxe"]), args, options);
+    	}
 	}
 
 	public static function runHaxelib(path: String, args : Array <String>, ?options: CommandOptions) : Int 
