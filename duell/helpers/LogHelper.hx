@@ -137,11 +137,13 @@ class LogHelper
 			
 		}
 
-
 		if (enableColor && colorSupported) 
 			return output;
 		else 
-			//return output;
-			return colorCodes.replace(output, "");
+		{
+			try {
+				return colorCodes.replace(output, "");
+			}
+		}
 	}
 }
