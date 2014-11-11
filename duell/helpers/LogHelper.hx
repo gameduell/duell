@@ -143,7 +143,10 @@ class LogHelper
 		{
 			try {
 				return colorCodes.replace(output, "");
-			}
+			} catch (e:Dynamic) {
+				trace("error on color replace");
+				return output;
+			};
 		}
 	}
 }
