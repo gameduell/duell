@@ -32,6 +32,8 @@ class ArgumentSpec <T>
 	{
 		this.name = name;
 		this.documentation = documentation;
+		this.set = false;
+		this.value = null;
 	}
 }
 

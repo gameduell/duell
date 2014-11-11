@@ -31,7 +31,7 @@ class LogHelper
 
 	public static function get_enableColor(): Bool
 	{
-		return Arguments.isSet("-nocolor");
+		return !Arguments.isSet("-nocolor");
 	}
 
 	public static function get_mute(): Bool
