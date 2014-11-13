@@ -96,5 +96,52 @@
     		</arg>
 
     	</args>
+
+        <configuration>
+            <elem name="app">
+                Use this to configure the title, package, company and filename (usually title without spaces) of your project. E.g.: &lt;app title="Super Game" file="SuperGame" package="com.game.super" version="1.2.3" company="MegaGamesCompany" /&gt;
+            </elem>
+
+            <elem name="main">
+                Use this to set the class name of the Main Class in your application. E.g.: &lt;main name="super.game.Main" /&gt;. 
+            </elem>
+
+            <elem name="output">
+                Use this to set where the output of your build will go to. By default this is "Export". E.g.: &lt;output path="Some/Folder" /&gt;. 
+            </elem>
+
+            <elem name="source">
+                Use this to set additional folders as Source folders for your build. By default the path where the configuration file is automatically set as a class path, so you probably only need to use this when you have a unstandard setup. E.g.: &lt;source path="Some/Folder" /&gt;. 
+            </elem>
+
+            <elem name="haxe-compile-arg">
+                Use this tag to add additional arguments to the haxe compilation. E.g.: &lt;haxe-compile-arg value="--no-opt" /&gt;. 
+            </elem>
+
+            <elem name="platform-config">
+                Inside this tag there will be configurations specific to each platform. To learn about them use "duell build 'platform' -help" for a complete list. Under this tag there will be one node for each platform and then under that node will be the configurations specific to the platform. E.g.: &lt;platform-config&gt; &lt;ios&gt; &lt;icon path="Iconys/ios" /&gt; &lt;/ios&gt; &lt;/platform-config&gt;. 
+            </elem>
+
+            <elem name="library-config">
+                Inside this tag there will be configurations specific to a library. To learn about them consult the library documentation which is not currently integrated in the tool. Under this tag there will be one node for each library and then under that node will be the configurations specific to the library. E.g.: &lt;library-config&gt; &lt;opengl&gt; &lt;depthbuffer value="true" /&gt; &lt;/opengl&gt; &lt;/library-config&gt;. 
+            </elem>
+
+            <elem name="haxelib">
+                Use this to use a haxelib. If its not installed, you will be prompted if you want to. You can also optionally request a specific version. E.g.: &lt;haxelib name="format" version="1.0.0" /&gt;. 
+            </elem>
+
+            <elem name="duelllib">
+                Use this to use a duelllib. If its not installed, you will be prompted if you want to. You can also optionally request a specific version. For an explanation of the versioning system check https://confluence.gameduell.de/display/SGF/Duell+Tool+versioning . E.g.: &lt;duelllib name="opengl" version="1.*.*" /&gt;. 
+            </elem>
+            
+            <elem name="ndll">
+                Use this flag to link against a native library. This is usually used inside libraries. E.g.: &lt;ndll name=&quot;openglcontextandroid&quot; build-file-path=&quot;project/Build.xml&quot; bin-path=&quot;ndll&quot; /&gt; . 
+            </elem>
+            
+            <elem name="include">
+                Use this to include another configuration file. This is specially used in backends of libraries to have specific configurations for a platform.  E.g.: &lt;include path=&quot;backends/openglcontext_android/duell_library.xml&quot;  /&gt;. 
+            </elem>
+            
+        </configuration>
     </command>
 </args>

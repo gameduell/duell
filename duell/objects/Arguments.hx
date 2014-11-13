@@ -50,14 +50,16 @@ class CommandSpec
 	public var commandHandler: IGDCommand;
 
 	public var arguments: Map<String, AnyArgumentSpec>;
+	public var configurationDocumentation: Map<String, String>;
 
-	public function new(name: String, hasPlugin: Bool, commandHandler: IGDCommand, documentation: String, arguments: Map<String, AnyArgumentSpec>)
+	public function new(name: String, hasPlugin: Bool, commandHandler: IGDCommand, documentation: String, arguments: Map<String, AnyArgumentSpec>, configuration: Map<String, String>)
 	{
 		this.name = name;
 		this.hasPlugin = hasPlugin;
 		this.documentation = documentation;
 		this.commandHandler = commandHandler;
 		this.arguments = arguments;
+		this.configurationDocumentation = configuration;
 	}
 }
 
@@ -307,7 +309,21 @@ class Arguments
 			}
 		}
 
-		return new CommandSpec(name, hasPlugin, commandHandler, documentation, args);
+		var configuration = null;
+
+		if (command.hasNode.configuration)
+		{
+			for (argXML in command.node.configuration.elements)
+			{
+				if (configuration == null)
+					configuration = new Map<String, String>();
+				var name = argXML.att.name;
+				var documentation =  StringTools.htmlUnescape(StringTools.trim(argXML.innerData));
+				configuration.set(name, documentation);
+			}
+		}
+
+		return new CommandSpec(name, hasPlugin, commandHandler, documentation, args, configuration);
 	}
 
 	private static function parseArgumentSpec(arg: Fast): AnyArgumentSpec
@@ -459,6 +475,16 @@ class Arguments
 			}
 		}
 
+		LogHelper.info(" ");
+		if (selectedCommand.configurationDocumentation != null)
+		{
+			LogHelper.info(LogHelper.UNDERLINE + "Project Configuration Documentation:" + LogHelper.NORMAL);
+
+			for (doc in selectedCommand.configurationDocumentation.keys())
+			{
+				printDocumentationConfiguration(doc, selectedCommand.configurationDocumentation.get(doc));
+			}
+		}
 	}
 
 	public static function printPluginHelp()
