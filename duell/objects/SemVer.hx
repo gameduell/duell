@@ -141,29 +141,27 @@ class SemVer
 	{
 		/// MAJOR
 		if (left.major == null)
-			return left;
+			return right;
 
 		if (right.major == null)
-			return right;
+			return left;
 
 		/// MINOR
 		if (left.minor == null)
-			return left;
+			return right;
 
 		if (right.minor == null)
-			return right;
+			return left;
 
 		/// PATCH
 		if (left.patch == null)
-			return left;
+			return right;
 
 		if (right.patch == null)
-			return right;
+			return left;
 
 		return left;
 	}
-
-
 
     private static inline var START_OFFSET = 1000000000;
     private static inline var OFFSET_REDUCTION = 100;

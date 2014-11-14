@@ -126,14 +126,11 @@ class GitHelper
         var output = gitProcess.getCompleteStdout().toString();
 
         var changesListStrings = output.split("\n");
-        var changesListArray = changesListStrings.map(function(str : String) : Array<String> return str.split(" "));
-        changesListArray = changesListArray.map(function(array : Array<String>) : Array<String> return array.map(function(str : String) return str.trim()));
-        changesListArray = changesListArray.map(function(array : Array<String>) : Array<String> return array.filter(function(str : String) return str != ""));
-        changesListArray = changesListArray.filter(function(array : Array<String>) : Bool return array.length > 0);
+        var changesListStringsTrimmed = changesListStrings.map(function(str : String): String return str.trim());
 
-        for (array in changesListArray)
+        for (str in changesListStringsTrimmed)
         {
-            if(array[0] != "??")
+            if(str != "" && !str.startsWith("??"))
                 return false;
         }
 
