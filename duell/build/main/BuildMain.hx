@@ -22,6 +22,11 @@ class BuildMain
     public static function main()
     {
         Arguments.validateArguments();
+
+        for (define in Arguments.defines.keys())
+        {
+            Configuration.addParsingDefine(define);
+        }
 		try 
         {
 	 		var build = new PlatformBuild();

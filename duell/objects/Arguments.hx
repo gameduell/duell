@@ -79,6 +79,8 @@ class Arguments
 	private static var pluginConfigurationDocumentation: Map<String, String> = null;
 	private static var generalDocumentation: String = null;
 
+	public static var defines(default, null): Map<String, String> = new Map<String, String>();
+
 	private static var rawArgs: Array<String>;
 
 	public static function validateArguments(): Bool
@@ -164,6 +166,12 @@ class Arguments
 		{
 			var argString = args[index++];
 
+			if (argString == "-D")
+			{
+				parseDefine(args[index++]);
+				continue;
+			}
+
 			var argSpec = null;
 			if (generalArgumentSpecs != null && generalArgumentSpecs.exists(argString))
 			{
@@ -227,6 +235,24 @@ class Arguments
 		}
 
 		return true;
+	} 
+
+	private static function parseDefine(str: String): Void
+	{
+		var array = str.split("=");
+		if (array.length == 1)
+		{
+			defines.set(array[0], null);
+		}
+		else if (array.length > 2)
+		{
+			LogHelper.error("Argument define " + str + " has incorrect structure, should be like -D SOMETHING or -D SOMETHING=2");
+		}
+		else
+		{
+			defines.set(array[0], array[1]);
+		}
+
 	} 
 
 	private static function parseConfig(): Void
@@ -371,6 +397,16 @@ class Arguments
 			return pluginArgumentSpecs.get(argument).value;
 
 		throw "Unknown argument " + argument;
+	}
+
+	public static function isDefineSet(define: String)
+	{
+		return defines.exists(define);
+	}
+
+	public static function getDefine(define: String)
+	{
+		return defines.get(define);
 	}
 
 	public static function getSelectedCommand()
