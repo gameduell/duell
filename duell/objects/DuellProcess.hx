@@ -9,6 +9,7 @@ import haxe.io.Bytes;
 import haxe.io.Path;
 import sys.io.Process;
 import sys.FileSystem;
+import neko.vm.Thread;
 
 import duell.helpers.LogHelper;
 import duell.helpers.PathHelper;
@@ -72,6 +73,8 @@ class DuellProcess
 	private var path : String;
 	private var args : Array<String>;
 	private var argString : String;
+
+	private var threadWaitingForFinish : Thread;
 
 	public function new(path : String, comm : String, args : Array<String>, options : ProcessOptions = null)
 	{	
@@ -210,6 +213,11 @@ class DuellProcess
 				finished = true;
 				stdoutFinished = true;
 
+				if (threadWaitingForFinish != null)
+				{
+					threadWaitingForFinish.sendMessage(null);
+				}
+
 				/// checks for failure
 				exitCodeBlocking();
 			}
@@ -258,6 +266,11 @@ class DuellProcess
 				finished = true;
 				stderrFinished = true;
 
+				if (threadWaitingForFinish != null)
+				{
+					threadWaitingForFinish.sendMessage(null);
+				}
+
 				/// checks for failure
 				exitCodeBlocking();
 			}
@@ -277,6 +290,12 @@ class DuellProcess
 						{
 							finished = true;
 							timedout = true;
+
+							if (threadWaitingForFinish != null)
+							{
+								threadWaitingForFinish.sendMessage(null);
+							}
+
 							LogHelper.println('Process "$command ${args.join(" ")}" timed out.');
 							process.kill();
 							break;
@@ -294,6 +313,7 @@ class DuellProcess
 
 	public function blockUntilFinished()
 	{
+		threadWaitingForFinish = Thread.current();
 		exitCodeBlocking();
 	}
 	
@@ -348,8 +368,13 @@ class DuellProcess
 		if (!finished)
 			return null;
 
+		threadWaitingForFinish = Thread.current();
+
 		/// WAIT FOR THE STDOUT TO FINISH COMPLETELY
-		while(!stdoutFinished) {};
+		while(!stdoutFinished)
+		{
+			Thread.readMessage(true);
+		}
 
 		stdoutMutex.acquire();
 
@@ -365,8 +390,13 @@ class DuellProcess
 		if (!finished)
 			return null;
 
+		threadWaitingForFinish = Thread.current();
+
 		/// WAIT FOR THE STDERR TO FINISH COMPLETELY
-		while(!stderrFinished) {};
+		while(!stderrFinished)
+		{
+			Thread.readMessage(true);
+		}
 
 		stderrMutex.acquire();
 		
@@ -392,13 +422,10 @@ class DuellProcess
 		/// ONLY ONE CALL TO EXIT CODE IS POSSIBLE, SO WE CACHE IT.
 		if (exitCodeCache == null)
 		{
-			while(!finished) {}
-
-			/// WAIT FOR THE STDOUT TO FINISH COMPLETELY
-			while(!stdoutFinished) {};
-
-			/// WAIT FOR THE STDERR TO FINISH COMPLETELY
-			while(!stderrFinished) {};
+			while (!finished || !stdoutFinished || !stderrFinished)
+			{
+				Thread.readMessage(true);
+			}
 
 			if (killed)
 				exitCodeCache = 0;
