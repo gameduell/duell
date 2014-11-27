@@ -43,6 +43,8 @@ class DuellProcess
 	private var totalStderr : BytesOutput;
 	private var stderrMutex : Mutex;
 	private var stderrLineBuffer : BytesOutput;
+	private var waitingOnStderrMutex : Mutex;
+	private var waitingOnStdoutMutex : Mutex;
 
 	/// TIMEOUT
 	private var timeoutTicker : Bool;
@@ -74,8 +76,6 @@ class DuellProcess
 	private var args : Array<String>;
 	private var argString : String;
 
-	private var threadWaitingForFinish : Thread;
-
 	public function new(path : String, comm : String, args : Array<String>, options : ProcessOptions = null)
 	{	
 		/// PROCESS ARGUMENTS
@@ -84,6 +84,8 @@ class DuellProcess
 		this.path = path == null ? "" : path;
 
 		exitCodeMutex = new Mutex();
+		waitingOnStderrMutex = new Mutex();
+		waitingOnStdoutMutex = new Mutex();
 
 		systemCommand = options != null && options.systemCommand != null ? options.systemCommand : false;
 		loggingPrefix = options != null && options.loggingPrefix != null ? options.loggingPrefix : "";
@@ -132,6 +134,7 @@ class DuellProcess
 
 		/// RUN THE PROCESS AND THE LISTENERS
 		timeoutTicker = true;
+
 		process = new sys.io.Process(command, args);
 
 		stdin = process.stdin;
@@ -179,6 +182,7 @@ class DuellProcess
 		neko.vm.Thread.create(
 			function ()
 			{
+		waitingOnStdoutMutex.acquire();
 				try
 				{
 					while(true)
@@ -212,11 +216,8 @@ class DuellProcess
 				log(stdoutLineBuffer.getBytes().toString());
 				finished = true;
 				stdoutFinished = true;
-
-				if (threadWaitingForFinish != null)
-				{
-					threadWaitingForFinish.sendMessage(null);
-				}
+				
+				waitingOnStdoutMutex.release();
 
 				/// checks for failure
 				exitCodeBlocking();
@@ -233,8 +234,10 @@ class DuellProcess
 		neko.vm.Thread.create(
 			function ()
 			{
+		waitingOnStderrMutex.acquire();
 				try
 				{
+
 					while(true)
 					{
 						var str = process.stderr.readString(1);
@@ -266,10 +269,7 @@ class DuellProcess
 				finished = true;
 				stderrFinished = true;
 
-				if (threadWaitingForFinish != null)
-				{
-					threadWaitingForFinish.sendMessage(null);
-				}
+				waitingOnStderrMutex.release();
 
 				/// checks for failure
 				exitCodeBlocking();
@@ -291,13 +291,9 @@ class DuellProcess
 							finished = true;
 							timedout = true;
 
-							if (threadWaitingForFinish != null)
-							{
-								threadWaitingForFinish.sendMessage(null);
-							}
-
 							LogHelper.println('Process "$command ${args.join(" ")}" timed out.');
 							process.kill();
+							process.close();
 							break;
 						}
 						timeoutTicker = false;
@@ -313,7 +309,6 @@ class DuellProcess
 
 	public function blockUntilFinished()
 	{
-		threadWaitingForFinish = Thread.current();
 		exitCodeBlocking();
 	}
 	
@@ -368,13 +363,9 @@ class DuellProcess
 		if (!finished)
 			return null;
 
-		threadWaitingForFinish = Thread.current();
-
 		/// WAIT FOR THE STDOUT TO FINISH COMPLETELY
-		while(!stdoutFinished)
-		{
-			Thread.readMessage(true);
-		}
+		waitingOnStdoutMutex.acquire();
+		waitingOnStdoutMutex.release();
 
 		stdoutMutex.acquire();
 
@@ -390,13 +381,9 @@ class DuellProcess
 		if (!finished)
 			return null;
 
-		threadWaitingForFinish = Thread.current();
-
 		/// WAIT FOR THE STDERR TO FINISH COMPLETELY
-		while(!stderrFinished)
-		{
-			Thread.readMessage(true);
-		}
+		waitingOnStderrMutex.acquire();
+		waitingOnStderrMutex.release();
 
 		stderrMutex.acquire();
 		
@@ -422,10 +409,11 @@ class DuellProcess
 		/// ONLY ONE CALL TO EXIT CODE IS POSSIBLE, SO WE CACHE IT.
 		if (exitCodeCache == null)
 		{
-			while (!finished || !stdoutFinished || !stderrFinished)
-			{
-				Thread.readMessage(true);
-			}
+			waitingOnStderrMutex.acquire();
+			waitingOnStderrMutex.release();
+			waitingOnStdoutMutex.acquire();
+			waitingOnStdoutMutex.release();
+			while (!finished) {}
 
 			if (killed)
 				exitCodeCache = 0;
