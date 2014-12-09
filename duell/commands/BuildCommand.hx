@@ -348,16 +348,16 @@ class BuildCommand implements IGDCommand
 
 						found = true;
 
-						if (currentDuellLib.version != newDuellLib.version)
+						if (currentDuellLib.actualVersion != newDuellLib.actualVersion)
 						{
 							if (!Arguments.isSet("-ignoreversioning"))
 							{
 								if (!currentDuellLib.resolveConflict(newDuellLib))
 								{
-									LogHelper.error('Tried to compile with two incompatible versions "${newDuellLib.version}" and "${currentDuellLib.version}" of the same library $name');
+									LogHelper.error('Tried to compile with two incompatible versions "${newDuellLib.actualVersion}" and "${currentDuellLib.actualVersion}" of the same library $name');
 								}
 
-								LogHelper.info('Library $name had a version conflict with version "${newDuellLib.version}" and "${currentDuellLib.version}". Resolving to version "${currentDuellLib.version}".');
+								LogHelper.info('Library $name had a version conflict with version "${newDuellLib.actualVersion}" and "${currentDuellLib.actualVersion}". Resolving to version "${currentDuellLib.actualVersion}".');
 							}
 							/// invalidate parsed cache
 							dependenciesAlreadyParsed.remove(currentDuellLib);
