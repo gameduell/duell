@@ -105,4 +105,36 @@ class FileHelper
 			LogHelper.error ("Cannot open \"" + destination + "\" for writing, do you have correct access permissions?");
 		}
 	}
+	public static function getAllFilesInDir(source:String):Array<String>
+	{
+	    var files:Array <String> = null;
+		var retFiles: Array<String> = [];
+		try 
+		{
+			files = FileSystem.readDirectory(source);
+		} 
+		catch (e:Dynamic) 
+		{
+			LogHelper.error("Could not find source directory \"" + source + "\"");
+		}
+		
+		for (file in files) 
+		{
+			if (file != "." && file != "..")
+			{
+				var itemSource:String = source + "/" + file;
+				
+				if (FileSystem.isDirectory(itemSource)) 
+				{
+					getAllFilesInDir(itemSource);
+				} 
+				else 
+				{
+					retFiles.push(itemSource);
+				}
+			}
+		}
+		return retFiles;
+
+	}
 }
