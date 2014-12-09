@@ -453,14 +453,14 @@ class BuildCommand implements IGDCommand
 			if (!duellLib.isRepoWithoutLocalChanges())
 			{
 				LogHelper.error(
-					'The library "${duellLib.name}"" is not on the correct version "${duellLib.version}", ' +
+					'The library "${duellLib.name}"" is not on the correct version "${duellLib.actualVersion}", ' +
 					'and it contains local changes or new files, so we can\'t shift automatically. ' +
 					'Please check your repository and save the changes, or set the version to be the branch you are on.');
 			}
 
 			if (!duellLib.isPossibleToShiftToTheCorrectBranch())
 			{
-            	var answer = AskHelper.askYesOrNo('The library of ${duellLib.name} does not have the branch for version ${duellLib.version}. Would you like to try to update it?');
+            	var answer = AskHelper.askYesOrNo('The library of ${duellLib.name} does not have the branch for version ${duellLib.actualVersion}. Would you like to try to update it?');
 
 	            if(answer)
 	            {
@@ -468,7 +468,7 @@ class BuildCommand implements IGDCommand
 
 					if (!duellLib.isPossibleToShiftToTheCorrectBranch())
 					{
-						LogHelper.error('After the update, the version ${duellLib.version} could not be found.');
+						LogHelper.error('After the update, the version ${duellLib.actualVersion} could not be found.');
 					}
 	            }
 	            else
@@ -488,14 +488,14 @@ class BuildCommand implements IGDCommand
 			if (!duellLib.isRepoWithoutLocalChanges())
 			{
 				LogHelper.error(
-					'The library "${duellLib.name}"" is not on the correct version "${duellLib.version}", ' +
+					'The library "${duellLib.name}"" is not on the correct version "${duellLib.actualVersion}", ' +
 					'and it contains local changes or new files, so we can\'t shift automatically. ' +
 					'Please check your repository and save the changes, or set the version to be the branch you are on.');
 			}
 
 			if (!duellLib.isPossibleToShiftToTheCorrectCommit())
 			{
-            	var answer = AskHelper.askYesOrNo('The library of ${duellLib.name} does not have the version ${duellLib.version}. Would you like to try to update it?');
+            	var answer = AskHelper.askYesOrNo('The library of ${duellLib.name} does not have the version ${duellLib.actualVersion}. Would you like to try to update it?');
 
 	            if(answer)
 	            {
@@ -503,7 +503,7 @@ class BuildCommand implements IGDCommand
 
 					if (!duellLib.isPossibleToShiftToTheCorrectCommit())
 					{
-						LogHelper.error('After the update, the version ${duellLib.version} could not be found.');
+						LogHelper.error('After the update, the version ${duellLib.actualVersion} could not be found.');
 					}
 	            }
 	            else
