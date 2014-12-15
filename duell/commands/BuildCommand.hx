@@ -348,7 +348,7 @@ class BuildCommand implements IGDCommand
 
 						found = true;
 
-						if (currentDuellLib.version != newDuellLib.version)
+						if (currentDuellLib.actualVersion != newDuellLib.actualVersion)
 						{
 							if (!Arguments.isSet("-ignoreversioning"))
 							{

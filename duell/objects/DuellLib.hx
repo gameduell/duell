@@ -384,7 +384,12 @@ class DuellLib
 		switch (getVersionType())
 		{
 			case (Version):
-				return getCompatibleTag();
+				/// actual version might be called without having checked the compatible tag
+				/// this is a problem because we might have not shifted to the master branch yet
+				if (compatibleTagCache == null)
+					return version;
+				else
+					return getCompatibleTag();
 			case (Branch):
 				return version;
 			case (Override):
