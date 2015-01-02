@@ -7,6 +7,7 @@ import duell.objects.Arguments;
 import duell.helpers.DuellConfigHelper;
 import duell.objects.DuellConfigJSON;
 import duell.helpers.AskHelper;
+import duell.helpers.DuellLibHelper;
 import duell.objects.DuellLib;
 
 import duell.commands.BuildCommand;
@@ -70,16 +71,15 @@ class Duell
 
         if (!isMissingSelfSetup && !Arguments.isSet("-fast") && !Arguments.isSet("-ignoreversioning"))
         {
-            var duell = DuellLib.getDuellLib("duell");
-            if (duell.isInstalled())
+            if (DuellLibHelper.isInstalled("duell"))
             {
-                if (duell.updateNeeded() == true)
+                if (DuellLibHelper.updateNeeded("duell"))
                 {
                     var answer = AskHelper.askYesOrNo('The library of the duell tool is not up to date on the master branch. Would you like to try to update it?');
 
                     if(answer)
                     {
-                        duell.update();
+                        DuellLibHelper.update("duell");
                     }
                 }
             }

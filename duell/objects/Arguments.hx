@@ -2,6 +2,7 @@ package duell.objects;
 
 import duell.helpers.DuellConfigHelper;
 import duell.helpers.DuellLibListHelper;
+import duell.helpers.DuellLibHelper;
 import duell.helpers.LogHelper;
 
 import duell.commands.IGDCommand;
@@ -146,10 +147,10 @@ class Arguments
 			index = 2;
 
 			/// check if plugin is installed and parse its arguments
-			var duellLib = DuellLib.getDuellLib("duell" + selectedCommand.name + plugin);
-			if (duellLib.isInstalled())
+			var duellLibName = "duell" + selectedCommand.name + plugin;
+			if (DuellLibHelper.isInstalled(duellLibName))
 			{
-				var path = duellLib.getPath();
+				var path = DuellLibHelper.getPath(duellLibName);
 				path = Path.join([path, PLUGIN_XML_FILE]);
 				if (sys.FileSystem.exists(path))
 					parsePlugin(File.getContent(path));

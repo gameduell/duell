@@ -16,6 +16,7 @@ import duell.helpers.CommandHelper;
 import duell.helpers.HXCPPConfigXMLHelper;
 import duell.helpers.DuellConfigHelper;
 import duell.helpers.DuellLibListHelper;
+import duell.helpers.DuellLibHelper;
 
 import duell.objects.HXCPPConfigXML;
 import duell.objects.Haxelib;
@@ -249,7 +250,7 @@ class ToolSetupCommand implements IGDCommand
 			
 			if (answer) 
 			{
-				CommandHelper.runCommand("", "sudo", ["cp", "-f", DuellLib.getDuellLib("duell").getPath() + "/bin/duell.sh", "/usr/bin/duell"], {errorMessage: "copying duell executable to the path"});
+				CommandHelper.runCommand("", "sudo", ["cp", "-f", DuellLibHelper.getPath("duell") + "/bin/duell.sh", "/usr/bin/duell"], {errorMessage: "copying duell executable to the path"});
 				CommandHelper.runCommand("", "sudo", ["chmod", "755", "/usr/bin/duell"], {errorMessage: "setting permissions on the duell executable"});
 				installedCommand = true;
 			}

@@ -5,6 +5,8 @@
  */
 package duell.objects;
 
+import duell.helpers.LogHelper;
+
 using Std;
 
 enum Preview {
@@ -15,56 +17,57 @@ enum Preview {
 
 class SemVer 
 {
-	public var major (default, null) : Null<Int>;
-	public var minor (default, null) : Null<Int>;	
-	public var patch (default, null) : Null<Int>;
-	public var preview (default, null) : Null<Preview>;
-	public var previewNum (default, null) : Null<Int>;
-	public function new(major, minor, patch, ?preview, ?previewNum) 
+	public var major (default, null) : Int;
+	public var minor (default, null) : Int;	
+	public var patch (default, null) : Int;
+	public var plus (default, null) : Bool;
+	public function new(major, minor, patch, plus) 
 	{
 		this.major = major;
 		this.minor = minor;
 		this.patch = patch;
-		this.preview = preview;
-		this.previewNum = previewNum;
+		this.plus = plus;
 
-		if ((patch != null && minor == null) || (patch != null && major == null) || (major == null && minor != null))
-			throw "Semantic version can't have undetermined minor/major and determined patch/minor. 1.*.1 or *.*.1 is not valid, only 1.1.* or 1.*.*";
+		if (this.major == null)
+		{
+			this.major = 0;
+			this.plus = true;
+			LogHelper.info("asterisks on versions as been deprecated. Please use 1.0.0+ instead of 1.*.*");
+		}
 
-		if ((major == null || minor == null || patch == null) && (preview != null || previewNum != null))
-			throw "Semantic version can't have undetermined patch/minor/major and specified preview/previewNum";
+		if (this.minor == null)
+		{
+			this.minor = 0;
+			this.plus = true;
+			LogHelper.info("asterisks on versions as been deprecated. Please use 1.0.0+ instead of 1.*.*");
+		}
+
+		if (this.patch == null)
+		{
+			this.patch = 0;
+			this.plus = true;
+			LogHelper.info("asterisks on versions as been deprecated. Please use 1.0.0+ instead of 1.*.*");
+		}
 	}
 	
 	public function toString():String 
 	{
 		var ret = '';
 
-		if (major != null)
-			ret += '$major';
-		else
-			ret += '*';
+		ret += '$major';
 
-		if (minor != null)
-			ret += '.$minor';
-		else
-			ret += '.*';
+		ret += '.$minor';
 
-		if (patch != null)
-			ret += '.$patch';
-		else
-			ret += '.*';
+		ret += '.$patch';
 
-		if(preview != null) 
+		if (plus)
 		{
-			ret += '-' + preview.getName().toLowerCase();
-			if (previewNum != null) 
-			{
-				ret += '.' + previewNum;
-			}
+			ret += '+';
 		}
+
 		return ret;
 	}
-	static var parse = ~/^([0-9|\*]+)\.([0-9|\*]+)\.([0-9|\*]+)(-(alpha|beta|rc)(\.([0-9]+))?)?$/;
+	static var parse = ~/^([0-9|\*]+)\.([0-9|\*]+)\.([0-9|\*]+)(\+)?$/;
 	
 	/// versions that do not respect the regexp will return null
 	/// versions that respect the regexp, but are incosistent, will throw an exception 
@@ -76,8 +79,7 @@ class SemVer
 		var major = null;
 		var minor = null;
 		var patch = null;
-		var preview = null;
-		var previewNum = null;
+		var plus = false;
 
 		if (parse.match(s.toLowerCase()))
 		{ 
@@ -90,20 +92,12 @@ class SemVer
 			if (parse.matched(3) != "*")
 				patch = parse.matched(3).parseInt();
 
-			preview = 	switch parse.matched(5) 
-						{
-							case 'alpha': ALPHA;
-							case 'beta': BETA;
-							case 'rc': RC;
-							case v if (v == null): null;
-							case v: return null;
-						};
-
-			previewNum = 	switch parse.matched(7) 
+			plus = 	switch parse.matched(4) 
 							{
-								case v if (v == null): null;
-								case v: v.parseInt();
+								case v if (v == null): false;
+								case v: true;
 							}
+
 		}
 		else
 		{
@@ -114,52 +108,52 @@ class SemVer
 			major,
 			minor,
 			patch,
-			preview,
-			previewNum
+			plus
 		);
 	}
  
 	public static function areCompatible(left : SemVer, right : SemVer) : Bool
 	{
+		/// this is always false, even if both are "plus"
 		if (left.major != right.major)
 			return false;
 
-		if (left.minor == null || right.minor == null)
+		/// check if
+		if (!left.plus && !right.plus)
+			return left.minor == right.minor && left.patch == right.patch;
+
+		/// this is always true if the major is the same
+		if (left.plus && right.plus)
 			return true;
 
-		if (left.patch == null || right.patch == null)
-			return true;
+		if (!left.plus)
+		{
+			if (left.minor > right.minor)
+				return true;
 
-		return 	left.major == right.major &&
-				left.minor == right.minor &&
-				left.patch == right.patch &&
-				left.preview == right.preview &&
-				left.previewNum == right.previewNum;
+			if (left.patch >= right.patch)
+				return true;
+		}
+		else
+		{
+			if (right.minor > left.minor)
+				return true;
+
+			if (right.patch >= left.patch)
+				return true;
+		}
+
+		return false;
 	}
 
 	public static function getMostSpecific(left : SemVer, right : SemVer) : SemVer
 	{
-		/// MAJOR
-		if (left.major == null)
+		if (left.plus)
 			return right;
-
-		if (right.major == null)
+		if (right.plus)
 			return left;
 
-		/// MINOR
-		if (left.minor == null)
-			return right;
-
-		if (right.minor == null)
-			return left;
-
-		/// PATCH
-		if (left.patch == null)
-			return right;
-
-		if (right.patch == null)
-			return left;
-
+		/// they are the same, so return the left
 		return left;
 	}
 
@@ -167,64 +161,20 @@ class SemVer
     private static inline var OFFSET_REDUCTION = 100;
 	public static function compare(left : SemVer, right : SemVer) : Int
 	{
-
 	    var accumulator = function(ver : SemVer) : Int
 	    {
 	    	var output = 0;
 	    	var offset = START_OFFSET;
 
-	    	if (ver.major == null)
-	    	{
-	    		output = (offset * OFFSET_REDUCTION) - 1;
-	    		return output;
-	    	}
-	    	else
-	    	{
-	    		output = offset * ver.major;
-	    	}
+	    	output = offset * ver.major;
 
 	    	offset = cast(offset / OFFSET_REDUCTION, Int);
 
-	    	if (ver.minor == null)
-	    	{
-	    		output += (offset * OFFSET_REDUCTION) - 1;
-	    		return output;
-	    	}
-	    	else
-	    	{
-	    		output += offset * ver.minor;
-	    	}
+	    	output += offset * ver.minor;
 
 	    	offset = cast(offset / OFFSET_REDUCTION, Int);
 
-	    	if (ver.patch == null)
-	    	{
-	    		output += (offset * OFFSET_REDUCTION) - 1;
-	    		return output;
-	    	}
-	    	else
-	    	{
-	    		output += offset * ver.patch;
-	    	}
-
-	    	offset = cast(offset / OFFSET_REDUCTION, Int);
-
-	    	if (ver.preview == null)
-	    	{
-	    		output += offset * 10; /// release version is higher
-	    		return output;
-	    	}
-	    	if (ver.preview != null)
-	    	{
-	    		output += offset * ver.preview.getIndex();
-	    	}
-
-	    	offset = cast(offset / OFFSET_REDUCTION, Int);
-	    	if (ver.previewNum != null)
-	    	{
-	    		output += offset * ver.previewNum;
-	    	}
-
+	    	output += offset * ver.patch;
 
 	    	return output;
 	    }

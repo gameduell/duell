@@ -3,6 +3,7 @@ package duell.commands;
 import duell.helpers.CommandHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.AskHelper;
+import duell.helpers.DuellLibHelper;
 import duell.objects.DuellLib;
 import haxe.CallStack;
 import duell.helpers.LogHelper;
@@ -56,17 +57,19 @@ class CreateCommand implements IGDCommand
         if (!pluginNameCorrectnessCheck.match(pluginName))
             LogHelper.error('Unknown plugin $pluginName, should be composed of only letters or numbers, no spaces of other characters. Example: \"duell create emptyProject\" or \"duell create helloWorld\"');
 
-        setupLib = DuellLib.getDuellLib("duellcreate" + pluginName);
+        var pluginLibName = "duellcreate" + pluginName;
 
-        if (setupLib.isInstalled())
+        setupLib = DuellLib.getDuellLib(pluginLibName);
+
+        if (DuellLibHelper.isInstalled(pluginLibName))
         {
-            if (setupLib.updateNeeded() == true)
+            if (DuellLibHelper.updateNeeded(pluginLibName) == true)
             {
                 var answer = AskHelper.askYesOrNo('The plugin with name $pluginName is not up to date on the master branch. Would you like to try to update it?');
 
                 if(answer)
                 {
-                    setupLib.update();
+                    DuellLibHelper.update(pluginLibName);
                 }
             }
             else
@@ -80,7 +83,7 @@ class CreateCommand implements IGDCommand
 
             if(answer)
             {
-                setupLib.install();
+                DuellLibHelper.install(pluginLibName);
             }
             else
             {
@@ -104,16 +107,16 @@ class CreateCommand implements IGDCommand
         buildArguments.push(outputRun);
 
         buildArguments.push("-cp");
-        buildArguments.push(DuellLib.getDuellLib("duell").getPath());
+        buildArguments.push(DuellLibHelper.getPath("duell"));
 
         buildArguments.push("-cp");
-        buildArguments.push(setupLib.getPath());
+        buildArguments.push(DuellLibHelper.getPath(setupLib.name));
 
         buildArguments.push("-D");
         buildArguments.push("plugin");
 
         buildArguments.push("-resource");
-        buildArguments.push(Path.join([DuellLib.getDuellLib("duell").getPath(), Arguments.CONFIG_XML_FILE]) + "@generalArguments");
+        buildArguments.push(Path.join([DuellLibHelper.getPath("duell"), Arguments.CONFIG_XML_FILE]) + "@generalArguments");
 
         PathHelper.mkdir(outputFolder);
 
