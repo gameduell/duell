@@ -190,6 +190,25 @@ class GitHelper
         return output.split("\n")[0];
     }
 
+    static public function getCurrentTags(destination : String) : Array<String>
+    {
+        var gitProcess = new DuellProcess(
+                                        destination,
+                                        "git", 
+                                        ["tag", "--contains", "HEAD"], 
+                                        {
+                                            systemCommand : true,
+                                            loggingPrefix : "[Git]",
+                                            block : true,
+                                            shutdownOnError : true,
+                                            errorMessage: "getting current tags on git"
+                                        });
+
+        var output = gitProcess.getCompleteStdout().toString();
+
+        return output.split("\n");
+    }
+
     static public function getCommitForTag(destination : String, tag : String) : String
     {
         var gitProcess = new DuellProcess(

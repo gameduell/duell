@@ -20,6 +20,8 @@ class GitVers
 	var branchList: Array<String> = [];
 	var tagList: Array<String> = [];
 
+	public var currentVersion (default, null): String;
+
 	public function new(dir: String)
 	{
 		this.dir = dir;
@@ -27,12 +29,34 @@ class GitVers
 		/// intermediate data
         branchList = GitHelper.listBranches(dir);
         tagList = GitHelper.listTags(dir);
+
+        currentVersion = getCurrentVersionOfDirectory(dir);
+	}
+
+	private static function getCurrentVersionOfDirectory(dir: String): String
+	{
+        var currentBranch = GitHelper.getCurrentBranch(dir);
+        if (currentBranch == "master")
+        {
+        	var tags = GitHelper.getCurrentTags(dir);
+
+        	for (tag in tags)
+        	{
+        		if (SemVer.ofString(tag) != null)
+        		{
+        			return tag;
+        		}
+        	}
+        	return "master";
+        }
+
+        return currentBranch;
 	}
 
 	/// override version is for basically checking first that version, and then everything else
 	/// its useful for when you want to get all branches of a given name in multiple repos, for developing
 	/// a feature that is done across multiple libraries
-	public function solveVersioning(requestedVersions: Array<String>, overrideVersion: String = null): String
+	public function resolveVersionConflict(requestedVersions: Array<String>, overrideVersion: String = null): String
 	{
         /// check override
         if (overrideVersion != null)
@@ -93,6 +117,23 @@ class GitVers
         	bestVersion = SemVer.getMostSpecific(bestVersion, version);
         }
 
+        return bestVersion.toString();
+	}
+
+	public function solveVersion(version:String): String
+	{
+    	if (branchList.indexOf(version) != -1)
+    	{
+    		return version;
+    	}
+
+    	var semVer = SemVer.ofString(version);
+
+    	if (semVer == null)
+    	{
+    		throw "version is neither a branch or a semantic version";
+    	}
+
         /// check existing versions
         var existingSemanticVersions = determineExistingSemanticVersions();
         
@@ -101,7 +142,7 @@ class GitVers
         var usedVersion = null;
         for (existing in existingSemanticVersions)
         {
-        	if (SemVer.areCompatible(existing, bestVersion))
+        	if (SemVer.areCompatible(existing, semVer))
         	{
         		usedVersion = existing;
         		break;
@@ -110,7 +151,7 @@ class GitVers
 
         if (usedVersion == null)
         {
-        	throw 'could not find any version that is compatible with ${bestVersion.toString()} in existing versions: ' + 
+        	throw 'could not find any version that is compatible with ${semVer.toString()} in existing versions: ' + 
         		   existingSemanticVersions.map(function(s) return s.toString());
         }
         return usedVersion.toString();
@@ -119,6 +160,13 @@ class GitVers
 	/// returns true if something changed, false if the current state is maintained
 	public function changeToVersion(version: String): Bool
 	{
+		if (currentVersion == version)
+		{
+			return false;
+		}
+
+		currentVersion = version;
+
 		if (branchList.indexOf(version) != -1)
 		{
 			return handleChangeToBranch(version);
