@@ -117,7 +117,7 @@ class DuellLibHelper
 
     public static function install(name: String)
     {
-    	haxelibPathOutputCache = null;
+    	haxelibPathOutputCache.remove(name);
 
         var duellLibList = DuellLibListHelper.getDuellLibReferenceList();
 
