@@ -173,15 +173,23 @@ class BuildCommand implements IGDCommand
 
 						foundSomethingNotParsed = true;
 
-						var resolvedVersion = duellLibVersion.gitVers.solveVersion(duellLibVersion.versionRequested);
-						
-						duellLibVersion.gitVers.changeToVersion(resolvedVersion);
+				    	if (!Arguments.isSet("-ignoreversioning"))
+				    	{
+							var resolvedVersion = duellLibVersion.gitVers.solveVersion(duellLibVersion.versionRequested);
+
+							duellLibVersion.gitVers.changeToVersion(resolvedVersion);
+						}
 
 						parseDuellLibWithName(duellLibVersion.name);
 					}
 
 					case VersionState.ParsedVersionChanged: 
 					{
+				    	if (!Arguments.isSet("-ignoreversioning"))
+				    	{
+				    		throw "should never happen, internal error";
+				    	}
+
 						duellLibVersion.versionState = VersionState.ParsedVersionUnchanged;
 
 						var resolvedVersion = duellLibVersion.gitVers.solveVersion(duellLibVersion.versionRequested);
@@ -205,7 +213,14 @@ class BuildCommand implements IGDCommand
 
 		for (duellLibVersion in duellLibVersions)
 		{
-			libList.duellLibs.push(DuellLib.getDuellLib(duellLibVersion.name, duellLibVersion.gitVers.currentVersion));
+	    	if (!Arguments.isSet("-ignoreversioning"))
+	    	{
+				libList.duellLibs.push(DuellLib.getDuellLib(duellLibVersion.name, duellLibVersion.gitVers.currentVersion));
+			}
+			else
+			{
+				libList.duellLibs.push(DuellLib.getDuellLib(duellLibVersion.name, "ignored"));
+			}
 		}
 	}
 
