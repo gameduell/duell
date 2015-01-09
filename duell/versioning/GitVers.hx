@@ -27,6 +27,7 @@ class GitVers
 		this.dir = dir;
 
 		/// intermediate data
+		GitHelper.fetch(dir);
         branchList = GitHelper.listBranches(dir);
         tagList = GitHelper.listTags(dir);
 
