@@ -49,8 +49,9 @@ typedef DuellLibVersion = { name: String, gitVers: GitVers, versionRequested: St
 
 class BuildCommand implements IGDCommand
 {
-	var libList : LibList = { duellLibs : new Array<DuellLib>(), haxelibs : new Array<Haxelib>() };
-	var duellLibVersions: Map<String, DuellLibVersion> = new Map<String, DuellLibVersion>();
+	var libList : LibList = { duellLibs : new Array<DuellLib>(), haxelibs : new Array() };
+	var duellLibVersions: Map<String, DuellLibVersion> = new Map();
+
 	var buildLib : DuellLib = null;
 	var platformName : String;
 
@@ -62,11 +63,11 @@ class BuildCommand implements IGDCommand
     {
     	try
     	{
-	    	LogHelper.info("");
+	    	LogHelper.info("\n");
 	    	LogHelper.info("\x1b[2m------");
 	    	LogHelper.info("Build");
 	    	LogHelper.info("------\x1b[0m");
-	    	LogHelper.info("");
+	    	LogHelper.info("\n");
 
 	    	if (Arguments.isSet("-fast"))
 	    	{
@@ -157,6 +158,16 @@ class BuildCommand implements IGDCommand
 
 	private function determineAndValidateDependenciesAndDefines()
 	{
+
+    	LogHelper.info("\n");
+    	LogHelper.info("\x1b[2m------------");
+    	LogHelper.info("Dependencies");
+    	LogHelper.info("------------\x1b[0m");
+    	LogHelper.info("\n");
+
+    	LogHelper.info("\n");
+		LogHelper.info("checking project");
+		LogHelper.info("     parsing project file");
 		parseXML(DuellDefines.PROJECT_CONFIG_FILENAME);
 
 		while(true)
@@ -169,6 +180,8 @@ class BuildCommand implements IGDCommand
 				{
 					case VersionState.Unparsed: 
 					{
+    					LogHelper.info("\n");
+						LogHelper.info("checking version of " + LogHelper.BOLD + duellLibVersion.name + LogHelper.NORMAL);
 						duellLibVersion.versionState = VersionState.ParsedVersionUnchanged;
 
 						foundSomethingNotParsed = true;
@@ -177,15 +190,22 @@ class BuildCommand implements IGDCommand
 				    	{
 							var resolvedVersion = duellLibVersion.gitVers.solveVersion(duellLibVersion.versionRequested);
 
-							duellLibVersion.gitVers.changeToVersion(resolvedVersion);
+							if (duellLibVersion.gitVers.currentVersion != resolvedVersion)
+							{
+								LogHelper.info("  - changing to version " + LogHelper.BOLD + resolvedVersion + LogHelper.NORMAL);
+								duellLibVersion.gitVers.changeToVersion(resolvedVersion);
+							}
 						}
 
+						LogHelper.info("     parsing " + LogHelper.BOLD + duellLibVersion.name + LogHelper.NORMAL);
 						parseDuellLibWithName(duellLibVersion.name);
 					}
 
 					case VersionState.ParsedVersionChanged: 
 					{
-				    	if (!Arguments.isSet("-ignoreversioning"))
+    					LogHelper.info("\n");
+						LogHelper.info("rechecking version of " + LogHelper.BOLD + duellLibVersion.name + LogHelper.NORMAL);
+				    	if (Arguments.isSet("-ignoreversioning"))
 				    	{
 				    		throw "should never happen, internal error";
 				    	}
@@ -194,10 +214,15 @@ class BuildCommand implements IGDCommand
 
 						var resolvedVersion = duellLibVersion.gitVers.solveVersion(duellLibVersion.versionRequested);
 
-						if (duellLibVersion.gitVers.changeToVersion(resolvedVersion)) /// only reparse if something changed
+						if (duellLibVersion.gitVers.currentVersion != resolvedVersion)
 						{
-							foundSomethingNotParsed = true;
-							parseDuellLibWithName(duellLibVersion.name);
+							LogHelper.info("  - changing to version " + LogHelper.BOLD + resolvedVersion + LogHelper.NORMAL);
+							if (duellLibVersion.gitVers.changeToVersion(resolvedVersion)) /// only reparse if something changed
+							{
+								foundSomethingNotParsed = true;
+								LogHelper.info("     reparsing: " + LogHelper.BOLD + duellLibVersion.name + LogHelper.NORMAL);
+								parseDuellLibWithName(duellLibVersion.name);
+							}
 						}
 
 					}
@@ -282,6 +307,12 @@ class BuildCommand implements IGDCommand
 		serializer.serialize(runArguments);
 		File.write(outputRunArguments, true).writeString(serializer.toString());
 
+    	LogHelper.info("\n");
+    	LogHelper.info("\x1b[2m--------------------");
+    	LogHelper.info("Building " + platformName);
+    	LogHelper.info("--------------------\x1b[0m");
+    	LogHelper.info("\n");
+
 		var result = CommandHelper.runNeko("", runArguments, {errorMessage: "running the plugin", exitOnError: false});
 		if (result != 0)
 			Sys.exit(result);
@@ -324,7 +355,9 @@ class BuildCommand implements IGDCommand
 		}
 		else
 		{
-			parseXML(DuellLibHelper.getPath(name) + '/' + DuellDefines.LIB_CONFIG_FILENAME);
+			var path = DuellLibHelper.getPath(name) + '/' + DuellDefines.LIB_CONFIG_FILENAME;
+
+			parseXML(path);
 		}
 	}
 
@@ -399,6 +432,8 @@ class BuildCommand implements IGDCommand
 						continue;
 					}
 					var newDuellLib = DuellLib.getDuellLib(name, version);
+
+					LogHelper.info("      depends on " + LogHelper.BOLD + newDuellLib.name + LogHelper.NORMAL + " " + newDuellLib.version);
 
 					handleDuellLibParsed(newDuellLib);
 

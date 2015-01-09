@@ -37,7 +37,7 @@ class GitVers
 	private static function getCurrentVersionOfDirectory(dir: String): String
 	{
         var currentBranch = GitHelper.getCurrentBranch(dir);
-        if (currentBranch == "master")
+        if (currentBranch == "master" || currentBranch == "HEAD")
         {
         	var tags = GitHelper.getCurrentTags(dir);
 
@@ -48,7 +48,8 @@ class GitVers
         			return tag;
         		}
         	}
-        	return "master";
+
+        	return currentBranch;
         }
 
         return currentBranch;
