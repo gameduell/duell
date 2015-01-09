@@ -31,21 +31,22 @@ class GitVers
         branchList = GitHelper.listBranches(dir);
         tagList = GitHelper.listTags(dir);
 
-        currentVersion = getCurrentVersionOfDirectory(dir);
+        currentVersion = getCurrentVersionOfDirectory();
 	}
 
-	private static function getCurrentVersionOfDirectory(dir: String): String
+	private function getCurrentVersionOfDirectory(): String
 	{
         var currentBranch = GitHelper.getCurrentBranch(dir);
         if (currentBranch == "master" || currentBranch == "HEAD")
         {
-        	var tags = GitHelper.getCurrentTags(dir);
+        	var commit = GitHelper.getCurrentCommit(dir);
 
-        	for (tag in tags)
+        	for (tag in tagList)
         	{
         		if (SemVer.ofString(tag) != null)
         		{
-        			return tag;
+        			if (GitHelper.getCommitForTag(dir, tag) == commit)
+        				return tag;
         		}
         	}
 
