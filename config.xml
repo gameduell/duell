@@ -89,6 +89,12 @@
     			</documentation>
     		</arg>
 
+            <arg name="-clean" type="void" >
+                <documentation>
+                    Clean up the Export folder and the native extensions. When this argument is specified, nothing else is done except cleaning up. This shouldn't be needed to do, unless you update something like hxcpp or the haxe version. If something is going wrong, you didn't do anything special and this fixed it, that issue should be reported.
+                </documentation>
+            </arg>
+
     		<arg name="-test" type="void" >
     			<documentation>
     				Launches a server listening to a configured port and then runs the application. It expects that a result of the app is posted to the port, e.g. Unitest results. After the results come in, the application ends. To create a unittest project use "duell create unitTestProject".

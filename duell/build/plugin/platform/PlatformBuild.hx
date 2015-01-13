@@ -22,5 +22,7 @@ extern class PlatformBuild
 
 	public function publish() : Void;
 
-	public function fast() : Void
+	public function fast() : Void;
+
+	public function clean() : Void;
 }

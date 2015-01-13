@@ -57,6 +57,14 @@ class BuildMain
             build.parse();
 
             pluginHelper.resolveLibraryPlugins();
+
+            if (Arguments.isSet("-clean"))
+            {
+                pluginHelper.clean();
+                build.clean();
+                return;
+            }
+
             pluginHelper.postParse();
 
             if (!Arguments.isSet("-noprebuild"))
@@ -158,6 +166,18 @@ class LibraryPluginHelper
         for (element in pluginArray)
         {
             var parseFunction : Dynamic = Reflect.field(element, "fast");
+            if (parseFunction != null)
+            {
+                Reflect.callMethod(element, parseFunction, []);
+            }
+        }
+    }
+
+    public function clean()
+    {
+        for (element in pluginArray)
+        {
+            var parseFunction : Dynamic = Reflect.field(element, "clean");
             if (parseFunction != null)
             {
                 Reflect.callMethod(element, parseFunction, []);
