@@ -9,6 +9,8 @@ package duell.helpers;
 import duell.helpers.PlatformHelper;
 import duell.helpers.CommandHelper;
 import duell.helpers.LogHelper;
+import duell.objects.DuellProcess;
+
 import sys.FileSystem;
 
 import haxe.io.Path;
@@ -117,6 +119,27 @@ class PathHelper
 		
 		return path;
 	}	
+
+	public static function isLink(path : String) : Bool
+	{
+		if (PlatformHelper.hostPlatform == Platform.MAC)
+		{
+			var process = new DuellProcess("", "readlink", [path], {
+																		systemCommand: true,
+																		block: true,
+																		mute: true
+																	});
+			var output = process.getCompleteStdout().toString();
+			if (output == null || output == "")
+				return false;
+			else
+				return true;
+		}
+
+		return false;
+	}
+
+
 	public static function removeDirectory(directory : String) : Void 
 	{
 		if (FileSystem.exists(directory)) 
@@ -137,9 +160,17 @@ class PathHelper
 				
 				try {
 
+
 					if (FileSystem.isDirectory(path)) 
 					{
-						removeDirectory(path);
+						if (isLink(path))
+						{
+							FileSystem.deleteFile(path);
+						}
+						else
+						{
+							removeDirectory(path);
+						}
 					} 
 					else 
 					{
