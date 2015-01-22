@@ -137,4 +137,42 @@ class FileHelper
 		return retFiles;
 
 	}
+
+	public static function recursiveCopyFiles(source:String, destination:String, onlyIfNewer: Bool = true)
+	{	
+		PathHelper.mkdir(destination);
+		
+		var files:Array <String> = null;
+		
+		try 
+		{
+			files = FileSystem.readDirectory(source);
+		} 
+		catch (e:Dynamic) 
+		{
+			LogHelper.error("Could not find source directory \"" + source + "\"");
+		}
+		
+		for (file in files) 
+		{
+			if (file != "." && file != "..")
+			{
+				var itemDestination:String = destination + "/" + file;
+				var itemSource:String = source + "/" + file;
+				
+				if (FileSystem.isDirectory(itemSource)) 
+				{
+					recursiveCopyFiles(itemSource, itemDestination, onlyIfNewer);
+				} 
+				else 
+				{
+					if (!onlyIfNewer || FileHelper.isNewer(itemSource, itemDestination))
+					{
+						File.copy(itemSource, itemDestination);
+					}
+				}
+			}
+		}
+		
+	}
 }
