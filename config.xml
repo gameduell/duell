@@ -101,6 +101,13 @@
     			</documentation>
     		</arg>
 
+
+            <arg name="-yestoall" type="void" >
+                <documentation>
+                    Answers "y" to all questions and default to all questions.
+                </documentation>
+            </arg>
+
     	</args>
 
         <configuration>
