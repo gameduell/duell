@@ -41,6 +41,12 @@
         </documentation>
     </arg>
 
+    <arg name="-yestoall" type="void" >
+        <documentation>
+            Answers "y" to all questions and default to all questions.
+        </documentation>
+    </arg>
+
 	<command name="create" class="CreateCommand" hasPlugin="true">
     	<documentation> 
     		Can be used for creating a default project in current folder like: duell create emptyProject.
@@ -102,11 +108,6 @@
     		</arg>
 
 
-            <arg name="-yestoall" type="void" >
-                <documentation>
-                    Answers "y" to all questions and default to all questions.
-                </documentation>
-            </arg>
 
     	</args>
 
