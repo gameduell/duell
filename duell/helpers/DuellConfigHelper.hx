@@ -6,6 +6,7 @@
  
 package duell.helpers;
 
+import duell.defines.DuellDefines;
 import sys.FileSystem;
 
 import haxe.io.Path;
@@ -43,5 +44,10 @@ class DuellConfigHelper
 	{
 		return FileSystem.exists(getDuellConfigFolderLocation()) && 
 			   FileSystem.exists(getDuellConfigFileLocation());
+	}
+
+	public static function getDuellUserFileLocation(): String
+	{
+		return getDuellConfigFolderLocation() + "/" + DuellDefines.USER_CONFIG_FILENAME;
 	}
 }

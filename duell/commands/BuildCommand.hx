@@ -5,6 +5,7 @@
  */
 package duell.commands;
 
+import duell.helpers.DuellConfigHelper;
 import duell.helpers.CommandHelper;
 import haxe.CallStack;
 import Sys;
@@ -167,6 +168,13 @@ class BuildCommand implements IGDCommand
 
     	LogHelper.info("\n");
 		LogHelper.info("checking project");
+
+		if (FileSystem.exists(DuellConfigHelper.getDuellUserFileLocation()))
+		{
+			LogHelper.info("     parsing user file");
+			parseXML(DuellConfigHelper.getDuellUserFileLocation());
+		}
+
 		LogHelper.info("     parsing project file");
 		parseXML(DuellDefines.PROJECT_CONFIG_FILENAME);
 

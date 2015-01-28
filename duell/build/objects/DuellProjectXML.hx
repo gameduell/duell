@@ -5,6 +5,7 @@
  */
 package duell.build.objects;
 
+import duell.helpers.DuellConfigHelper;
 import duell.defines.DuellDefines;
 
 import duell.helpers.PathHelper;
@@ -60,6 +61,11 @@ class DuellProjectXML
 		parsingConditions = [];
 		parsingConditions = parsingConditions.concat(Configuration.getConfigParsingDefines());
 		parsingConditions = parsingConditions.concat(PlatformConfiguration.getConfigParsingDefines());
+
+		if (FileSystem.exists(DuellConfigHelper.getDuellUserFileLocation()))
+		{
+			parseFile(DuellConfigHelper.getDuellUserFileLocation());
+		}
 
 		if (!FileSystem.exists(DuellDefines.PROJECT_CONFIG_FILENAME))
 		{

@@ -169,6 +169,15 @@ class ToolSetupCommand implements IGDCommand
 			output.close();
 		}
 
+		if (!FileSystem.exists(DuellConfigHelper.getDuellUserFileLocation()))
+		{
+			var fileContent: String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<project>\n</project>\n";
+
+			var output = File.write(DuellConfigHelper.getDuellUserFileLocation(), false);
+			output.writeString(fileContent);
+			output.close();
+		}
+
 		var repoPath = AskHelper.askString("Path to store repos from libraries?", DuellConfigHelper.getDuellConfigFolderLocation() + "/lib");
 
 		var repoListURL = AskHelper.askString("URL to repo list?", defaultRepoListURL);
