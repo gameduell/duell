@@ -271,6 +271,11 @@ class DuellProjectXML
 		{
 			Configuration.getData().APP.VERSION = element.att.version;
 		}
+
+		if (element.has.buildNumber)
+		{
+			Configuration.getData().APP.BUILD_NUMBER = element.att.buildNumber;
+		}
 	}
 
 	private function parseOutputElement(element : Fast)
