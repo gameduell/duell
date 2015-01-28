@@ -113,7 +113,7 @@
 
         <configuration>
             <elem name="app">
-                Use this to configure the title, package, company and filename (usually title without spaces) of your project. E.g.: &lt;app title="Super Game" file="SuperGame" package="com.game.super" version="1.2.3" company="MegaGamesCompany" /&gt;
+                Use this to configure the title, package, company and filename (usually title without spaces) of your project. E.g.: &lt;app title="Super Game" file="SuperGame" package="com.game.super" version="1.2.3" buildNumber="123" company="MegaGamesCompany" /&gt;
             </elem>
 
             <elem name="main">
