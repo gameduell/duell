@@ -176,7 +176,7 @@ class BuildCommand implements IGDCommand
 		}
 
 		LogHelper.info("     parsing project file");
-		parseXML(DuellDefines.PROJECT_CONFIG_FILENAME);
+		parseXML(Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]));
 
 		while(true)
 		{
@@ -527,10 +527,17 @@ class BuildCommand implements IGDCommand
 	private function resolvePath(path : String) : String
 	{
 		path = PathHelper.unescape(path);
+		trace(path);
 		
 		if (PathHelper.isPathRooted(path))
 			return path;
 
-		return Path.join([currentXMLPath[currentXMLPath.length - 1], path]);
+
+
+		trace(path);
+		path = Path.join([currentXMLPath[currentXMLPath.length - 1], path]);
+		trace(path);
+
+		return path;
 	}
 }

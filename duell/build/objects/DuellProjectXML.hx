@@ -72,7 +72,7 @@ class DuellProjectXML
 			LogHelper.error('Project config file not found. There should be a ${DuellDefines.PROJECT_CONFIG_FILENAME} here');
 		}
 
-		parseFile(Sys.getCwd() + "/" + DuellDefines.PROJECT_CONFIG_FILENAME);
+		parseFile(Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]));
 
 		parseDuellLibs();
 	}
