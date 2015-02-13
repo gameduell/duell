@@ -527,16 +527,11 @@ class BuildCommand implements IGDCommand
 	private function resolvePath(path : String) : String
 	{
 		path = PathHelper.unescape(path);
-		trace(path);
 		
 		if (PathHelper.isPathRooted(path))
 			return path;
 
-
-
-		trace(path);
 		path = Path.join([currentXMLPath[currentXMLPath.length - 1], path]);
-		trace(path);
 
 		return path;
 	}
