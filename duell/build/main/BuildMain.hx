@@ -67,6 +67,8 @@ class BuildMain
 
             pluginHelper.postParse();
 
+            pluginHelper.postPostParse();
+
             if (!Arguments.isSet("-noprebuild"))
             {
                 build.prepareBuild();
@@ -130,6 +132,18 @@ class LibraryPluginHelper
         for (element in pluginArray)
         {
             var parseFunction : Dynamic = Reflect.field(element, "postParse");
+            if (parseFunction != null)
+            {
+                Reflect.callMethod(element, parseFunction, []);
+            }
+        }
+    }
+
+    public function postPostParse()
+    {
+        for (element in pluginArray)
+        {
+            var parseFunction : Dynamic = Reflect.field(element, "postPostParse");
             if (parseFunction != null)
             {
                 Reflect.callMethod(element, parseFunction, []);
