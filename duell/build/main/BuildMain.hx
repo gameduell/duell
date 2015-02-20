@@ -41,9 +41,20 @@ class BuildMain
 
 	 		for (requiredSetup in build.requiredSetups)
 	 		{
-		        if (duellConfig.setupsCompleted.indexOf(requiredSetup) == -1)
+                var requiredSetupString = requiredSetup.name + ":" + requiredSetup.version;
+		        if (duellConfig.setupsCompleted.indexOf(requiredSetupString) == -1)
 		        {
-		        	LogHelper.error('You are missing a setup. Please run duell setup $requiredSetup');
+                    /// Temporary workaround for previous unversioned version
+                    if (duellConfig.setupsCompleted.indexOf(requiredSetup.name) != -1)
+                    {
+                        duellConfig.setupsCompleted.remove(requiredSetup.name);
+                        duellConfig.setupsCompleted.push(requiredSetupString);
+                        duellConfig.writeToConfig();
+                    }
+                    else
+                    {
+                        LogHelper.error('You are missing a setup. Please run duell setup ${requiredSetup.name} -v ${requiredSetup.version}');
+                    }
 		        }
 	 		}
 

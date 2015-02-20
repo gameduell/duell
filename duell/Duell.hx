@@ -11,6 +11,7 @@ import duell.helpers.DuellLibHelper;
 import duell.objects.DuellLib;
 
 import duell.commands.BuildCommand;
+import duell.commands.UpdateCommand;
 import duell.commands.CreateCommand;
 import duell.commands.EnvironmentSetupCommand;
 import duell.commands.ToolSetupCommand;
@@ -68,22 +69,6 @@ class Duell
 
 
         printBanner();
-
-        if (!isMissingSelfSetup && !Arguments.isSet("-fast") && !Arguments.isSet("-ignoreversioning"))
-        {
-            if (DuellLibHelper.isInstalled("duell"))
-            {
-                if (DuellLibHelper.updateNeeded("duell"))
-                {
-                    var answer = AskHelper.askYesOrNo('The library of the duell tool is not up to date on the master branch. Would you like to try to update it?');
-
-                    if(answer)
-                    {
-                        DuellLibHelper.update("duell");
-                    }
-                }
-            }
-        }
 
         if (isMissingSelfSetup)
         {

@@ -37,24 +37,23 @@ import duell.objects.Arguments;
 import haxe.Serializer;
 import haxe.Unserializer;
 
-typedef LibList = { duellLibs: Array<DuellLib>, haxelibs: Array<Haxelib> }
+import duell.objects.DuellConfigJSON;
 
-enum VersionState
-{
-	Unparsed;
-	ParsedVersionUnchanged;
-	ParsedVersionChanged;
-}
 
-typedef DuellLibVersion = { name: String, gitVers: GitVers, versionRequested: String, /*helper var*/ versionState: VersionState}; 
+typedef DuellLibAndParsed = {lib: DuellLib, parsed: Bool}
+typedef DuellLibList = Array<DuellLibAndParsed>
 
 class BuildCommand implements IGDCommand
 {
-	var libList : LibList = { duellLibs : new Array<DuellLib>(), haxelibs : new Array() };
-	var duellLibVersions: Map<String, DuellLibVersion> = new Map();
+	var libList : DuellLibList = [];
 
 	var buildLib : DuellLib = null;
+	var buildGitVers: GitVers = null;
 	var platformName : String;
+
+	var duellConfig: DuellConfigJSON;
+
+	static inline var HOURS_TO_REQUEST_UPDATE = 8;
 
     public function new()
     {
@@ -70,28 +69,25 @@ class BuildCommand implements IGDCommand
 	    	LogHelper.info("------\x1b[0m");
 	    	LogHelper.info("\n");
 
-	    	if (Arguments.isSet("-fast"))
-	    	{
-	    		runFast();
-	    	}
-	    	else
-	    	{
-		    	LogHelper.println("");
+	    	LogHelper.println("");
 
-		    	checkIfItIsAProjectFolder();
+	    	checkIfItIsAProjectFolder();
 
-		    	LogHelper.println("");
+	    	LogHelper.println("");
 
-		    	determinePlatformToBuildFromArguments();
+	    	checkUpdateTime();
 
-		    	LogHelper.println("");
+	    	LogHelper.println("");
 
-		    	determineAndValidateDependenciesAndDefines();
+	    	determinePlatformToBuildFromArguments();
 
-		    	LogHelper.println("");
+	    	LogHelper.println("");
 
-		    	buildNewExecutableWithBuildLibAndDependencies();
-	    	}
+	    	determineAndValidateDependenciesAndDefines();
+
+	    	LogHelper.println("");
+
+	    	buildNewExecutableWithBuildLibAndDependencies();
 
 	    	LogHelper.println("");
 	    	LogHelper.info("\x1b[2m------");
@@ -126,134 +122,76 @@ class BuildCommand implements IGDCommand
 
     	buildLib = DuellLib.getDuellLib("duellbuild" + platformName);
 
-    	if (!Arguments.isSet("-ignoreversioning"))
+    	if (!DuellLibHelper.isInstalled(buildLib.name))
+        {
+    		var answer = AskHelper.askYesOrNo('A library for building $platformName is not currently installed. Would you like to try to install it?');
+
+    		if(answer)
+    		{
+    			DuellLibHelper.install(buildLib.name);
+    			LogHelper.println('You should now run "duell update" to set the plugin to the correct version for your project');
+    		}
+    		else
+    		{
+	    		LogHelper.println('Rerun with the library "duellbuild$platformName" installed');
+    		}
+			
+			Sys.exit(0);
+    	}
+    }
+
+    private function checkUpdateTime()
+    {
+        duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+    	if (duellConfig.lastProjectFile != Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]))
     	{
-	    	if (DuellLibHelper.isInstalled(buildLib.name))
-	    	{
-	            if (DuellLibHelper.updateNeeded(buildLib.name) == true)
-	            {
-	                var answer = AskHelper.askYesOrNo('The library of $platformName is not up to date on the master branch. Would you like to try to update it?');
+    		suggestUpdate();
+    		return;
+    	}
 
-	                if(answer)
-	                {
-	                    DuellLibHelper.update(buildLib.name);
-	                }
-	            }
-	        }
-	        else
-	        {
-	    		var answer = AskHelper.askYesOrNo('A library for building $platformName is not currently installed. Would you like to try to install it?');
+    	var currentDate = Date.now();
+    	var previousDate = Date.fromString(duellConfig.lastProjectTime);
 
-	    		if(answer)
-	    		{
-	    			DuellLibHelper.install(buildLib.name);
-	    		}
-	    		else
-	    		{
-		    		LogHelper.println('Rerun with the library "duellbuild$platformName" installed');
-					Sys.exit(0);
-	    		}
-	    	}
+    	var previousHours = previousDate.getTime() / 60.0 / 60.0;
+    	var currentHours = currentDate.getTime() / 60.0 / 60.0;
+
+    	if (previousHours + HOURS_TO_REQUEST_UPDATE < currentHours)
+    	{
+    		suggestUpdate();
+    	}
+    }
+
+    private function suggestUpdate()
+    {
+    	var answer = AskHelper.askYesOrNo("You have not run an update for this project recently. Would like to do so?");
+
+    	if (answer)
+    	{
+    		new duell.commands.UpdateCommand().execute();
+    		Sys.exit(0);
+    	}
+    	else
+    	{
+    		duellConfig.lastProjectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
+    		duellConfig.lastProjectTime = Date.now().toString();
     	}
     }
 
 	private function determineAndValidateDependenciesAndDefines()
 	{
-
-    	LogHelper.info("\n");
-    	LogHelper.info("\x1b[2m------------");
-    	LogHelper.info("Dependencies");
-    	LogHelper.info("------------\x1b[0m");
-    	LogHelper.info("\n");
-
-    	LogHelper.info("\n");
-		LogHelper.info("checking project");
-
 		if (FileSystem.exists(DuellConfigHelper.getDuellUserFileLocation()))
 		{
-			LogHelper.info("     parsing user file");
 			parseXML(DuellConfigHelper.getDuellUserFileLocation());
 		}
 
-		LogHelper.info("     parsing project file");
 		parseXML(Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]));
 
-		while(true)
+		var filtered = libList.filter(function (l) return !l.parsed);
+		
+		for (lib in filtered)
 		{
-			var foundSomethingNotParsed = false;
-			var clone = [for (l in duellLibVersions) l]; /// because the duellLibVersions will change
-			for (duellLibVersion in clone)
-			{
-				switch (duellLibVersion.versionState)
-				{
-					case VersionState.Unparsed: 
-					{
-    					LogHelper.info("\n");
-						LogHelper.info("checking version of " + LogHelper.BOLD + duellLibVersion.name + LogHelper.NORMAL);
-						duellLibVersion.versionState = VersionState.ParsedVersionUnchanged;
-
-						foundSomethingNotParsed = true;
-
-				    	if (!Arguments.isSet("-ignoreversioning"))
-				    	{
-							var resolvedVersion = duellLibVersion.gitVers.solveVersion(duellLibVersion.versionRequested);
-
-							if (duellLibVersion.gitVers.currentVersion != resolvedVersion)
-							{
-								LogHelper.info("  - changing to version " + LogHelper.BOLD + resolvedVersion + LogHelper.NORMAL);
-								duellLibVersion.gitVers.changeToVersion(resolvedVersion);
-							}
-						}
-
-						LogHelper.info("     parsing " + LogHelper.BOLD + duellLibVersion.name + LogHelper.NORMAL);
-						parseDuellLibWithName(duellLibVersion.name);
-					}
-
-					case VersionState.ParsedVersionChanged: 
-					{
-    					LogHelper.info("\n");
-						LogHelper.info("rechecking version of " + LogHelper.BOLD + duellLibVersion.name + LogHelper.NORMAL);
-				    	if (Arguments.isSet("-ignoreversioning"))
-				    	{
-				    		throw "should never happen, internal error";
-				    	}
-
-						duellLibVersion.versionState = VersionState.ParsedVersionUnchanged;
-
-						var resolvedVersion = duellLibVersion.gitVers.solveVersion(duellLibVersion.versionRequested);
-
-						if (duellLibVersion.gitVers.currentVersion != resolvedVersion)
-						{
-							LogHelper.info("  - changing to version " + LogHelper.BOLD + resolvedVersion + LogHelper.NORMAL);
-							if (duellLibVersion.gitVers.changeToVersion(resolvedVersion)) /// only reparse if something changed
-							{
-								foundSomethingNotParsed = true;
-								LogHelper.info("     reparsing: " + LogHelper.BOLD + duellLibVersion.name + LogHelper.NORMAL);
-								parseDuellLibWithName(duellLibVersion.name);
-							}
-						}
-
-					}
-					case VersionState.ParsedVersionUnchanged:
-						///nothing happens
-				}
-			}
-			if (!foundSomethingNotParsed)
-			{
-				break;
-			}
-		}
-
-		for (duellLibVersion in duellLibVersions)
-		{
-	    	if (!Arguments.isSet("-ignoreversioning"))
-	    	{
-				libList.duellLibs.push(DuellLib.getDuellLib(duellLibVersion.name, duellLibVersion.gitVers.currentVersion));
-			}
-			else
-			{
-				libList.duellLibs.push(DuellLib.getDuellLib(duellLibVersion.name, "ignored"));
-			}
+			lib.parsed = true;
+			parseDuellLibWithName(lib.lib.name);
 		}
 	}
 
@@ -277,21 +215,21 @@ class BuildCommand implements IGDCommand
 		buildArguments.push("-cp");
 		buildArguments.push(DuellLibHelper.getPath(buildLib.name));
 
-		for (duellLib in libList.duellLibs)
+		for (l in libList)
 		{
 			buildArguments.push("-cp");
-			buildArguments.push(DuellLibHelper.getPath(duellLib.name));
+			buildArguments.push(DuellLibHelper.getPath(l.lib.name));
 
-            if (FileSystem.exists(haxe.io.Path.join([DuellLibHelper.getPath(duellLib.name), "duell", "build", "plugin", "library", duellLib.name, "LibraryXMLParser.hx"])))
+            if (FileSystem.exists(haxe.io.Path.join([DuellLibHelper.getPath(l.lib.name), "duell", "build", "plugin", "library", l.lib.name, "LibraryXMLParser.hx"])))
 			{
 				buildArguments.push("--macro");
-				buildArguments.push('keep(\"duell.build.plugin.library.${duellLib.name}.LibraryXMLParser\")');
+				buildArguments.push('keep(\"duell.build.plugin.library.${l.lib.name}.LibraryXMLParser\")');
 			}
 
-            if (FileSystem.exists(haxe.io.Path.join([DuellLibHelper.getPath(duellLib.name), "duell", "build", "plugin", "library", duellLib.name, "LibraryBuild.hx"])))
+            if (FileSystem.exists(haxe.io.Path.join([DuellLibHelper.getPath(l.lib.name), "duell", "build", "plugin", "library", l.lib.name, "LibraryBuild.hx"])))
             {
                 buildArguments.push("--macro");
-                buildArguments.push('keep(\"duell.build.plugin.library.${duellLib.name}.LibraryBuild\")');
+                buildArguments.push('keep(\"duell.build.plugin.library.${l.lib.name}.LibraryBuild\")');
             }
 		}
 
@@ -379,49 +317,6 @@ class BuildCommand implements IGDCommand
 		{
 			switch element.name
 			{
-				case 'haxelib':
-					var name = null;
-					var version = null;
-					if(element.has.name)
-					{
-						name = element.att.name;
-					}
-
-					if(element.has.version)
-					{
-						version = element.att.version;
-					}
-
-					if (name != null && name != '')
-					{
-						var haxelib = Haxelib.getHaxelib(name, version);
-
-						if (libList.haxelibs.indexOf(haxelib) == -1)
-						{
-							if (!haxelib.exists())
-							{	
-
-								var haxelibMessagePart = haxelib.name + (haxelib.version != "" ? " with version " + haxelib.version : "");
-								var answer = AskHelper.askYesOrNo('Haxelib $haxelibMessagePart is missing, would you like to install it?');
-
-								if (answer)
-									haxelib.install();
-								else
-									LogHelper.error('Cannot continue with an uninstalled lib.');
-							}
-
-							for (haxelib in libList.haxelibs)
-							{
-								if(haxelib.name == name && haxelib.version != version) /// version doesn't need to be checked
-								{
-									LogHelper.error('Tried to compile with two versions ($version and ${haxelib.version}) of the same library $name');
-								}
-							}
-
-							libList.haxelibs.push(haxelib);
-						}
-					} 
-
 				case 'duelllib':
 					var name = null;
 					var version = null;
@@ -441,8 +336,6 @@ class BuildCommand implements IGDCommand
 					}
 					var newDuellLib = DuellLib.getDuellLib(name, version);
 
-					LogHelper.info("      depends on " + LogHelper.BOLD + newDuellLib.name + LogHelper.NORMAL + " " + newDuellLib.version);
-
 					handleDuellLibParsed(newDuellLib);
 
 				case 'include':
@@ -461,67 +354,15 @@ class BuildCommand implements IGDCommand
 
 	private function handleDuellLibParsed(newDuellLib: DuellLib)
 	{
-		if (Arguments.isSet("-ignoreversioning"))
+		for (l in libList)
 		{
-			for (duellLibName in duellLibVersions.keys())
-			{
-				if(duellLibName != newDuellLib.name)
-					continue;
+			if(l.lib.name != newDuellLib.name)
+				continue;
 
-				return;
-			}
-
-			duellLibVersions.set(newDuellLib.name, {name: newDuellLib.name, gitVers: null, versionRequested: "ignored", versionState:VersionState.Unparsed});
-		}
-		else
-		{
-			if (!DuellLibHelper.isInstalled(newDuellLib.name))
-			{
-				var answer = AskHelper.askYesOrNo('DuellLib ${newDuellLib.name} is missing, would you like to install it?');
-
-				if (answer)
-					DuellLibHelper.install(newDuellLib.name);
-				else
-					LogHelper.error('Cannot continue with an uninstalled lib.');
-			}
-
-			if (!DuellLibHelper.isPathValid(newDuellLib.name))
-			{
-				LogHelper.error('DuellLib ${newDuellLib.name} has an invalid path - ${DuellLibHelper.getPath(newDuellLib.name)} - check your "haxelib list"');
-			}
-
-			for (duellLibName in duellLibVersions.keys())
-			{
-				if(duellLibName != newDuellLib.name)
-					continue;
-
-				var duellLibVersion = duellLibVersions[newDuellLib.name];
-
-				var prevVersion = duellLibVersion.versionRequested;
-
-				if (prevVersion == newDuellLib.version)
-					return;
-
-				var newVersion = duellLibVersion.gitVers.resolveVersionConflict([duellLibVersion.versionRequested, newDuellLib.version], Arguments.get("-overridebranch"));
-
-				if (prevVersion != newVersion)
-				{
-					switch(duellLibVersion.versionState)
-					{
-						case (VersionState.ParsedVersionUnchanged):
-							duellLibVersion.versionState = VersionState.ParsedVersionChanged;
-						default:
-							/// if its not parsed or if the version is already changed, nothing happens
-					}
-					duellLibVersion.versionRequested = newVersion;
-				}
-
-				return;
-			}
-
-			duellLibVersions[newDuellLib.name] = {name: newDuellLib.name, gitVers: new GitVers(newDuellLib.getPath()), versionRequested: newDuellLib.version, versionState:VersionState.Unparsed};
+			return;
 		}
 
+		libList.push({lib: newDuellLib, parsed: false});
 	}
 
 	private function resolvePath(path : String) : String

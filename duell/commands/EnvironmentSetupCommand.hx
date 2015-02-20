@@ -11,13 +11,20 @@ import haxe.CallStack;
 import duell.helpers.LogHelper;
 import duell.commands.IGDCommand;
 
+import duell.versioning.GitVers;
+
 import duell.objects.Arguments;
 import haxe.io.Path;
+
+using StringTools;
+
 class EnvironmentSetupCommand implements IGDCommand
 {
 
     var setupLib : DuellLib = null;
     var platformName : String;
+
+    var gitvers: GitVers;
 
     public function new()
     {
@@ -66,23 +73,7 @@ class EnvironmentSetupCommand implements IGDCommand
         var pluginLibName = "duellsetup" + platformName;
         setupLib = DuellLib.getDuellLib(pluginLibName);
 
-        if (DuellLibHelper.isInstalled(pluginLibName))
-        {
-            if (DuellLibHelper.updateNeeded(pluginLibName) == true)
-            {
-                var answer = AskHelper.askYesOrNo('The library of $platformName environment is not up to date on the master branch. Would you like to try to update it?');
-
-                if(answer)
-                {
-                    DuellLibHelper.update(pluginLibName);
-                }
-            }
-            else
-            {
-                LogHelper.info("","No update needed");
-            }
-        }
-        else
+        if (!DuellLibHelper.isInstalled(pluginLibName))
         {
             var answer = AskHelper.askYesOrNo('A library for setup of $platformName environment is not currently installed. Would you like to try to install it?');
 
@@ -95,6 +86,17 @@ class EnvironmentSetupCommand implements IGDCommand
                 LogHelper.println('Rerun with the library "duellsetup$platformName" installed');
                 Sys.exit(0);
             }
+        }
+
+        gitvers = new GitVers(setupLib.getPath());
+        if (Arguments.get("-v") != null)
+        {
+            var solvedVersion = gitvers.solveVersion(Arguments.get("-v"));
+            gitvers.changeToVersion(solvedVersion);
+        }
+        else
+        {
+            LogHelper.error("You must always specify a version. E.g. duell setup android -v 1.0.0");
         }
     }
 
@@ -137,11 +139,10 @@ class EnvironmentSetupCommand implements IGDCommand
         LogHelper.println("Saving Setup Done Marker... ");
         var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 
-        if (duellConfig.setupsCompleted.indexOf(platformName) == -1)
-        {
-            duellConfig.setupsCompleted.push(platformName);
-            duellConfig.writeToConfig();
-        }
+        duellConfig.setupsCompleted = duellConfig.setupsCompleted.filter(function (s) return !s.split(":")[0].startsWith(platformName));
+
+        duellConfig.setupsCompleted.push(platformName + ":" + gitvers.currentVersion);
+        duellConfig.writeToConfig();
     }
 
 }

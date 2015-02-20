@@ -137,6 +137,19 @@ class Haxelib
         CommandHelper.runHaxelib("", ["update", name], {errorMessage: 'updating the library "$name"'});
     }
 
+    public function selectVersion()
+    {
+    	var arguments = ["set"];
+    	arguments.push(name);
+
+		if(version != "")
+    		arguments.push(version);
+
+    	var haxePath = Sys.getEnv("HAXEPATH");
+    	var systemCommand = haxePath != null && haxePath != "" ? false : true;
+		new DuellProcess(haxePath, "haxelib", arguments, {block: true, systemCommand: true, errorMessage: "set haxelib version"});
+    }
+
     public function install()
     {
     	var args = ["install", name];

@@ -23,12 +23,6 @@
 		</documentation>
 	</arg>
 
-    <arg name="-ignoreversioning" type="void">
-        <documentation>
-            No versions for anything will be checked, repos will be used as is.
-        </documentation>
-    </arg>
-
     <arg name="-fast" type="void" >
         <documentation>
             This is used in the build command. Use this command if you are just iterating haxe code, and want to quickly build and run the app. In order to be able to use it, just build and run once normally on any platform, and then run with "-fast" afterwards.
@@ -57,6 +51,14 @@
     	<documentation>
     		Runs a specified setup. This is usually and environment setup that needs to be run once for a specified platform. Such as, setup android to be able to build for android. 
     	</documentation>
+        <args>
+            <arg name="-v" type="string" >
+                <documentation>
+                    Specify that you want to run a specific setup version.
+                </documentation>
+            </arg>
+        </args>
+
 	</command>
 
 	<command name="self_setup" class="ToolSetupCommand" hasPlugin="false" >
@@ -64,6 +66,12 @@
             Basic setup for the duell tool. It checks/creates a folder .duell in your home folder. Inside that folder a config file is created and the tool itself is downloaded, installed into haxelib and 'duell' command installed into the command line environment.
     	</documentation>
 	</command>
+
+    <command name="update" class="UpdateCommand" hasPlugin="false" >
+        <documentation> 
+            This command will check all the dependencies of the current project in the current directory and update accordingly. This command will run automatically on the build command every time you change project and every 4 hours.
+        </documentation>
+    </command>
 
     <command name="build" class="BuildCommand" hasPlugin="true">
     	<documentation>
@@ -89,7 +97,7 @@
     			</documentation>
     		</arg>
 
-    		<arg name="-publish" type="void" >
+    		<arg name="-publish" type="string" >
     			<documentation>
     				Works differently in each platform, but basically each platform plugin should output a releasable package. E.g. ios should sign the .app and compile in release without debugging information.
     			</documentation>
@@ -122,6 +130,18 @@
 
             <elem name="output">
                 Use this to set where the output of your build will go to. By default this is "Export". E.g.: &lt;output path="Some/Folder" /&gt;. 
+            </elem>
+
+            <elem name="supported-build-plugin">
+                Use this to specify that your project or library requires/supports a version of a build plugin. E.g.: &lt;supported-build-plugin name="ios" version="1.5.0+" /&gt;. 
+            </elem>
+
+            <elem name="supported-duell-tool">
+                Use this to specify that your project or library requires/supports a version of a duell tool. E.g.: &lt;supported-duell-tool version="1.5.0+" /&gt;. 
+            </elem>
+
+            <elem name="supported-haxe-version">
+                Use this to specify that your project or library requires/supports a version of the haxe compiler. E.g.: &lt;supported-haxe-version version="3.1.0+" /&gt;. 
             </elem>
 
             <elem name="source">

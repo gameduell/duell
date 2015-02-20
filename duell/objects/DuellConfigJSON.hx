@@ -18,6 +18,8 @@ class DuellConfigJSON
 	public var localLibraryPath : String;
 	public var repoListURLs : Array<String>;
 	public var setupsCompleted : Array<String>;
+	public var lastProjectFile : String;
+	public var lastProjectTime : String;
 	public var configJSON : Dynamic;
 
 	private var configPath : String;
@@ -42,6 +44,10 @@ class DuellConfigJSON
 
 		if (setupsCompleted == null)
 			setupsCompleted = [];
+
+		lastProjectFile = configJSON.lastProjectFile;
+
+		lastProjectTime = configJSON.lastProjectTime;
 	}
 
 	private static var cache : DuellConfigJSON;
@@ -67,6 +73,8 @@ class DuellConfigJSON
 		configJSON.localLibraryPath = localLibraryPath;
 		configJSON.repoListURLs = repoListURLs;
 		configJSON.setupsCompleted = setupsCompleted;
+		configJSON.lastProjectTime = lastProjectTime;
+		configJSON.lastProjectFile = lastProjectFile;
 
 		FileSystem.deleteFile(configPath);
 		

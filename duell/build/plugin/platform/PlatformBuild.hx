@@ -7,7 +7,7 @@ package duell.build.plugin.platform;
 
 extern class PlatformBuild
 {
-	public var requiredSetups : Array<String>;
+	public var requiredSetups : Array<{name: String, version: String}>;
 	public var supportedHostPlatforms : Array<duell.helpers.PlatformHelper.Platform>;
 
 	public function new() : Void;
