@@ -174,6 +174,7 @@ class BuildCommand implements IGDCommand
     	{
     		duellConfig.lastProjectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
     		duellConfig.lastProjectTime = Date.now().toString();
+    		duellConfig.writeToConfig();
     	}
     }
 
