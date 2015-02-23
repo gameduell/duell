@@ -152,8 +152,8 @@ class BuildCommand implements IGDCommand
     	var currentDate = Date.now();
     	var previousDate = Date.fromString(duellConfig.lastProjectTime);
 
-    	var previousHours = previousDate.getTime() / 60.0 / 60.0;
-    	var currentHours = currentDate.getTime() / 60.0 / 60.0;
+    	var previousHours = previousDate.getTime() / 1000.0 / 60.0 / 60.0;
+    	var currentHours = currentDate.getTime() / 1000.0 / 60.0 / 60.0;
 
     	if (previousHours + HOURS_TO_REQUEST_UPDATE < currentHours)
     	{
