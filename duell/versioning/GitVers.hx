@@ -37,23 +37,18 @@ class GitVers
 	private function getCurrentVersionOfDirectory(): String
 	{
         var currentBranch = GitHelper.getCurrentBranch(dir);
-        if (currentBranch == "master" || currentBranch == "HEAD")
-        {
-        	var commit = GitHelper.getCurrentCommit(dir);
+    	var commit = GitHelper.getCurrentCommit(dir);
 
-        	for (tag in tagList)
-        	{
-        		if (SemVer.ofString(tag) != null)
-        		{
-        			if (GitHelper.getCommitForTag(dir, tag) == commit)
-        				return tag;
-        		}
-        	}
+    	for (tag in tagList)
+    	{
+    		if (SemVer.ofString(tag) != null)
+    		{
+    			if (GitHelper.getCommitForTag(dir, tag) == commit)
+    				return tag;
+    		}
+    	}
 
-        	return currentBranch;
-        }
-
-        return currentBranch;
+    	return currentBranch;
 	}
 
 	/// override version is for basically checking first that version, and then everything else
@@ -160,14 +155,44 @@ class GitVers
         return usedVersion.toString();
 	}
 
-	/// returns true if something changed, false if the current state is maintained
-	public function changeToVersion(version: String): Bool
+
+	public function needsToChangeVersion(version: String): Bool
 	{
-		if (currentVersion == version)
+		/// BRANCH
+		if (branchList.indexOf(version) != -1)
 		{
+			if (GitHelper.getCurrentBranch(dir) != version)
+			{
+				return true;
+			}
+
+			if (GitHelper.updateNeeded(dir))
+			{
+				return true;
+			}
+
 			return false;
 		}
 
+		/// VERSION
+		if (tagList.indexOf(version) != -1)
+		{
+			var commit = GitHelper.getCommitForTag(dir, version);
+			if (GitHelper.getCurrentCommit(dir) != commit)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		throw "version requested for change '" + version + "' is neither a version nor an existing branch";
+
+	}
+
+	/// returns true if something changed, false if the current state is maintained
+	public function changeToVersion(version: String): Bool
+	{
 		currentVersion = version;
 
 		if (branchList.indexOf(version) != -1)
@@ -216,18 +241,6 @@ class GitVers
 	function handleChangeToTag(version: String): Bool
 	{
 		var changed = false;
-
-		if (GitHelper.getCurrentBranch(dir) != "master")
-		{
-			if (!GitHelper.isRepoWithoutLocalChanges(dir))
-			{
-				throw "can't change to master branch of repo because it has local changes, path: " + dir;
-			}
-
-			GitHelper.checkoutBranch(dir, "master");
-
-			changed = true;
-		}
 
 		var commit = GitHelper.getCommitForTag(dir, version);
 		if (GitHelper.getCurrentCommit(dir) != commit)

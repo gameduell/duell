@@ -162,7 +162,7 @@ class UpdateCommand implements IGDCommand
 
 						var resolvedVersion = duellLibVersion.gitVers.solveVersion(duellLibVersion.versionRequested);
 
-						if (duellLibVersion.gitVers.currentVersion != resolvedVersion)
+						if (duellLibVersion.gitVers.needsToChangeVersion(resolvedVersion))
 						{
 							LogHelper.info("  - changing to version " + LogHelper.BOLD + resolvedVersion + LogHelper.NORMAL);
 							duellLibVersion.gitVers.changeToVersion(resolvedVersion);
@@ -181,7 +181,7 @@ class UpdateCommand implements IGDCommand
 
 						var resolvedVersion = duellLibVersion.gitVers.solveVersion(duellLibVersion.versionRequested);
 
-						if (duellLibVersion.gitVers.currentVersion != resolvedVersion)
+						if (duellLibVersion.gitVers.needsToChangeVersion(resolvedVersion))
 						{
 							LogHelper.info("  - changing to version " + LogHelper.BOLD + resolvedVersion + LogHelper.NORMAL);
 							if (duellLibVersion.gitVers.changeToVersion(resolvedVersion)) /// only reparse if something changed
@@ -210,7 +210,7 @@ class UpdateCommand implements IGDCommand
 			LogHelper.info("checking version of " + LogHelper.BOLD + pluginVersion.lib.name + LogHelper.NORMAL);
 			var resolvedVersion = pluginVersion.gitVers.solveVersion(pluginVersion.lib.version);
 
-			if (pluginVersion.gitVers.currentVersion != resolvedVersion)
+			if (pluginVersion.gitVers.needsToChangeVersion(resolvedVersion))
 			{
 				LogHelper.info("  - changing to version " + LogHelper.BOLD + resolvedVersion + LogHelper.NORMAL);
 				pluginVersion.gitVers.changeToVersion(resolvedVersion);
@@ -227,10 +227,14 @@ class UpdateCommand implements IGDCommand
 			LogHelper.info("checking version of " + LogHelper.BOLD + "duell tool" + LogHelper.NORMAL);
 			var resolvedVersion = duellToolGitVers.solveVersion(duellToolRequestedVersion);
 
-			if (duellToolGitVers.currentVersion != resolvedVersion)
+			if (duellToolGitVers.needsToChangeVersion(resolvedVersion))
 			{
 				LogHelper.info("  - changing to version " + LogHelper.BOLD + resolvedVersion + LogHelper.NORMAL);
 				duellToolGitVers.changeToVersion(resolvedVersion);
+			}
+			else
+			{
+				LogHelper.info("  - using version " + LogHelper.BOLD + duellToolGitVers.currentVersion + LogHelper.NORMAL);
 			}
 
 		}
