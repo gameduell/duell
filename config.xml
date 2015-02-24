@@ -29,12 +29,6 @@
         </documentation>
     </arg>
 
-    <arg name="-overridebranch" type="string">
-        <documentation>
-            This argument is used in the versioning. Check https://confluence.gameduell.de/display/SGF/Duell+Tool+versioning
-        </documentation>
-    </arg>
-
     <arg name="-yestoall" type="void" >
         <documentation>
             Answers "y" to all questions and default to all questions.
@@ -71,6 +65,15 @@
         <documentation> 
             This command will check all the dependencies of the current project in the current directory and update accordingly. This command will run automatically on the build command every time you change project and every 4 hours.
         </documentation>
+
+        <args>
+            <arg name="-overridebranch" type="string">
+                <documentation>
+                    This argument is used in the versioning. Check https://confluence.gameduell.de/display/SGF/Duell+Tool+versioning
+                </documentation>
+            </arg>
+        </args>
+
     </command>
 
     <command name="build" class="BuildCommand" hasPlugin="true">
