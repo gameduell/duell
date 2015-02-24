@@ -180,10 +180,10 @@ class GitVers
 			var commit = GitHelper.getCommitForTag(dir, version);
 			if (GitHelper.getCurrentCommit(dir) != commit)
 			{
-				return false;
+				return true;
 			}
 
-			return true;
+			return false;
 		}
 
 		throw "version requested for change '" + version + "' is neither a version nor an existing branch";
