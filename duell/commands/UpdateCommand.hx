@@ -401,6 +401,10 @@ class UpdateCommand implements IGDCommand
 						{
 							haxelibVersions.set(name, haxelib);
 						}
+						else if (version == null || version == "")
+						{
+							/// we keep the old version
+						}
 						else if(existingHaxelib.version != version) /// version doesn't need to be checked
 						{
 							LogHelper.error('Tried to compile with two versions ($version and ${existingHaxelib.version}) of the same library $name');
