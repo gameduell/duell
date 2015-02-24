@@ -12,4 +12,5 @@ class DuellDefines
 	public static var PROJECT_CONFIG_FILENAME = 'duell_project.xml';
 	public static var LIB_CONFIG_FILENAME = 'duell_library.xml';
 	public static var PLATFORM_CONFIG_FILENAME = 'duell_platform.xml';
+	public static var DEFAULT_HXCPP_VERSION = "3.1.39";
 }
