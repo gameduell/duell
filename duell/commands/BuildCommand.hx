@@ -187,12 +187,19 @@ class BuildCommand implements IGDCommand
 
 		parseXML(Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]));
 
-		var filtered = libList.filter(function (l) return !l.parsed);
 		
-		for (lib in filtered)
+		while (true)
 		{
-			lib.parsed = true;
-			parseDuellLibWithName(lib.lib.name);
+			var filtered = libList.filter(function (l) return !l.parsed);
+
+			if (filtered.length == 0)
+				break;
+
+			for (lib in filtered)
+			{
+				lib.parsed = true;
+				parseDuellLibWithName(lib.lib.name);
+			}
 		}
 	}
 
