@@ -167,7 +167,8 @@ class BuildCommand implements IGDCommand
 
     	if (answer)
     	{
-    		new duell.commands.UpdateCommand().execute();
+			CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell", "update"], {} );
+
     		Sys.exit(0);
     	}
     	else
