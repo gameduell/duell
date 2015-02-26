@@ -391,24 +391,26 @@ class UpdateCommand implements IGDCommand
 								LogHelper.error('Cannot continue with an uninstalled lib.');
 						}
 
+						haxelib.selectVersion();
 						haxelibVersions.set(haxelib.name, haxelib);
 					}
 					else
 					{
 						var existingHaxelib = haxelibVersions.get(name);
 
-						if (existingHaxelib.version == null || existingHaxelib.version == "")
+						var solvedlib = Haxelib.solveConflict(existingHaxelib, haxelib);
+
+						if(solvedlib == null) /// version doesn't need to be checked
 						{
-							haxelibVersions.set(name, haxelib);
+							LogHelper.error('Tried to compile with two incompatible versions ("$haxelib" and "$existingHaxelib") of the same library $name');
 						}
-						else if (version == null || version == "")
+
+						if (solvedlib != existingHaxelib)
 						{
-							/// we keep the old version
+							solvedlib.selectVersion(); /// just to make sure
 						}
-						else if(existingHaxelib.version != version) /// version doesn't need to be checked
-						{
-							LogHelper.error('Tried to compile with two versions ($version and ${existingHaxelib.version}) of the same library $name');
-						}
+
+						haxelibVersions.set(name, solvedlib);
 					}
 
 					LogHelper.info("      depends on haxelib " + LogHelper.BOLD + haxelib.name + LogHelper.NORMAL + " " + haxelib.version);

@@ -120,8 +120,6 @@ class Haxelib
 	private function getHaxelibPathOutput(): String
 	{
 		var nameToTry = name;
-		if(version != "")
-			nameToTry += ":" + version;
 
     	var haxePath = Sys.getEnv("HAXEPATH");
     	var systemCommand = haxePath != null && haxePath != "" ? false : true;
@@ -132,29 +130,81 @@ class Haxelib
 		return output.toString();
 	}
 
-    public function update()
-    {
-        CommandHelper.runHaxelib("", ["update", name], {errorMessage: 'updating the library "$name"'});
-    }
-
     public function selectVersion()
     {
-    	var arguments = ["set"];
-    	arguments.push(name);
+    	if (version == null || version == "")
+    		return;
 
-		if(version != "")
-    		arguments.push(version);
+	    var arguments = [];
+    	if (isGitVersion())
+    	{
+	    	arguments.push("git");
+	   		arguments.push(name);
+	    	arguments = arguments.concat(version.split(" "));
+    	}
+    	else
+    	{
+	    	arguments.push("set");
+	   		arguments.push(name);
+	    	arguments.push(version);
+    	}
 
-    	var haxePath = Sys.getEnv("HAXEPATH");
-    	var systemCommand = haxePath != null && haxePath != "" ? false : true;
+
+	    var haxePath = Sys.getEnv("HAXEPATH");
+	    var systemCommand = haxePath != null && haxePath != "" ? false : true;
 		new DuellProcess(haxePath, "haxelib", arguments, {block: true, systemCommand: true, errorMessage: "set haxelib version"});
     }
 
     public function install()
     {
-    	var args = ["install", name];
-    	if (version != "")
-    		args.push(version);
-        CommandHelper.runHaxelib("", args, {errorMessage: 'installing the library "$name"'});
+    	if (isGitVersion())
+    	{
+    		selectVersion();
+    	}
+    	else
+    	{
+	    	var args = ["install", name];
+	    	if (version != "")
+	    		args.push(version);
+	        CommandHelper.runHaxelib("", args, {errorMessage: 'installing the library "$name"'});
+    	}
+    }
+
+    public static function solveConflict(left: Haxelib, right: Haxelib): Haxelib
+    {
+    	if (left.isGitVersion() && right.isGitVersion())
+    	{
+    		if (left.version != right.version)
+    			return null;
+
+    		return left;
+    	}
+
+    	if (left.isGitVersion())
+    		return left;
+
+    	if (right.isGitVersion())
+    		return right;
+
+    	if (left.version == null || left.version == "")
+    		return right;
+
+    	if (right.version == null || right.version == "")
+    		return left;
+
+    	if (left.version == right.version)
+    		return left;
+
+    	return null;
+    }
+
+    public function isGitVersion(): Bool
+    {
+    	return version != null && (version.startsWith("ssh") || version.startsWith("http"));
+    }
+
+    public function toString(): String
+    {
+    	return "haxelib " + name + " version " + version;
     }
 }
