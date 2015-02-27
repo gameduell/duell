@@ -142,7 +142,7 @@ class GitHelper
         new DuellProcess(
                             destination,
                             "git", 
-                            ["fetch"], 
+                            ["fetch", "--tags", "--prune"], 
                             {
                                 systemCommand : true,
                                 loggingPrefix : "[Git]",
