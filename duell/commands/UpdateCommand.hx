@@ -125,14 +125,34 @@ class UpdateCommand implements IGDCommand
 		duellToolGitVers = new GitVers(DuellLib.getDuellLib("duell").getPath());
 
     	LogHelper.info("\n");
-		LogHelper.info("checking project");
+		LogHelper.info("parsing");
 
+		parseDuellUserFile();
+
+		parseProjectFile();
+
+		iterateDuellLibVersionsUntilEverythingIsParsedAndVersioned();
+
+		checkVersionsOfPlugins();
+
+		checkDuellToolVersion();
+		
+		checkHaxeVersion();
+
+		createFinalLibLists();
+	}
+
+	private function parseDuellUserFile()
+	{
 		if (FileSystem.exists(DuellConfigHelper.getDuellUserFileLocation()))
 		{
 			LogHelper.info("     parsing user file");
 			parseXML(DuellConfigHelper.getDuellUserFileLocation());
 		}
+	}
 
+	private function parseProjectFile()
+	{
 		LogHelper.info("     parsing configuration file in current directory");
 
 		var projectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
@@ -146,7 +166,10 @@ class UpdateCommand implements IGDCommand
 		{
 			parseXML(libFile);
 		}
+	}
 
+	private function iterateDuellLibVersionsUntilEverythingIsParsedAndVersioned()
+	{
 		while(true)
 		{
 			var foundSomethingNotParsed = false;
@@ -206,7 +229,11 @@ class UpdateCommand implements IGDCommand
 			}
 		}
 
+	}
 
+
+	private function checkVersionsOfPlugins()
+	{
 		for (pluginVersion in pluginVersions)
 		{
 			LogHelper.info("\n");
@@ -223,61 +250,54 @@ class UpdateCommand implements IGDCommand
 				LogHelper.info("  - using version " + LogHelper.BOLD + pluginVersion.gitVers.currentVersion + LogHelper.NORMAL);
 			}
 		}
-		
-		if (duellToolRequestedVersion != null)
+	}
+
+	private function checkDuellToolVersion()
+	{
+		if (duellToolRequestedVersion == null)
+			return;
+
+		LogHelper.info("\n");
+		LogHelper.info("checking version of " + LogHelper.BOLD + "duell tool" + LogHelper.NORMAL);
+		var resolvedVersion = duellToolGitVers.solveVersion(duellToolRequestedVersion);
+
+		if (duellToolGitVers.needsToChangeVersion(resolvedVersion))
 		{
-			LogHelper.info("\n");
-			LogHelper.info("checking version of " + LogHelper.BOLD + "duell tool" + LogHelper.NORMAL);
-			var resolvedVersion = duellToolGitVers.solveVersion(duellToolRequestedVersion);
-
-			if (duellToolGitVers.needsToChangeVersion(resolvedVersion))
-			{
-				LogHelper.info("  - changing to version " + LogHelper.BOLD + resolvedVersion + LogHelper.NORMAL);
-				duellToolGitVers.changeToVersion(resolvedVersion);
-			}
-			else
-			{
-				LogHelper.info("  - using version " + LogHelper.BOLD + duellToolGitVers.currentVersion + LogHelper.NORMAL);
-			}
-
+			LogHelper.info("  - changing to version " + LogHelper.BOLD + resolvedVersion + LogHelper.NORMAL);
+			duellToolGitVers.changeToVersion(resolvedVersion);
 		}
-		
-
-		if (haxeVersionRequested != null)
+		else
 		{
-			LogHelper.info("checking version of " + LogHelper.BOLD + "haxe" + LogHelper.NORMAL);
-
-			var haxePath = Sys.getEnv("HAXEPATH");
-
-			var options: ProcessOptions = {systemCommand: true, 
-													mute: true, 
-										 shutdownOnError: true, 
-										 	errorMessage: "Error retrieving haxe version",
-										 		   block:true};
-
-	    	var duellProcess = new DuellProcess(Sys.getCwd(), Path.join([haxePath, "haxe"]), ["-version"], options);
-	    	var versionString = duellProcess.getCompleteStderr().toString().trim();
-
-			var haxeVersion = SemVer.ofString(versionString);
-
-			if (!SemVer.areCompatible(haxeVersion, haxeVersionRequested))
-			{
-				LogHelper.error("Requested Haxe Version " + haxeVersionRequested.toString() + " and current version " + haxeVersion.toString() + " are not compatible. Please install a haxe version that is compatible.");
-			}
-
-			LogHelper.info("  - using version " + LogHelper.BOLD + haxeVersion.toString() + LogHelper.NORMAL + " which is compatible with requested version " + LogHelper.BOLD + haxeVersionRequested.toString() + LogHelper.NORMAL);
+			LogHelper.info("  - using version " + LogHelper.BOLD + duellToolGitVers.currentVersion + LogHelper.NORMAL);
 		}
+	}
 
-		for (duellLibVersion in duellLibVersions)
+	private function checkHaxeVersion()
+	{
+		if (haxeVersionRequested == null)
+			return;
+
+		LogHelper.info("checking version of " + LogHelper.BOLD + "haxe" + LogHelper.NORMAL);
+
+		var haxePath = Sys.getEnv("HAXEPATH");
+
+		var options: ProcessOptions = {systemCommand: true, 
+												mute: true, 
+									 shutdownOnError: true, 
+									 	errorMessage: "Error retrieving haxe version",
+									 		   block:true};
+
+    	var duellProcess = new DuellProcess(Sys.getCwd(), Path.join([haxePath, "haxe"]), ["-version"], options);
+    	var versionString = duellProcess.getCompleteStderr().toString().trim();
+
+		var haxeVersion = SemVer.ofString(versionString);
+
+		if (!SemVer.areCompatible(haxeVersion, haxeVersionRequested))
 		{
-			finalLibList.duellLibs.push(DuellLib.getDuellLib(duellLibVersion.name, duellLibVersion.gitVers.currentVersion));
+			LogHelper.error("Requested Haxe Version " + haxeVersionRequested.toString() + " and current version " + haxeVersion.toString() + " are not compatible. Please install a haxe version that is compatible.");
 		}
 
-		finalLibList.haxelibs = [];
-		for (haxelibVersion in haxelibVersions)
-		{
-			finalLibList.haxelibs.push(haxelibVersion);
-		}
+		LogHelper.info("  - using version " + LogHelper.BOLD + haxeVersion.toString() + LogHelper.NORMAL + " which is compatible with requested version " + LogHelper.BOLD + haxeVersionRequested.toString() + LogHelper.NORMAL);
 	}
 
 	private function printFinalResult(): Void
@@ -312,6 +332,20 @@ class UpdateCommand implements IGDCommand
 	    		LogHelper.info("   " + lib.name + " - " + lib.version);
 	    	}
     	}
+	}
+
+	private function createFinalLibLists()
+	{
+		for (duellLibVersion in duellLibVersions)
+		{
+			finalLibList.duellLibs.push(DuellLib.getDuellLib(duellLibVersion.name, duellLibVersion.gitVers.currentVersion));
+		}
+
+		finalLibList.haxelibs = [];
+		for (haxelibVersion in haxelibVersions)
+		{
+			finalLibList.haxelibs.push(haxelibVersion);
+		}
 	}
 
 	private function saveUpdateExecution()
@@ -353,65 +387,28 @@ class UpdateCommand implements IGDCommand
 			{
 				case 'haxelib':
 
-					var name = null;
-					var version = null;
-					if(element.has.name)
+					var name = element.att.name;
+
+					if (name == '')
 					{
-						name = element.att.name;
+						continue;
 					}
 
-					if(element.has.version)
-					{
-						version = element.att.version;
-					}
+					var version = null;
 
 					if (!element.has.version || element.att.version == "")
 					{
 						LogHelper.info("WARNING: Haxelib dependencies must always specify a version. This will become an error in future releases. File: " + path);
 						version = "";
 					}
-
-					if (name == null || name == '')
+					else
 					{
-						continue;
+						version = element.att.version;
 					}
 
 					var haxelib = Haxelib.getHaxelib(name, version);
 
-					if (!haxelibVersions.exists(name))
-					{
-						if (!haxelib.exists())
-						{	
-							var haxelibMessagePart = haxelib.name + (haxelib.version != "" ? " with version " + haxelib.version : "");
-							var answer = AskHelper.askYesOrNo('Haxelib $haxelibMessagePart is missing, would you like to install it?');
-
-							if (answer)
-								haxelib.install();
-							else
-								LogHelper.error('Cannot continue with an uninstalled lib.');
-						}
-
-						haxelib.selectVersion();
-						haxelibVersions.set(haxelib.name, haxelib);
-					}
-					else
-					{
-						var existingHaxelib = haxelibVersions.get(name);
-
-						var solvedlib = Haxelib.solveConflict(existingHaxelib, haxelib);
-
-						if(solvedlib == null) /// version doesn't need to be checked
-						{
-							LogHelper.error('Tried to compile with two incompatible versions ("$haxelib" and "$existingHaxelib") of the same library $name');
-						}
-
-						if (solvedlib != existingHaxelib)
-						{
-							solvedlib.selectVersion(); /// just to make sure
-						}
-
-						haxelibVersions.set(name, solvedlib);
-					}
+					handleHaxelibParsed(haxelib);
 
 					LogHelper.info("      depends on haxelib " + LogHelper.BOLD + haxelib.name + LogHelper.NORMAL + " " + haxelib.version);
 
@@ -573,6 +570,45 @@ class UpdateCommand implements IGDCommand
 		}
 
 		duellLibVersions[newDuellLib.name] = {name: newDuellLib.name, gitVers: new GitVers(newDuellLib.getPath()), versionRequested: newDuellLib.version, versionState:VersionState.Unparsed};
+	}
+
+	private function handleHaxelibParsed(haxelib: Haxelib)
+	{
+		if (!haxelibVersions.exists(haxelib.name))
+		{
+			if (!haxelib.exists())
+			{	
+				var haxelibMessagePart = haxelib.name + (haxelib.version != "" ? " with version " + haxelib.version : "");
+				var answer = AskHelper.askYesOrNo('Haxelib $haxelibMessagePart is missing, would you like to install it?');
+
+				if (answer)
+					haxelib.install();
+				else
+					LogHelper.error('Cannot continue with an uninstalled lib.');
+			}
+
+			haxelib.selectVersion();
+			haxelibVersions.set(haxelib.name, haxelib);
+		}
+		else
+		{
+			var existingHaxelib = haxelibVersions.get(haxelib.name);
+
+			var solvedlib = Haxelib.solveConflict(existingHaxelib, haxelib);
+
+			if(solvedlib == null) /// version doesn't need to be checked
+			{
+				LogHelper.error('Tried to compile with two incompatible versions ("$haxelib" and "$existingHaxelib") of the same library ${haxelib.name}');
+			}
+
+			if (solvedlib != existingHaxelib)
+			{
+				solvedlib.selectVersion(); /// just to make sure
+			}
+
+			haxelibVersions.set(haxelib.name, solvedlib);
+		}
+
 	}
 
 	private function handlePluginParsed(buildLib: DuellLib)
