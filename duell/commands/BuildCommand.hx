@@ -176,8 +176,10 @@ class BuildCommand implements IGDCommand
     	{
 			CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell", "update"], {} );
 
-    		Sys.exit(0);
-    	}
+            CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell"].concat(Arguments.getRawArguments()));
+
+            Sys.exit(0);
+        }
     	else
     	{
     		duellConfig.lastProjectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
