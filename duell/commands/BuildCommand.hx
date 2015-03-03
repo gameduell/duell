@@ -69,25 +69,32 @@ class BuildCommand implements IGDCommand
 	    	LogHelper.info("------\x1b[0m");
 	    	LogHelper.info("\n");
 
-	    	LogHelper.println("");
+	    	if (Arguments.isSet("-fast"))
+	    	{
+	    		runFast();
+	    	}
+	    	else
+	    	{
+		    	LogHelper.println("");
 
-	    	checkIfItIsAProjectFolder();
+		    	checkIfItIsAProjectFolder();
 
-	    	LogHelper.println("");
+		    	LogHelper.println("");
 
-	    	checkUpdateTime();
+		    	checkUpdateTime();
 
-	    	LogHelper.println("");
+		    	LogHelper.println("");
 
-	    	determinePlatformToBuildFromArguments();
+		    	determinePlatformToBuildFromArguments();
 
-	    	LogHelper.println("");
+		    	LogHelper.println("");
 
-	    	determineAndValidateDependenciesAndDefines();
+		    	determineAndValidateDependenciesAndDefines();
 
-	    	LogHelper.println("");
+		    	LogHelper.println("");
 
-	    	buildNewExecutableWithBuildLibAndDependencies();
+		    	buildNewExecutableWithBuildLibAndDependencies();
+	    	}
 
 	    	LogHelper.println("");
 	    	LogHelper.info("\x1b[2m------");
