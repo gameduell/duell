@@ -28,7 +28,7 @@ class DuellLib
 		this.version = version;
 	}
 
-	public static var duellLibCache : Map<String, Map<String, DuellLib> > = new Map<String, Map<String, DuellLib> >();
+	private static var duellLibCache : Map<String, Map<String, DuellLib> > = new Map<String, Map<String, DuellLib> >();
 	public static function getDuellLib(name : String, version : String = "master") : DuellLib
 	{
 		if (version == null || version == "")

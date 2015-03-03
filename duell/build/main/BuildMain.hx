@@ -13,12 +13,19 @@ import duell.build.plugin.platform.PlatformBuild;
 import duell.helpers.LogHelper;
 import duell.helpers.PlatformHelper;
 import duell.helpers.DuellConfigHelper;
+import duell.helpers.DuellLibHelper;
 
 import duell.objects.Arguments;
 import duell.objects.DuellConfigJSON;
 
+import sys.io.File;
+import sys.FileSystem;
+
+import haxe.io.Path;
+
 class BuildMain 
 {
+    private static inline var SERIALIZED_CACHES_FILENAME = 'serialized_duelllib_caches.cache';
     public static function main()
     {
         Arguments.validateArguments();
@@ -60,6 +67,8 @@ class BuildMain
 
             if (Arguments.isSet("-fast"))
             {
+                deserializeCaches();
+
                 pluginHelper.fast();
                 build.fast();
                 return;
@@ -92,6 +101,8 @@ class BuildMain
                 pluginHelper.postBuild();
             }
 
+            serializeCaches();
+
             if (Arguments.isSet("-publish"))
             {
                 build.publish();
@@ -110,6 +121,26 @@ class BuildMain
     		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
     		LogHelper.error(error);
     	}
+    }
+
+    private static function serializeCaches()
+    {
+        var tmpFolder = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"]);
+        var serializedCachesFile = Path.join([tmpFolder, SERIALIZED_CACHES_FILENAME]);
+
+        var fileOutput = File.write(serializedCachesFile, true);
+        fileOutput.writeString(DuellLibHelper.serializeCaches());
+        fileOutput.close();
+    }
+
+    private static function deserializeCaches()
+    {
+        var tmpFolder = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"]);
+        var serializedCachesFile = Path.join([tmpFolder, SERIALIZED_CACHES_FILENAME]);
+
+        var s = File.read(serializedCachesFile, true).readAll().toString();
+
+        DuellLibHelper.deserializeCaches(s);
     }
 }
 

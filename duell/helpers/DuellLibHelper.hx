@@ -14,12 +14,26 @@ import sys.FileSystem;
 
 using StringTools;
 
+import haxe.Serializer;
+import haxe.Unserializer;
+
+typedef DuellLibHelperCaches = {
+	existsCache: Array<String>,
+	haxelibPathOutputCache: Map<String, String>,
+	pathCache: Map<String, String>
+}
+
 class DuellLibHelper
 { 
-	private static var existsCache: Array<String> = [];
+	private static var caches: DuellLibHelperCaches = {
+		existsCache: [],
+		haxelibPathOutputCache: new Map(),
+		pathCache: new Map()
+	}
+
 	public static function isInstalled(name: String): Bool
 	{
-		if (existsCache.indexOf(name) != -1)
+		if (caches.existsCache.indexOf(name) != -1)
 		{
 			return true;
 		}
@@ -28,7 +42,7 @@ class DuellLibHelper
 
 		if (haxelibPathOutput.indexOf('is not installed') == -1)
 		{
- 			existsCache.push(name);
+ 			caches.existsCache.push(name);
  			return true;
 		}
 
@@ -36,11 +50,10 @@ class DuellLibHelper
 	}
 
 
-	private static var haxelibPathOutputCache: Map<String, String> = new Map<String, String>();
 	private static function getHaxelibPathOutput(name: String): String
 	{
-		if (haxelibPathOutputCache.exists(name))
-			return haxelibPathOutputCache.get(name);
+		if (caches.haxelibPathOutputCache.exists(name))
+			return caches.haxelibPathOutputCache.get(name);
 
     	var haxePath = Sys.getEnv("HAXEPATH");
     	var systemCommand = haxePath != null && haxePath != "" ? false : true;
@@ -48,7 +61,7 @@ class DuellLibHelper
 		var output = proc.getCompleteStdout();
 		var stringOutput = output.toString();
 
-		haxelibPathOutputCache.set(name, stringOutput);
+		caches.haxelibPathOutputCache.set(name, stringOutput);
 
 		return stringOutput;
 	}
@@ -58,11 +71,10 @@ class DuellLibHelper
 		return FileSystem.exists(getPath(name));
 	}
 
-	private static var pathCache: Map<String, String> = new Map<String, String>();
 	public static function getPath(name: String) : String
 	{
-		if (pathCache.exists(name))
-			return pathCache.get(name);
+		if (caches.pathCache.exists(name))
+			return caches.pathCache.get(name);
 
 		if (!isInstalled(name))
 		{
@@ -77,12 +89,12 @@ class DuellLibHelper
 			
 			if (lines[i].trim().startsWith('-D')) 
 			{
-				pathCache.set(name, lines[i - 1].trim());
+				caches.pathCache.set(name, lines[i - 1].trim());
 			}
 			
 		}
 
-		if (pathCache.get(name) == '') 
+		if (caches.pathCache.get(name) == '') 
 		{
 			try {
 				for (line in lines) 
@@ -91,7 +103,7 @@ class DuellLibHelper
 					{
 						if (FileSystem.exists(line)) 
 						{
-							pathCache.set(name, line);
+							caches.pathCache.set(name, line);
 							break;
 						}
 					}
@@ -100,7 +112,7 @@ class DuellLibHelper
 			
 		}
 		
-		return pathCache.get(name);
+		return caches.pathCache.get(name);
 	}
 
     public static function updateNeeded(name: String) : Bool
@@ -117,7 +129,7 @@ class DuellLibHelper
 
     public static function install(name: String)
     {
-    	haxelibPathOutputCache.remove(name);
+    	caches.haxelibPathOutputCache.remove(name);
 
         var duellLibList = DuellLibListHelper.getDuellLibReferenceList();
 
@@ -129,5 +141,19 @@ class DuellLibHelper
         {
             LogHelper.error('Couldn\'t find the Duell Library reference in the repo list for $name. Can\'t install it.');
         }
+    }
+
+    public static function serializeCaches(): String
+    {
+		var serializer = new Serializer();
+		serializer.serialize(caches);
+
+		var s = serializer.toString();
+		return s;
+    }
+
+    public static function deserializeCaches(cache: String): Void
+    {
+		caches = new Unserializer(cache).unserialize();
     }
 }

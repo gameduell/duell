@@ -267,7 +267,9 @@ class BuildCommand implements IGDCommand
 
 		var serializer = new Serializer();
 		serializer.serialize(runArguments);
-		File.write(outputRunArguments, true).writeString(serializer.toString());
+		var fileOutput = File.write(outputRunArguments, true);
+		fileOutput.writeString(serializer.toString());
+		fileOutput.close();
 
     	LogHelper.info("\n");
     	LogHelper.info("\x1b[2m--------------------");
