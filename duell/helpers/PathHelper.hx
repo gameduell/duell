@@ -247,6 +247,40 @@ class PathHelper
 		return gatheredFileList;
 	}
 
+    public static function getRecursiveFolderListUnderFolder(folder : String, gatheredFolderList : Array<String> = null, prefix : String = "") : Array<String>
+    {
+        if (gatheredFolderList == null)
+        {
+            gatheredFolderList = [];
+        }
+
+        var files = [];
+        try
+        {
+            files = FileSystem.readDirectory(folder);
+        }
+        catch (e:Dynamic)
+        {
+            LogHelper.error("Could not find folder directory \"" + folder + "\"");
+        }
+
+        for (file in files)
+        {
+            if (file.substr(0, 1) != ".") /// hidden file
+            {
+                var fullPath = Path.join([folder, file]);
+
+                if (FileSystem.isDirectory(fullPath))
+                {
+                    gatheredFolderList.push(haxe.io.Path.join([prefix, file]));
+                    getRecursiveFolderListUnderFolder(fullPath, gatheredFolderList, haxe.io.Path.join([prefix, file]));
+                }
+            }
+        }
+
+        return gatheredFolderList;
+    }
+
 	public static function getHomeFolder() : String
 	{
 		var env = Sys.environment();
