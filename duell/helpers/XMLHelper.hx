@@ -14,28 +14,46 @@ class XMLHelper
 {
 	public static function isValidElement(element : Fast, validatingConditions : Array<String>) : Bool 
 	{
-        var processValue = function(value : String) : Array<Array<String> >
+        var processValue = function(value : String) : Array<Array<String>>
         {
-			var optionalDefines = value.split("||");
-            
+            var andDefines = value.split("[and]");
+			var optionalDefines = value.indexOf("||") != -1 ? value.split("||") : value.split("[or]");
+
+            andDefines.map(function (str) return str.trim());
+            andDefines = andDefines.filter(function (str) return str != "");
+
 			optionalDefines.map(function (str) return str.trim());
 			optionalDefines = optionalDefines.filter(function (str) return str != "");
+
+            if (optionalDefines.length > 1 && andDefines.length > 1)
+            {
+                LogHelper.error('Chaining of [and] and [or] defines is not supported in element: "$value"');
+                return null;
+            }
             
             var result = [];
-            for (requiredDefinesString in optionalDefines)
+
+            if (andDefines.length > 1)
             {
-            	var requiredDefines = requiredDefinesString.split(" ");
-                requiredDefines.map(function (str) return str.trim());
-                requiredDefines = requiredDefines.filter(function (str) return str != "");
-            
-            	if (requiredDefines.length != 0)
-                    result.push(requiredDefines);
+                result.push(andDefines);
+            }
+            else
+            {
+                for (requiredDefinesString in optionalDefines)
+                {
+                    var requiredDefines = requiredDefinesString.split(" ");
+                    requiredDefines.map(function (str) return str.trim());
+                    requiredDefines = requiredDefines.filter(function (str) return str != "");
+
+                    if (requiredDefines.length != 0)
+                        result.push(requiredDefines);
+                }
             }
 
 			return result;
         }
 
-		var evaluateValue = function(optionalDefines : Array<Array<String> >) : Bool 
+		var evaluateValue = function(optionalDefines : Array<Array<String>>) : Bool
 		{
 			var matchOptional = false;
 			
