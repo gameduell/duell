@@ -17,6 +17,7 @@ class XMLHelper
         var processValue = function(value : String) : Array<Array<String>>
         {
             var andDefines = value.split("[and]");
+            // if "||" is present, then attempt to use it for the splitting. Otherwise, default to splitting by "[or]"
 			var optionalDefines = value.indexOf("||") != -1 ? value.split("||") : value.split("[or]");
 
             andDefines.map(function (str) return str.trim());
