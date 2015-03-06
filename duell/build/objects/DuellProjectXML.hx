@@ -5,6 +5,7 @@
  */
 package duell.build.objects;
 
+import duell.helpers.BuildTagHelper;
 import duell.objects.Arguments;
 import duell.helpers.DuellConfigHelper;
 import duell.defines.DuellDefines;
@@ -403,6 +404,29 @@ class DuellProjectXML
 			duelllib: function(_, s) return DuellLib.getDuellLib(s).getPath(),
 			haxelib: function(_, s) return Haxelib.getHaxelib(s).getPath(),
             define: function(_, s) return Arguments.getDefine(s),
+            call0: function(_, className: String, methodName: String)
+            {
+                className = className.trim();
+                methodName = methodName.trim();
+
+                var classInstance: Dynamic = Type.resolveClass(className);
+
+                if (classInstance == null)
+                {
+                    LogHelper.error('Class "$className" could not be resolved while parsing call0 macro');
+                    return null;
+                }
+
+                var func: Dynamic = Reflect.field(classInstance, methodName);
+
+                if (func == null)
+                {
+                    LogHelper.error('Function "$methodName" not found for class "$className" while parsing call0 macro');
+                    return null;
+                }
+
+                return Reflect.callMethod(classInstance, func, []);
+            },
 			projectpath: function(_, s) return Sys.getCwd()
 		});
 
