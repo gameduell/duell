@@ -1,0 +1,15 @@
+eclipse.preferences.version=1
+repositories/file\:____localhome_buildtools_mc-tools_babel-R0.11.0-juno_ja_zh_stripped_eclipse/enabled=true
+repositories/file\:____localhome_buildtools_mc-tools_babel-R0.11.0-juno_ja_zh_stripped_eclipse/isSystem=false
+repositories/file\:____localhome_buildtools_mc-tools_babel-R0.11.0-juno_ja_zh_stripped_eclipse/name=Babel Language Pack Metadata Repository
+repositories/file\:____localhome_buildtools_mc-tools_babel-R0.11.0-juno_ja_zh_stripped_eclipse/suffix=content.xml
+repositories/file\:____localhome_buildtools_mc-tools_babel-R0.11.0-juno_ja_zh_stripped_eclipse/type=org.eclipse.equinox.internal.p2.metadata.repository.LocalMetadataRepository
+repositories/file\:____localhome_buildtools_mc-tools_babel-R0.11.0-juno_ja_zh_stripped_eclipse/uri=file\:////localhome/buildtools/mc-tools/babel-R0.11.0-juno_ja_zh_stripped/eclipse
+repositories/file\:____localhome_buildtools_mc-tools_babel-R0.11.0-juno_ja_zh_stripped_eclipse/version=1.0.0
+repositories/file\:____localhome_buildtools_mc-tools_org.eclipse.rcp-3.8.2/enabled=true
+repositories/file\:____localhome_buildtools_mc-tools_org.eclipse.rcp-3.8.2/isSystem=false
+repositories/file\:____localhome_buildtools_mc-tools_org.eclipse.rcp-3.8.2/name=org.eclipse.rcp Repo
+repositories/file\:____localhome_buildtools_mc-tools_org.eclipse.rcp-3.8.2/suffix=content.xml
+repositories/file\:____localhome_buildtools_mc-tools_org.eclipse.rcp-3.8.2/type=org.eclipse.equinox.internal.p2.metadata.repository.LocalMetadataRepository
+repositories/file\:____localhome_buildtools_mc-tools_org.eclipse.rcp-3.8.2/uri=file\:////localhome/buildtools/mc-tools/org.eclipse.rcp-3.8.2
+repositories/file\:____localhome_buildtools_mc-tools_org.eclipse.rcp-3.8.2/version=1.0.0
