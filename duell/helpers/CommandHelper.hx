@@ -260,4 +260,17 @@ class CommandHelper
 		return CommandHelper.runCommand(path, Path.join([haxePath, "haxelib"]), args, options);
 	}
 
+    public static function runJava(path: String, args: Array <String>, ?options: CommandOptions): Int
+    {
+        var javaHome: String = Sys.getEnv("JAVA_HOME");
+
+        var javaBinaryPath: String = switch (PlatformHelper.hostPlatform)
+        {
+            case Platform.MAC: Path.join([javaHome, "bin", "java"]);
+            // case Platform.WINDOWS: Path.join([javaHome, "bin", "java.exe"]);
+            case _: "java";
+        };
+
+        return CommandHelper.runCommand(path, javaBinaryPath, args, options);
+    }
 }

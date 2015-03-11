@@ -5,6 +5,7 @@
  */
 package duell.build.main;
 
+import duell.objects.DuellLib;
 import haxe.CallStack;
 
 import duell.build.objects.Configuration;
@@ -74,6 +75,8 @@ class BuildMain
                 return;
             }
 
+            setLocalJavaDistributionHome();
+
             build.parse();
 
             pluginHelper.resolveLibraryPlugins();
@@ -141,6 +144,22 @@ class BuildMain
         var s = File.read(serializedCachesFile, true).readAll().toString();
 
         DuellLibHelper.deserializeCaches(s);
+    }
+
+    private static function setLocalJavaDistributionHome(): Void
+    {
+        var duellLibPath: String = DuellLib.getDuellLib("duell").getPath();
+
+        var javaHome: String = switch (PlatformHelper.hostPlatform)
+        {
+            case Platform.MAC: Path.join([duellLibPath, "bin", "mac", "jdk1.7.0_71"]);
+            case _: null;
+        }
+
+        if (javaHome != null)
+        {
+            Sys.putEnv("JAVA_HOME", javaHome);
+        }
     }
 }
 
