@@ -400,6 +400,16 @@ class Arguments
 		throw "Unknown argument " + argument;
 	}
 
+    public static function isGeneralArgument(argument: String): Bool
+    {
+        if (generalArgumentSpecs != null && generalArgumentSpecs.exists(argument))
+        {
+            return generalArgumentSpecs.get(argument).set;
+        }
+
+        return false;
+    }
+
 	public static function isDefineSet(define: String)
 	{
 		return defines.exists(define);
