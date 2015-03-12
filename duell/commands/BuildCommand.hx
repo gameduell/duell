@@ -174,9 +174,14 @@ class BuildCommand implements IGDCommand
 
     	if (answer)
     	{
-			CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell", "update"], {} );
+            var updateArguments: Array<String> = Arguments.getRawArguments().filter(function (argument: String): Bool
+            {
+                return Arguments.isGeneralArgument(argument);
+            });
 
-            CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell"].concat(Arguments.getRawArguments()));
+			CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell", "update"].concat(updateArguments), {});
+
+            CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell"].concat(Arguments.getRawArguments()), {});
 
             Sys.exit(0);
         }
