@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
-<schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-        xmlns="http://www.w3.org/2001/XMLSchema"
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
         targetNamespace="duell"
         xmlns:d="duell"
         elementFormDefault="qualified">
@@ -95,4 +94,4 @@
         <xs:attribute name="unless" type="xs:string" use="optional"/>
         <!-- XSD 1.1 <xs:assert test="(@if and not(@unless)) or (not(@if) and @unless)"/> -->
     </xs:complexType>
-</schema>
+</xs:schema>
