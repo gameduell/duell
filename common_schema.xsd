@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="duell"
+        xmlns:d="duell"
+        elementFormDefault="qualified">
+
+    <xs:complexType name="Name">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="Value">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="value" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="Version">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="version" type="d:SupportedVersion" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="VersionName">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+                <xs:attribute name="version" type="d:SupportedVersion" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="SupportedVersion">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="([a-zA-Z0-9_-]+)|([0-9]+\.[0-9]+\.[0-9]+(\+)?)" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="Path">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="path" type="xs:anyURI" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="WidthHeight">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="width" type="xs:int" use="required"/>
+                <xs:attribute name="height" type="xs:int" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="App">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="title" type="xs:string" use="optional"/>
+                <xs:attribute name="file" type="xs:string" use="optional"/>
+                <xs:attribute name="package" type="xs:string" use="optional"/>
+                <xs:attribute name="version" type="xs:string" default="0.0.1" />
+                <xs:attribute name="buildNumber" type="xs:string" default="1" />
+                <xs:attribute name="company" type="xs:string" default="GameDuell GmbH"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="Ndll">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+                <xs:attribute name="build-file-path" type="xs:string" use="required"/>
+                <xs:attribute name="bin-path" type="xs:string" use="required" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="IgnoreContents">
+        <xs:sequence>
+            <xs:any maxOccurs="unbounded" processContents="skip" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Conditional">
+        <xs:attribute name="if" type="xs:string" use="optional"/>
+        <xs:attribute name="unless" type="xs:string" use="optional"/>
+        <!-- XSD 1.1 <xs:assert test="(@if and not(@unless)) or (not(@if) and @unless)"/> -->
+    </xs:complexType>
+</schema>

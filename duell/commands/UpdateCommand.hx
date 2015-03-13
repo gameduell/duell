@@ -5,6 +5,8 @@
  */
 package duell.commands;
 
+import duell.build.objects.Configuration;
+import duell.helpers.TemplateHelper;
 import duell.helpers.DuellConfigHelper;
 import duell.helpers.CommandHelper;
 import haxe.CallStack;
@@ -140,6 +142,8 @@ class UpdateCommand implements IGDCommand
 		checkHaxeVersion();
 
 		createFinalLibLists();
+
+        validateDuellXml();
 	}
 
 	private function parseDuellUserFile()
@@ -642,6 +646,63 @@ class UpdateCommand implements IGDCommand
 			}
 		}
 	}
+
+    private function validateDuellXml(): Void
+    {
+        var duellPath: String = DuellLibHelper.getPath("duell");
+        var schemaPath: String = Path.join([duellPath, "duell_schema.xsd"]);
+
+        var librariesWithSchema: Array<{name : String, path : String}> = [];
+        var pluginsWithSchema: Array<{name : String, path : String}> = [];
+
+        var librariesWithoutSchema: Array<String> = [];
+        var pluginsWithoutSchema: Array<String> = [];
+
+        for (duelllib in duellLibVersions.keys())
+        {
+            var duellLibPath: String = DuellLibHelper.getPath(duelllib);
+            var duellLibSchemaPath: String = Path.join([duellLibPath, "schema.xsd"]);
+
+            if (FileSystem.exists(duellLibSchemaPath))
+            {
+                librariesWithSchema.push({name: duelllib, path: duellLibSchemaPath});
+            }
+            else
+            {
+                librariesWithoutSchema.push(duelllib);
+            }
+        }
+
+        for (plugin in pluginVersions.keys())
+        {
+            var duellLibPath: String = DuellLibHelper.getPath(plugin);
+            var duellLibSchemaPath: String = Path.join([duellLibPath, "schema.xsd"]);
+
+            var rawPluginName: String = plugin.substr(10);
+
+            if (FileSystem.exists(duellLibSchemaPath))
+            {
+                pluginsWithSchema.push({name: rawPluginName, path: duellLibSchemaPath});
+            }
+            else
+            {
+                pluginsWithoutSchema.push(rawPluginName);
+            }
+        }
+
+        var outPath: String = Path.join([duellPath, "new_schema.xsd"]);
+
+        var template =
+        {
+            NS: "duell",
+            LIBRARIES_WITH_SCHEMA: librariesWithSchema,
+            PLUGINS_WITH_SCHEMA: pluginsWithSchema,
+            LIBRARIES_WITHOUT_SCHEMA: librariesWithoutSchema,
+            PLUGINS_WITHOUT_SCHEMA: pluginsWithoutSchema
+        }
+
+        TemplateHelper.copyTemplateFile(schemaPath, outPath, template, null);
+    }
 
 	private function resolvePath(path : String) : String
 	{

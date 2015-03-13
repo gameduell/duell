@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:d="::NS::"
+           targetNamespace="::NS::"
+           elementFormDefault="qualified">
+
+    ::if (LIBRARIES_WITH_SCHEMA.length == 0)::
+    ::if (PLUGINS_WITH_SCHEMA.length == 0)::
+    <xs:include schemaLocation="common_schema.xsd"/>
+    ::end::
+    ::end::
+
+    ::foreach LIBRARIES_WITH_SCHEMA::
+    <xs:include schemaLocation="file://::path::" />::end::
+    ::foreach PLUGINS_WITH_SCHEMA::
+    <xs:include schemaLocation="file://::path::" />::end::
+
+    <!-- Root types -->
+
+    <xs:element name="project" type="d:DuellProject" />
+    <xs:element name="library" type="d:DuellLibrary" />
+    <xs:element name="user" type="d:DuellUser" />
+
+    <!-- Definition of root structures -->
+
+    <xs:complexType name="DuellProject">
+        <xs:sequence>
+            <xs:group ref="d:ToolVersions" />
+
+            <xs:element name="app" minOccurs="1" maxOccurs="unbounded" type="d:App"/>
+            <xs:element name="main" minOccurs="1" maxOccurs="1" type="d:Name"/>
+
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="source" type="d:Path"/>
+                <xs:element name="haxelib" type="d:VersionName"/>
+                <xs:element name="duelllib" type="d:VersionName"/>
+            </xs:choice>
+
+            <xs:group ref="d:Configuration" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DuellLibrary">
+        <xs:sequence>
+            <xs:group ref="d:ToolVersions" />
+
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="haxelib" type="d:VersionName"/>
+                <xs:element name="duelllib" type="d:VersionName"/>
+                <xs:element name="ndll" type="d:Ndll" />
+                <xs:element name="include" type="d:Path"/>
+                <xs:element name="haxe-compile-arg" type="d:Value"/>
+                <xs:element name="source" type="d:Path"/>
+            </xs:choice>
+
+            <xs:group ref="d:Configuration" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DuellUser">
+        <xs:sequence>
+            <xs:group ref="d:ToolVersions" />
+
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="haxelib" type="d:VersionName"/>
+                <xs:element name="duelllib" type="d:VersionName"/>
+            </xs:choice>
+
+            <xs:group ref="d:Configuration" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Main groups -->
+
+    <xs:group name="ToolVersions">
+        <xs:sequence>
+            <xs:element name="supported-haxe-version" minOccurs="0" maxOccurs="1" type="d:Version"/>
+            <xs:element name="supported-duell-tool" minOccurs="0" maxOccurs="1" type="d:Version"/>
+            <xs:element name="supported-build-plugin" minOccurs="0" maxOccurs="unbounded" type="d:VersionName"/>
+        </xs:sequence>
+    </xs:group>
+
+    <xs:group name="Libraries">
+        <xs:sequence>
+            <xs:element name="haxelib" type="d:VersionName"/>
+            <xs:element name="duelllib" type="d:VersionName"/>
+        </xs:sequence>
+    </xs:group>
+
+    <xs:group name="Configuration">
+        <xs:sequence>
+            <xs:element name="library-config" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:all>
+                        ::foreach LIBRARIES_WITH_SCHEMA::
+                        <xs:element name="::name::" type="d:::name::"/>::end::
+                        ::foreach LIBRARIES_WITHOUT_SCHEMA::
+                        <xs:element name="::__current__::" minOccurs="0" type="d:IgnoreContents"/>::end::
+                    </xs:all>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="platform-config" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:all>
+                        ::foreach PLUGINS_WITH_SCHEMA::
+                        <xs:element name="::name::" type="d:::name::"/>::end::
+                        ::foreach PLUGINS_WITHOUT_SCHEMA::
+                        <xs:element name="::__current__::" minOccurs="0" type="d:IgnoreContents"/>::end::
+                    </xs:all>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:group>
+
+</xs:schema>

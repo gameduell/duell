@@ -6,8 +6,6 @@
 package duell.build.objects;
 
 import duell.build.plugin.platform.PlatformConfiguration;
-import duell.build.plugin.library.LibraryConfiguration;
-
 
 typedef ConfigurationData = {
 	APP : {
@@ -40,7 +38,7 @@ typedef ConfigurationData = {
 	NDLLS : Array<{NAME : String, BIN_PATH : String, BUILD_FILE_PATH : String, REGISTER_STATICS : Bool}>,
 
 	/// functions to be used during template processing on the macro parameter
-	TEMPLATE_FUNCTIONS : Dynamic 
+	TEMPLATE_FUNCTIONS : Dynamic
 };
 
 class Configuration
