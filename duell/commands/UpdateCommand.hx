@@ -698,7 +698,7 @@ class UpdateCommand implements IGDCommand
             }
         }
 
-        var outPath: String = Path.join([duellPath, "new_schema.xsd"]);
+        var outPath: String = Path.join([duellPath, "schema.xsd"]);
 
         var template =
         {

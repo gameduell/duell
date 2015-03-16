@@ -20,6 +20,14 @@
         </xs:complexContent>
     </xs:complexType>
 
+    <xs:complexType name="ValueBoolean">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="value" type="xs:boolean" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
     <xs:complexType name="Version">
         <xs:complexContent>
             <xs:extension base="d:Conditional">
