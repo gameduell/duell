@@ -350,6 +350,11 @@ class UpdateCommand implements IGDCommand
 		{
 			finalLibList.haxelibs.push(haxelibVersion);
 		}
+
+        for (plugin in pluginVersions.keys())
+        {
+            finalPluginList.push(pluginVersions[plugin].lib);
+        }
 	}
 
 	private function saveUpdateExecution()
@@ -573,8 +578,11 @@ class UpdateCommand implements IGDCommand
 			return;
 		}
 
-		duellLibVersions[newDuellLib.name] = {name: newDuellLib.name, gitVers: new GitVers(newDuellLib.getPath()), versionRequested: newDuellLib.version, versionState:VersionState.Unparsed};
-	}
+        var gitVers: GitVers = new GitVers(newDuellLib.getPath());
+        var newVersion: String = gitVers.resolveVersionConflict([newDuellLib.version], Arguments.get("-overridebranch"));
+
+		duellLibVersions[newDuellLib.name] = {name: newDuellLib.name, gitVers: gitVers, versionRequested: newVersion, versionState:VersionState.Unparsed};
+    }
 
 	private function handleHaxelibParsed(haxelib: Haxelib)
 	{
@@ -650,7 +658,7 @@ class UpdateCommand implements IGDCommand
     private function validateDuellXml(): Void
     {
         var duellPath: String = DuellLibHelper.getPath("duell");
-        var schemaPath: String = Path.join([duellPath, "duell_schema.xsd"]);
+        var schemaPath: String = Path.join([duellPath, "schema", "duell_schema.xsd"]);
 
         var librariesWithSchema: Array<{name : String, path : String}> = [];
         var pluginsWithSchema: Array<{name : String, path : String}> = [];
