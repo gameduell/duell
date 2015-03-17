@@ -39,7 +39,7 @@ class SchemaHelper
     public static function createSchemaXml(duelllibs: Array<String>, plugins: Array<String>): Void
     {
         var duellPath: String = DuellLibHelper.getPath("duell");
-        var schemaPath: String = Path.join([duellPath, "schema", "duell_schema.xsd"]);
+        var schemaPath: String = Path.join([duellPath, "schema", TEMPLATED_SCHEMA_FILE]);
 
         var librariesWithSchema: Array<{name : String, path : String}> = [];
         var pluginsWithSchema: Array<{name : String, path : String}> = [];

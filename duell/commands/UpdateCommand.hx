@@ -392,7 +392,7 @@ class UpdateCommand implements IGDCommand
 
     private function createSchemaXml()
     {
-        SchemaHelper.createSchemaXml([for (l in duellLibVersions.keys()) l], [for (p in pluginVersions.keys()) p]);
+        SchemaHelper.createSchemaXml([for (l in finalLibList.duellLibs) l.name], [for (p in finalPluginList) p.name]);
     }
 
     private function saveUpdateExecution()
