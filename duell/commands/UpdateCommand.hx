@@ -5,6 +5,7 @@
  */
 package duell.commands;
 
+import duell.helpers.SchemaHelper;
 import duell.build.objects.Configuration;
 import duell.helpers.TemplateHelper;
 import duell.helpers.DuellConfigHelper;
@@ -117,6 +118,8 @@ class UpdateCommand implements IGDCommand
                 LogHelper.info("\n");
 
                 validateSchemaXml();
+
+                LogHelper.info("Success!");
             }
 
 	    	saveUpdateExecution();
@@ -387,9 +390,13 @@ class UpdateCommand implements IGDCommand
         }
 	}
 
+    private function createSchemaXml()
+    {
+        SchemaHelper.createSchemaXml([for (l in duellLibVersions.keys()) l], [for (p in pluginVersions.keys()) p]);
+    }
+
 	private function saveUpdateExecution()
 	{
-
         var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
     	duellConfig.lastProjectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
     	duellConfig.lastProjectTime = Date.now().toString();
@@ -685,63 +692,6 @@ class UpdateCommand implements IGDCommand
 		}
 	}
 
-    private function createSchemaXml(): Void
-    {
-        var duellPath: String = DuellLibHelper.getPath("duell");
-        var schemaPath: String = Path.join([duellPath, "schema", "duell_schema.xsd"]);
-
-        var librariesWithSchema: Array<{name : String, path : String}> = [];
-        var pluginsWithSchema: Array<{name : String, path : String}> = [];
-
-        var librariesWithoutSchema: Array<String> = [];
-        var pluginsWithoutSchema: Array<String> = [];
-
-        for (duelllib in duellLibVersions.keys())
-        {
-            var duellLibPath: String = DuellLibHelper.getPath(duelllib);
-            var duellLibSchemaPath: String = Path.join([duellLibPath, "schema.xsd"]);
-
-            if (FileSystem.exists(duellLibSchemaPath))
-            {
-                librariesWithSchema.push({name: duelllib, path: duellLibSchemaPath});
-            }
-            else
-            {
-                librariesWithoutSchema.push(duelllib);
-            }
-        }
-
-        for (plugin in pluginVersions.keys())
-        {
-            var duellLibPath: String = DuellLibHelper.getPath(plugin);
-            var duellLibSchemaPath: String = Path.join([duellLibPath, "schema.xsd"]);
-
-            var rawPluginName: String = plugin.substr(10);
-
-            if (FileSystem.exists(duellLibSchemaPath))
-            {
-                pluginsWithSchema.push({name: rawPluginName, path: duellLibSchemaPath});
-            }
-            else
-            {
-                pluginsWithoutSchema.push(rawPluginName);
-            }
-        }
-
-        var outPath: String = Path.join([duellPath, "schema.xsd"]);
-
-        var template =
-        {
-            NS: "duell",
-            LIBRARIES_WITH_SCHEMA: librariesWithSchema,
-            PLUGINS_WITH_SCHEMA: pluginsWithSchema,
-            LIBRARIES_WITHOUT_SCHEMA: librariesWithoutSchema,
-            PLUGINS_WITHOUT_SCHEMA: pluginsWithoutSchema
-        }
-
-        TemplateHelper.copyTemplateFile(schemaPath, outPath, template, null);
-    }
-
     private function duellFileHasDuellNamespace(): Bool
     {
         var projectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
@@ -749,20 +699,14 @@ class UpdateCommand implements IGDCommand
 
         if (FileSystem.exists(projectFile))
         {
-            return fileHasDuellNamespace(projectFile);
+            return SchemaHelper.hasDuellNamespace(projectFile);
         }
         else if (FileSystem.exists(libFile))
         {
-            return fileHasDuellNamespace(libFile);
+            return SchemaHelper.hasDuellNamespace(libFile);
         }
 
         return false;
-    }
-
-    private function fileHasDuellNamespace(path: String): Bool
-    {
-        var data: String = File.getContent(path);
-        return data.indexOf('xmlns="duell"') != -1;
     }
 
     private function validateSchemaXml(): Void
@@ -772,27 +716,12 @@ class UpdateCommand implements IGDCommand
 
         if (FileSystem.exists(projectFile))
         {
-            validateXmlFile(projectFile);
+            SchemaHelper.validate(projectFile);
         }
         else if (FileSystem.exists(libFile))
         {
-            validateXmlFile(libFile);
+            SchemaHelper.validate(projectFile);
         }
-    }
-
-    private function validateXmlFile(path: String): Void
-    {
-        var duellPath: String = DuellLibHelper.getPath("duell");
-        var toolPath: String = Path.join([duellPath, "bin"]);
-        var schemaPath: String = Path.join([duellPath, "schema.xsd"]);
-
-        var exitCode: Int = CommandHelper.runJava(toolPath, ["-jar", "schema_validator.jar", schemaPath, path],
-        {
-            errorMessage: 'Failed to validate schema for file: $path'
-        });
-
-        LogHelper.info("Success!");
-        LogHelper.info("\n");
     }
 
 	private function resolvePath(path : String) : String

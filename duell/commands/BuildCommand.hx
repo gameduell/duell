@@ -5,6 +5,7 @@
  */
 package duell.commands;
 
+import duell.helpers.SchemaHelper;
 import duell.helpers.DuellConfigHelper;
 import duell.helpers.CommandHelper;
 import haxe.CallStack;
@@ -92,6 +93,10 @@ class BuildCommand implements IGDCommand
 		    	determineAndValidateDependenciesAndDefines();
 
 		    	LogHelper.println("");
+
+                validateSchemaIfNamespaceSet();
+
+                LogHelper.println("");
 
 		    	buildNewExecutableWithBuildLibAndDependencies();
 	    	}
@@ -217,6 +222,16 @@ class BuildCommand implements IGDCommand
 			}
 		}
 	}
+
+    private function validateSchemaIfNamespaceSet(): Void
+    {
+        var projectFile: String = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
+
+        if (SchemaHelper.hasDuellNamespace(projectFile))
+        {
+            SchemaHelper.validate(projectFile);
+        }
+    }
 
 	private function buildNewExecutableWithBuildLibAndDependencies()
 	{
