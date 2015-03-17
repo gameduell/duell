@@ -16,7 +16,10 @@ class SchemaHelper
     private static inline var DUELL_NS = "duell";
 
     private static inline var SCHEMA_FILE = "schema.xsd";
+
+    private static inline var SCHEMA_FOLDER = "schema";
     private static inline var TEMPLATED_SCHEMA_FILE = "duell_schema.xsd";
+    private static inline var COMMON_SCHEMA_FILE = "common_schema.xsd";
 
     public static function hasDuellNamespace(pathXml: String): Bool
     {
@@ -39,7 +42,8 @@ class SchemaHelper
     public static function createSchemaXml(duelllibs: Array<String>, plugins: Array<String>): Void
     {
         var duellPath: String = DuellLibHelper.getPath("duell");
-        var schemaPath: String = Path.join([duellPath, "schema", TEMPLATED_SCHEMA_FILE]);
+        var schemaPath: String = Path.join([duellPath, SCHEMA_FOLDER, TEMPLATED_SCHEMA_FILE]);
+        var commonSchemaPath: String = Path.join([duellPath, SCHEMA_FOLDER, COMMON_SCHEMA_FILE]);
 
         var librariesWithSchema: Array<{name : String, path : String}> = [];
         var pluginsWithSchema: Array<{name : String, path : String}> = [];
@@ -85,6 +89,7 @@ class SchemaHelper
         var template =
         {
             NS: DUELL_NS,
+            COMMON_FILE: commonSchemaPath,
             LIBRARIES_WITH_SCHEMA: librariesWithSchema,
             PLUGINS_WITH_SCHEMA: pluginsWithSchema,
             LIBRARIES_WITHOUT_SCHEMA: librariesWithoutSchema,

@@ -6,7 +6,7 @@
 
     ::if (LIBRARIES_WITH_SCHEMA.length == 0)::
     ::if (PLUGINS_WITH_SCHEMA.length == 0)::
-    <xs:include schemaLocation="common_schema.xsd"/>
+    <xs:include schemaLocation="file://::COMMON_FILE::"/>
     ::end::
     ::end::
 
