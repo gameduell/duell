@@ -57,12 +57,15 @@ enum VersionState
 
 typedef DuellLibVersion = { name: String, gitVers: GitVers, versionRequested: String, /*helper var*/ versionState: VersionState}; 
 
-typedef PluginVersion = { lib: DuellLib, gitVers: GitVers}; 
+typedef PluginVersion = { lib: DuellLib, gitVers: GitVers};
+
+typedef ToolVersion = { name: String, version: String};
 
 class UpdateCommand implements IGDCommand
 {
 	var finalLibList: LibList = { duellLibs : [], haxelibs : [] };
 	var finalPluginList: Array<DuellLib> = [];
+    var finalToolList: Array<ToolVersion> = [];
 
 	var haxelibVersions: Map<String, Haxelib> = new Map();
 	var duellLibVersions: Map<String, DuellLibVersion> = new Map();
@@ -102,6 +105,19 @@ class UpdateCommand implements IGDCommand
 	    	LogHelper.info("\n");
 
 	    	printFinalResult();
+
+            if (duellFileHasDuellNamespace())
+            {
+                LogHelper.info("\x1b[2m------");
+
+                LogHelper.info("\n");
+                LogHelper.info("\x1b[2m-------------------------");
+                LogHelper.info("Validating XML schema");
+                LogHelper.info("--------------------------\x1b[0m");
+                LogHelper.info("\n");
+
+                validateSchemaXml();
+            }
 
 	    	saveUpdateExecution();
 
@@ -143,7 +159,7 @@ class UpdateCommand implements IGDCommand
 
 		createFinalLibLists();
 
-        validateDuellXml();
+        createSchemaXml();
 	}
 
 	private function parseDuellUserFile()
@@ -274,6 +290,8 @@ class UpdateCommand implements IGDCommand
 		{
 			LogHelper.info("  - using version " + LogHelper.BOLD + duellToolGitVers.currentVersion + LogHelper.NORMAL);
 		}
+
+        finalToolList.push({name: "duell tool", version: duellToolGitVers.currentVersion});
 	}
 
 	private function checkHaxeVersion()
@@ -301,13 +319,13 @@ class UpdateCommand implements IGDCommand
 			LogHelper.error("Requested Haxe Version " + haxeVersionRequested.toString() + " and current version " + haxeVersion.toString() + " are not compatible. Please install a haxe version that is compatible.");
 		}
 
+        finalToolList.push({name: "haxe", version: versionString});
+
 		LogHelper.info("  - using version " + LogHelper.BOLD + haxeVersion.toString() + LogHelper.NORMAL + " which is compatible with requested version " + LogHelper.BOLD + haxeVersionRequested.toString() + LogHelper.NORMAL);
 	}
 
 	private function printFinalResult(): Void
 	{
-
-
     	LogHelper.info(LogHelper.BOLD + "DuellLibs:" + LogHelper.NORMAL);
     	LogHelper.info("\n");
 
@@ -336,6 +354,18 @@ class UpdateCommand implements IGDCommand
 	    		LogHelper.info("   " + lib.name + " - " + lib.version);
 	    	}
     	}
+
+        if (finalToolList.length > 0)
+        {
+            LogHelper.info("\n");
+            LogHelper.info(LogHelper.BOLD + "Tools:" + LogHelper.NORMAL);
+            LogHelper.info("\n");
+
+            for (tool in finalToolList)
+            {
+                LogHelper.info("   " + tool.name + " - " + tool.version);
+            }
+        }
 	}
 
 	private function createFinalLibLists()
@@ -655,7 +685,7 @@ class UpdateCommand implements IGDCommand
 		}
 	}
 
-    private function validateDuellXml(): Void
+    private function createSchemaXml(): Void
     {
         var duellPath: String = DuellLibHelper.getPath("duell");
         var schemaPath: String = Path.join([duellPath, "schema", "duell_schema.xsd"]);
@@ -710,6 +740,59 @@ class UpdateCommand implements IGDCommand
         }
 
         TemplateHelper.copyTemplateFile(schemaPath, outPath, template, null);
+    }
+
+    private function duellFileHasDuellNamespace(): Bool
+    {
+        var projectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
+        var libFile = Path.join([Sys.getCwd(), DuellDefines.LIB_CONFIG_FILENAME]);
+
+        if (FileSystem.exists(projectFile))
+        {
+            return fileHasDuellNamespace(projectFile);
+        }
+        else if (FileSystem.exists(libFile))
+        {
+            return fileHasDuellNamespace(libFile);
+        }
+
+        return false;
+    }
+
+    private function fileHasDuellNamespace(path: String): Bool
+    {
+        var data: String = File.getContent(path);
+        return data.indexOf('xmlns="duell"') != -1;
+    }
+
+    private function validateSchemaXml(): Void
+    {
+        var projectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
+        var libFile = Path.join([Sys.getCwd(), DuellDefines.LIB_CONFIG_FILENAME]);
+
+        if (FileSystem.exists(projectFile))
+        {
+            validateXmlFile(projectFile);
+        }
+        else if (FileSystem.exists(libFile))
+        {
+            validateXmlFile(libFile);
+        }
+    }
+
+    private function validateXmlFile(path: String): Void
+    {
+        var duellPath: String = DuellLibHelper.getPath("duell");
+        var toolPath: String = Path.join([duellPath, "bin"]);
+        var schemaPath: String = Path.join([duellPath, "schema.xsd"]);
+
+        var exitCode: Int = CommandHelper.runJava(toolPath, ["-jar", "schema_validator.jar", schemaPath, path],
+        {
+            errorMessage: 'Failed to validate schema for file: $path'
+        });
+
+        LogHelper.info("Success!");
+        LogHelper.info("\n");
     }
 
 	private function resolvePath(path : String) : String

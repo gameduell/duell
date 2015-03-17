@@ -1,5 +1,7 @@
 package duell;
 
+import haxe.io.Path;
+import duell.helpers.PlatformHelper;
 import duell.helpers.LogHelper;
 
 import duell.objects.Arguments;
@@ -70,6 +72,8 @@ class Duell
 
         printBanner();
 
+        setLocalJavaDistributionHome();
+
         if (isMissingSelfSetup)
         {
             new ToolSetupCommand().execute();
@@ -83,7 +87,7 @@ class Duell
         return;
     }
 
-    private function printBanner()
+    private static function printBanner()
     {
         LogHelper.println("\x1b[33;1m                         ");         
         LogHelper.println("    ____   __  __ ______ __     __ ");   
@@ -94,5 +98,21 @@ class Duell
         LogHelper.println("                                   \x1b[0m");
         LogHelper.println("");
         LogHelper.println("\x1b[1mDuell tool \x1b[0m\x1b[3;37mDuell command line tool\x1b[0m\x1b[0m");
+    }
+
+    private static function setLocalJavaDistributionHome(): Void
+    {
+        var duellLibPath: String = DuellLib.getDuellLib("duell").getPath();
+
+        var javaHome: String = switch (PlatformHelper.hostPlatform)
+        {
+            case Platform.MAC: Path.join([duellLibPath, "bin", "mac", "jdk1.7.0_71"]);
+            case _: null;
+        }
+
+        if (javaHome != null)
+        {
+            Sys.putEnv("JAVA_HOME", javaHome);
+        }
     }
 }
