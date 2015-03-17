@@ -223,7 +223,7 @@ class BuildCommand implements IGDCommand
 		}
 	}
 
-    private function validateSchemaIfNamespaceSet(): Void
+    private static function validateSchemaIfNamespaceSet(): Void
     {
         var projectFile: String = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
 

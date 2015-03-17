@@ -395,7 +395,7 @@ class UpdateCommand implements IGDCommand
         SchemaHelper.createSchemaXml([for (l in duellLibVersions.keys()) l], [for (p in pluginVersions.keys()) p]);
     }
 
-	private function saveUpdateExecution()
+    private function saveUpdateExecution()
 	{
         var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
     	duellConfig.lastProjectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
@@ -692,7 +692,7 @@ class UpdateCommand implements IGDCommand
 		}
 	}
 
-    private function duellFileHasDuellNamespace(): Bool
+    private static function duellFileHasDuellNamespace(): Bool
     {
         var projectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
         var libFile = Path.join([Sys.getCwd(), DuellDefines.LIB_CONFIG_FILENAME]);
@@ -709,7 +709,7 @@ class UpdateCommand implements IGDCommand
         return false;
     }
 
-    private function validateSchemaXml(): Void
+    private static function validateSchemaXml(): Void
     {
         var projectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
         var libFile = Path.join([Sys.getCwd(), DuellDefines.LIB_CONFIG_FILENAME]);

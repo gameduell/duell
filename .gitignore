@@ -2,4 +2,3 @@ test
 *.pyc
 .idea/
 *.iml
-schema.xsd

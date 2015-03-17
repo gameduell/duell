@@ -28,7 +28,7 @@ class SchemaHelper
     {
         var duellPath: String = DuellLibHelper.getPath("duell");
         var toolPath: String = Path.join([duellPath, "bin"]);
-        var schemaPath: String = Path.join([duellPath, SCHEMA_FILE]);
+        var schemaPath: String = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), SCHEMA_FILE]);
 
         CommandHelper.runJava(toolPath, ["-jar", "schema_validator.jar", schemaPath, pathXml],
         {
@@ -80,7 +80,7 @@ class SchemaHelper
             }
         }
 
-        var outPath: String = Path.join([duellPath, SCHEMA_FILE]);
+        var outPath: String = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), SCHEMA_FILE]);
 
         var template =
         {

@@ -91,7 +91,7 @@
                 <xs:attribute name="package" type="xs:string" use="optional"/>
                 <xs:attribute name="version" type="xs:string" default="0.0.1" />
                 <xs:attribute name="buildNumber" type="xs:string" default="1" />
-                <xs:attribute name="company" type="xs:string" default="GameDuell GmbH"/>
+                <xs:attribute name="company" type="xs:string" default="YourCompanyName"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
