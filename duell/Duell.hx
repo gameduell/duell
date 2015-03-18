@@ -69,10 +69,12 @@ class Duell
             LogHelper.error('You are missing the initial setup. Please run the "self_setup" command. For more info run with "-help".');
         }
 
+        if (Arguments.getSelectedCommand().name != "self_setup")
+        {
+            setLocalJavaDistributionHome();
+        }
 
         printBanner();
-
-        setLocalJavaDistributionHome();
 
         if (isMissingSelfSetup)
         {
