@@ -137,18 +137,29 @@ class BuildCommand implements IGDCommand
     	if (!DuellLibHelper.isInstalled(buildLib.name))
         {
     		var answer = AskHelper.askYesOrNo('A library for building $platformName is not currently installed. Would you like to try to install it?');
+            var stopBuild = true;
 
-    		if(answer)
+    		if (answer)
     		{
     			DuellLibHelper.install(buildLib.name);
-    			LogHelper.println('You should now run "duell update" to set the plugin to the correct version for your project');
+
+                var update = AskHelper.askYesOrNo('Do you want to run update to set the plugin to the correct version for your project? It is unsafe not to run an update at this stage.');
+
+                if (update)
+                {
+                    CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell", "update"], {});
+                    stopBuild = false;
+                }
     		}
     		else
     		{
 	    		LogHelper.println('Rerun with the library "duellbuild$platformName" installed');
     		}
-			
-			Sys.exit(0);
+
+            if (stopBuild)
+            {
+			    Sys.exit(0);
+            }
     	}
     }
 
