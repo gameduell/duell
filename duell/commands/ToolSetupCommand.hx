@@ -171,7 +171,7 @@ class ToolSetupCommand implements IGDCommand
 
 		if (!FileSystem.exists(DuellConfigHelper.getDuellUserFileLocation()))
 		{
-			var fileContent: String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<project>\n</project>\n";
+			var fileContent: String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<user xmlns=\"duell\">\n</user>\n";
 
 			var output = File.write(DuellConfigHelper.getDuellUserFileLocation(), false);
 			output.writeString(fileContent);
