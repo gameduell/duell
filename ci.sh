@@ -8,6 +8,8 @@ cd test
 
 haxelib run duell create unitTestProject -verbose -yestoall
 
+sed -i '' 's/supported-duell-tool version=".*"/supported-duell-tool version="master"/g' duell_project.xml
+
 haxelib run duell update -verbose -yestoall
 
 haxelib run duell build android -test -verbose -D jenkins -yestoall
