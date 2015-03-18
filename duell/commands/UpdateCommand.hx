@@ -141,7 +141,7 @@ class UpdateCommand implements IGDCommand
 	private function determineAndValidateDependenciesAndDefines()
 	{
 		/// ADD HXCPP
-		haxelibVersions.set("hxcpp", Haxelib.getHaxelib("hxcpp", DuellDefines.DEFAULT_HXCPP_VERSION));
+        handleHaxelibParsed(Haxelib.getHaxelib("hxcpp", DuellDefines.DEFAULT_HXCPP_VERSION));
 
 		duellToolGitVers = new GitVers(DuellLib.getDuellLib("duell").getPath());
 
