@@ -26,7 +26,7 @@ class PythonProcess extends DuellProcess
 
         return switch (PlatformHelper.hostPlatform)
         {
-            case Platform.MAC: Path.join([duellLibPath, "bin", "mac", "python2.7"]);
+            case Platform.MAC: Path.join([duellLibPath, "bin", "mac", "bin", "python"]);
             case _: "python";
         };
     }
