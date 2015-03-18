@@ -93,7 +93,7 @@
                 <xs:complexType>
                     <xs:all>
                         ::foreach LIBRARIES_WITH_SCHEMA::
-                        <xs:element name="::name::" type="d:::name::"/>::end::
+                        <xs:element name="::name::" minOccurs="0" type="d:::name::"/>::end::
                         ::foreach LIBRARIES_WITHOUT_SCHEMA::
                         <xs:element name="::__current__::" minOccurs="0" type="d:IgnoreContents"/>::end::
                     </xs:all>
@@ -104,7 +104,7 @@
                 <xs:complexType>
                     <xs:all>
                         ::foreach PLUGINS_WITH_SCHEMA::
-                        <xs:element name="::name::" type="d:::name::"/>::end::
+                        <xs:element name="::name::" minOccurs="0" type="d:::name::"/>::end::
                         ::foreach PLUGINS_WITHOUT_SCHEMA::
                         <xs:element name="::__current__::" minOccurs="0" type="d:IgnoreContents"/>::end::
                     </xs:all>
