@@ -152,7 +152,15 @@ class Haxelib
 
 	    var haxePath = Sys.getEnv("HAXEPATH");
 	    var systemCommand = haxePath != null && haxePath != "" ? false : true;
-		new DuellProcess(haxePath, "haxelib", arguments, {block: true, systemCommand: true, errorMessage: "set haxelib version"});
+
+        var process = new DuellProcess(haxePath, "haxelib", arguments, {systemCommand: true, errorMessage: "set haxelib version"});
+
+        if (Arguments.isSet("-yestoall"))
+        {
+            process.stdin.writeString("y\n");
+        }
+
+        process.blockUntilFinished();
     }
 
     public function install()
