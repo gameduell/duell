@@ -56,7 +56,7 @@ enum VersionState
 	ParsedVersionChanged;
 }
 
-typedef DuellLibVersion = { name: String, gitVers: GitVers, versionRequested: String, /*helper var*/ versionState: VersionState}; 
+typedef DuellLibVersion = { name: String, gitVers: GitVers, versionRequested: String, /*helper var*/ versionState: VersionState};
 
 typedef PluginVersion = { lib: DuellLib, gitVers: GitVers};
 
@@ -128,13 +128,13 @@ class UpdateCommand implements IGDCommand
 	    	LogHelper.info("\x1b[2m------");
 	    	LogHelper.info("end");
 	    	LogHelper.info("------\x1b[0m");
-    	} 
+    	}
     	catch(error : Dynamic)
     	{
     		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
     		LogHelper.error(error);
     	}
-	    
+
 	    return "success";
     }
 
@@ -157,7 +157,7 @@ class UpdateCommand implements IGDCommand
 		checkVersionsOfPlugins();
 
 		checkDuellToolVersion();
-		
+
 		checkHaxeVersion();
 
 		createFinalLibLists();
@@ -201,7 +201,7 @@ class UpdateCommand implements IGDCommand
 			{
 				switch (duellLibVersion.versionState)
 				{
-					case VersionState.Unparsed: 
+					case VersionState.Unparsed:
 					{
     					LogHelper.info("\n");
 						LogHelper.info("checking version of " + LogHelper.BOLD + duellLibVersion.name + LogHelper.NORMAL);
@@ -221,7 +221,7 @@ class UpdateCommand implements IGDCommand
 						parseDuellLibWithName(duellLibVersion.name);
 					}
 
-					case VersionState.ParsedVersionChanged: 
+					case VersionState.ParsedVersionChanged:
 					{
     					LogHelper.info("\n");
 						LogHelper.info("rechecking version of " + LogHelper.BOLD + duellLibVersion.name + LogHelper.NORMAL);
@@ -306,9 +306,9 @@ class UpdateCommand implements IGDCommand
 
 		var haxePath = Sys.getEnv("HAXEPATH");
 
-		var options: ProcessOptions = {systemCommand: true, 
-												mute: true, 
-									 shutdownOnError: true, 
+		var options: ProcessOptions = {systemCommand: true,
+												mute: true,
+									 shutdownOnError: true,
 									 	errorMessage: "Error retrieving haxe version",
 									 		   block:true};
 
@@ -423,11 +423,11 @@ class UpdateCommand implements IGDCommand
 
 	private var currentXMLPath : Array<String> = []; /// used to resolve paths. Is used by all XML parsers (library and platform)
 	private function parseXML(path : String):Void
-	{ 
+	{
 		var xml = new Fast(Xml.parse(File.getContent(path)).firstElement());
 		currentXMLPath.push(Path.directory(path));
 
-		for (element in xml.elements) 
+		for (element in xml.elements)
 		{
 			switch element.name
 			{
@@ -516,7 +516,7 @@ class UpdateCommand implements IGDCommand
 					version = element.att.version;
 
 					LogHelper.info("      supports " + LogHelper.BOLD + "duell tool " + LogHelper.NORMAL + " " + version);
- 
+
 					if (duellToolRequestedVersion == null)
 					{
 						duellToolRequestedVersion = version;
@@ -531,7 +531,7 @@ class UpdateCommand implements IGDCommand
 							catch (e: String)
 							{
 								neko.Lib.rethrow('Duell tool version conflict: ' + e);
-							} 
+							}
 						}
 					}
 
@@ -626,7 +626,7 @@ class UpdateCommand implements IGDCommand
 		if (!haxelibVersions.exists(haxelib.name))
 		{
 			if (!haxelib.exists())
-			{	
+			{
 				var haxelibMessagePart = haxelib.name + (haxelib.version != "" ? " with version " + haxelib.version : "");
 				var answer = AskHelper.askYesOrNo('Haxelib $haxelibMessagePart is missing, would you like to install it?');
 
@@ -687,7 +687,7 @@ class UpdateCommand implements IGDCommand
 				catch (e: String)
 				{
 					neko.Lib.rethrow('Plugin ${buildLib.name} version conflict: ' + e);
-				} 
+				}
 			}
 		}
 	}
@@ -727,7 +727,7 @@ class UpdateCommand implements IGDCommand
 	private function resolvePath(path : String) : String
 	{
 		path = PathHelper.unescape(path);
-		
+
 		if (PathHelper.isPathRooted(path))
 			return path;
 

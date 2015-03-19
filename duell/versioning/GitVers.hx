@@ -101,7 +101,7 @@ class GitVers
         {
         	if (!SemVer.areCompatible(firstSemVer, semVer))
         	{
-        		throw 'Cannot solve version conflict because the major versions are different. Version ${semVer.toString()} and ${firstSemVer.toString()}. For path $dir';
+        		throw 'Cannot solve version conflict because the versions are incompatible. Version ${semVer.toString()} and ${firstSemVer.toString()}. For path $dir';
         	}
         }
 

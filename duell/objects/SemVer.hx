@@ -128,22 +128,22 @@ class SemVer
 
 		if (!left.plus)
 		{
-			if (left.minor > right.minor)
-				return true;
+			if (left.minor < right.minor)
+				return false;
 
-			if (left.patch >= right.patch)
-				return true;
+			if (left.patch < right.patch)
+				return false;
 		}
 		else
 		{
-			if (right.minor > left.minor)
-				return true;
+			if (right.minor < left.minor)
+				return false;
 
-			if (right.patch >= left.patch)
-				return true;
+			if (right.patch < left.patch)
+				return false;
 		}
 
-		return false;
+		return true;
 	}
 
 	public static function getMostSpecific(left : SemVer, right : SemVer) : SemVer
