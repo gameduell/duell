@@ -62,7 +62,7 @@
 
     <xs:simpleType name="SupportedHaxelibVersion">
         <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]+\.[0-9]+\.[0-9]+)|((ssh|http(s)?)://.+( .+)*)" />
+            <xs:pattern value="([0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z]+)?)|((ssh|http(s)?)://.+( .+)*)" />
         </xs:restriction>
     </xs:simpleType>
 
