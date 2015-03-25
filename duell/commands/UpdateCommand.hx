@@ -720,7 +720,7 @@ class UpdateCommand implements IGDCommand
         }
         else if (FileSystem.exists(libFile))
         {
-            SchemaHelper.validate(projectFile);
+            SchemaHelper.validate(libFile);
         }
     }
 
