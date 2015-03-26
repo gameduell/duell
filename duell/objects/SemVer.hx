@@ -168,11 +168,11 @@ class SemVer
 
 	    	output = offset * ver.major;
 
-	    	offset = cast(offset / OFFSET_REDUCTION, Int);
+	    	offset = Std.int(offset / OFFSET_REDUCTION);
 
 	    	output += offset * ver.minor;
 
-	    	offset = cast(offset / OFFSET_REDUCTION, Int);
+	    	offset = Std.int(offset / OFFSET_REDUCTION);
 
 	    	output += offset * ver.patch;
 
