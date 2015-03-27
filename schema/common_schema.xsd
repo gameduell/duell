@@ -28,6 +28,15 @@
         </xs:complexContent>
     </xs:complexType>
 
+    <xs:complexType name="ValueUri">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="value" type="xs:anyURI" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+
     <xs:complexType name="Version">
         <xs:complexContent>
             <xs:extension base="d:Conditional">
