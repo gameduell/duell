@@ -92,6 +92,15 @@
         </xs:complexContent>
     </xs:complexType>
 
+    <xs:complexType name="InnerContent">
+        <xs:simpleContent>
+            <xs:extension base="d:NonEmptyString">
+                <xs:attribute name="if" type="xs:string" use="optional"/>
+                <xs:attribute name="unless" type="xs:string" use="optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
     <xs:complexType name="App">
         <xs:complexContent>
             <xs:extension base="d:Conditional">
@@ -126,4 +135,11 @@
         <xs:attribute name="unless" type="xs:string" use="optional"/>
         <!-- XSD 1.1 <xs:assert test="(@if and not(@unless)) or (not(@if) and @unless)"/> -->
     </xs:complexType>
+
+    <xs:simpleType name="NonEmptyString">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
 </xs:schema>
