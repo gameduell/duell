@@ -28,6 +28,14 @@
         </xs:complexContent>
     </xs:complexType>
 
+    <xs:complexType name="ValueInteger">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="value" type="xs:int" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
     <xs:complexType name="ValueUri">
         <xs:complexContent>
             <xs:extension base="d:Conditional">
@@ -35,7 +43,6 @@
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
-
 
     <xs:complexType name="Version">
         <xs:complexContent>
