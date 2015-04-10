@@ -506,7 +506,17 @@ class UpdateCommand implements IGDCommand
 			    	}
 			    	else
 			    	{
-			    		/// if it's not installed we just ignore it for this update
+			    		var answer = AskHelper.askYesOrNo('A library for building $name is not currently installed. Would you like to try to install it?');
+
+			    		if (answer)
+			    		{
+			    			DuellLibHelper.install(buildLib.name);
+					    	handlePluginParsed(buildLib);
+						}
+						else
+						{
+							/// ignore the lib
+						}
 			    	}
 
 				case 'supported-duell-tool':
