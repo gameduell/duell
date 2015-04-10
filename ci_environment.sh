@@ -104,6 +104,13 @@ expect {
 		exp_continue
 	}
 
+	\"you need to install HAXM\" {
+
+		send \"n\r\"
+
+		exp_continue
+	}
+
 	\"Download the android NDK\" {
 
 		send \"y\r\"
