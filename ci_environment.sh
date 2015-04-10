@@ -7,7 +7,7 @@ mkdir ~/.duell/haxelib
 haxelib setup ~/.duell/haxelib
 
 expect -c "
-spawn neko run.n self_setup -verbose  
+spawn neko run.n self_setup -verbose
 set timeout -1
 
 expect \"Path to store repos from libraries?\"
@@ -71,7 +71,7 @@ expect {
 
 
 expect -c "
-spawn haxelib run duell setup android -verbose -v 1.0.0
+spawn haxelib run duell setup android -verbose -v 2.0.0
 
 set timeout -1
 
@@ -140,4 +140,3 @@ expect {
 
 }
 "
-
