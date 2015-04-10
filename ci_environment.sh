@@ -111,6 +111,13 @@ expect {
 		exp_continue
 	}
 
+	\"Do you wish to create a custom hardware profile\" {
+
+		send \"\r\"
+
+		exp_continue
+	}
+
 	\"Download the android NDK\" {
 
 		send \"y\r\"
