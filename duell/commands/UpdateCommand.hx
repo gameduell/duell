@@ -386,7 +386,7 @@ class UpdateCommand implements IGDCommand
 
         for (plugin in pluginVersions.keys())
         {
-            finalPluginList.push(pluginVersions[plugin].lib);
+            finalPluginList.push(DuellLib.getDuellLib(pluginVersions[plugin].lib.name,  pluginVersions[plugin].gitVers.currentVersion));
         }
 	}
 
