@@ -80,7 +80,7 @@ class DuellProjectXML
 	}
 
 	private function parseFile(file : String)
-	{		
+	{
 		if (!PathHelper.isPathRooted(file))
 			LogHelper.error("internal error, parseFile should only receive rooted paths.");
 
@@ -94,7 +94,7 @@ class DuellProjectXML
 
 		currentXML = new Fast(Xml.parse(stringContent).firstElement());
 
-		for (element in currentXML.elements) 
+		for (element in currentXML.elements)
 		{
 			if (!XMLHelper.isValidElement(element, parsingConditions))
 				continue;
@@ -116,7 +116,7 @@ class DuellProjectXML
 					parseHaxeCompileArgElement(element);
 
 				case 'platform-config':
-					parsePlatformConfigSection(element);		
+					parsePlatformConfigSection(element);
 
 				case 'library-config':
 					parseLibraryConfigSection(element);
@@ -142,7 +142,7 @@ class DuellProjectXML
 	private function parseDuellLibs()
 	{
 		/// BFS
-		while (libsAlreadyParsed.length != Configuration.getData().DEPENDENCIES.DUELLLIBS.length) 
+		while (libsAlreadyParsed.length != Configuration.getData().DEPENDENCIES.DUELLLIBS.length)
 		{
 			var duellLibsToParse = Configuration.getData().DEPENDENCIES.DUELLLIBS.copy();
 
@@ -209,11 +209,11 @@ class DuellProjectXML
 			{
 				Configuration.getData().DEPENDENCIES.HAXELIBS.push({name : name, version : version});
 			}
-		} 
+		}
 	}
 
 	private function parseDuellLibElement(lib : Fast)
-	{	
+	{
 		var name = null;
 		var version = null;
 		if(lib.has.name)
@@ -246,7 +246,7 @@ class DuellProjectXML
 			{
 				Configuration.getData().DEPENDENCIES.DUELLLIBS.push({name : name, version : version});
 			}
-		} 
+		}
 	}
 
 	private function parseAppElement(element : Fast)
@@ -325,7 +325,7 @@ class DuellProjectXML
 
 	private function parseLibraryConfigSection(xml : Fast)
 	{
-		for (element in xml.elements) 
+		for (element in xml.elements)
 		{
 			if (!XMLHelper.isValidElement(element, parsingConditions))
 				continue;
@@ -347,6 +347,7 @@ class DuellProjectXML
 		var name : String = "";
 		var buildFilePath : String = "project/Build.xml";
 		var binPath = "bin";
+		var debugSuffix = true;
 		var registerStatics = true;
 		if (element.has.name)
 		{
@@ -360,14 +361,20 @@ class DuellProjectXML
 			if (element.has.resolve("bin-path"))
 			{
 				binPath = element.att.resolve("bin-path");
-			}	
+			}
 
 			if (element.has.resolve("register-statics"))
 			{
 				registerStatics = (element.att.resolve("register-statics") == "true")? true : false;
 			}
 
-			Configuration.getData().NDLLS.push({REGISTER_STATICS : registerStatics, BIN_PATH : resolvePath(binPath), NAME : name, BUILD_FILE_PATH : resolvePath(buildFilePath)});
+			if (element.has.resolve("debug-suffix"))
+			{
+				debugSuffix = (element.att.resolve("debug-suffix") == "true")? true : false;
+			}
+
+
+			Configuration.getData().NDLLS.push({REGISTER_STATICS : registerStatics, BIN_PATH : resolvePath(binPath), NAME : name, BUILD_FILE_PATH : resolvePath(buildFilePath), DEBUG_SUFFIX : debugSuffix});
 		}
 	}
 
@@ -388,7 +395,7 @@ class DuellProjectXML
 	public function resolvePath(path : String) : String
 	{
 		path = PathHelper.unescape(path);
-		
+
 		if (PathHelper.isPathRooted(path))
 			return path;
 
