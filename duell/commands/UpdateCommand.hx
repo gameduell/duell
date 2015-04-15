@@ -78,8 +78,7 @@ class UpdateCommand implements IGDCommand
 	var duellToolGitVers: GitVers;
 	var duellToolRequestedVersion: String = null;
 
-	var duellToolChangedToVersion: SemVer = null;
-	var duellToolPreviousVersion: SemVer = null;
+	var isDifferentDuellToolVersion: Bool = false;
 
 	var haxeVersionRequested: SemVer = null;
 
@@ -133,13 +132,10 @@ class UpdateCommand implements IGDCommand
 	    	LogHelper.info("------\x1b[0m");
 
 
-			if (duellToolChangedToVersion != null && duellToolChangedToVersion != null)
+			if (isDifferentDuellToolVersion)
 			{
-				if (duellToolPreviousVersion.major != duellToolChangedToVersion.major)
-				{
-                	LogHelper.info("Rerunning the update because the duell tool major version changed.");
-					CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell", "update"].concat(Arguments.getRawArguments()), {});
-				}
+                	LogHelper.info("Rerunning the update because the duell tool version changed.");
+					CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell"].concat(Arguments.getRawArguments()), {});
 			}
     	}
     	catch(error : Dynamic)
@@ -300,9 +296,15 @@ class UpdateCommand implements IGDCommand
 		if (duellToolGitVers.needsToChangeVersion(resolvedVersion))
 		{
 			LogHelper.info("  - changing to version " + LogHelper.BOLD + resolvedVersion + LogHelper.NORMAL);
-			duellToolPreviousVersion = SemVer.ofString(duellToolGitVers.currentVersion);
+			var duellToolPreviousVersion = duellToolGitVers.currentVersion;
 			duellToolGitVers.changeToVersion(resolvedVersion);
-			duellToolChangedToVersion = SemVer.ofString(duellToolGitVers.currentVersion);
+			var duellToolChangedToVersion = duellToolGitVers.currentVersion;
+
+			if (duellToolPreviousVersion != duellToolChangedToVersion)
+			{
+				isDifferentDuellToolVersion = true;
+			}
+
 		}
 		else
 		{
