@@ -243,7 +243,7 @@ class ExtractionHelper
 					CommandHelper.runCommand("", "cp", [ "-Rf", Path.join([ignoreRootFolder, file]), targetPath], {errorMessage: "copying files to the target directory of the extraction"});
 				}
 
-				Sys.command("rm", [ "-r", ignoreRootFolder ]);
+				CommandHelper.runCommand("", "rm", [ "-rf", ignoreRootFolder], {errorMessage: "deleting extracted folder"});
 			}
 			else
 			{
