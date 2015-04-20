@@ -157,10 +157,7 @@ class Haxelib
 
         var process = new DuellProcess(haxePath, "haxelib", arguments, {systemCommand: systemCommand, errorMessage: "set haxelib version"});
 
-        if (Arguments.isSet("-yestoall"))
-        {
-            process.stdin.writeString("y\n");
-        }
+		process.stdin.writeString("y\n");
 
         process.blockUntilFinished();
     }
@@ -179,7 +176,11 @@ class Haxelib
 
 		    var haxePath = Sys.getEnv("HAXEPATH");
 		    var systemCommand = haxePath != null && haxePath != "" ? false : true;
-	        var process = new DuellProcess(haxePath, "haxelib", args, {systemCommand: systemCommand, errorMessage: 'installing the library "$name"', mute: true, block: true});
+	        var process = new DuellProcess(haxePath, "haxelib", args, {systemCommand: systemCommand, errorMessage: 'installing the library "$name"', mute: true});
+
+			process.stdin.writeString("y\n");
+
+	        process.blockUntilFinished();
     	}
     }
 
