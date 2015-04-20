@@ -13,7 +13,7 @@ import sys.FileSystem;
 
 using StringTools;
 
-class Haxelib 
+class Haxelib
 {
 	public var name(default, null) : String;
 	public var version(default, null) : String;
@@ -73,37 +73,37 @@ class Haxelib
 
 		if(!exists())
 		{
-			if (version != "") 
+			if (version != "")
 			{
 				LogHelper.error ("Could not find haxelib \"" + name + "\" version \"" + version + "\", does it need to be installed?");
-			} 
-			else 
+			}
+			else
 			{
 				LogHelper.error ("Could not find haxelib \"" + name + "\", does it need to be installed?");
 			}
 		}
 
 		var output = getHaxelibPathOutput();
-			
+
 		var lines = output.split ("\n");
-			
+
 		for (i in 1...lines.length) {
-			
-			if (lines[i].trim().startsWith('-D')) 
+
+			if (lines[i].trim().startsWith('-D'))
 			{
 				path = lines[i - 1].trim();
 			}
-			
+
 		}
 
-		if (path == "") 
+		if (path == "")
 		{
 			try {
-				for (line in lines) 
+				for (line in lines)
 				{
-					if (line != "" && line.substr(0, 1) != "-") 
+					if (line != "" && line.substr(0, 1) != "-")
 					{
-						if (FileSystem.exists(line)) 
+						if (FileSystem.exists(line))
 						{
 							path = line;
 							break;
@@ -111,9 +111,9 @@ class Haxelib
 					}
 				}
 			} catch (e:Dynamic) {}
-			
+
 		}
-		
+
 		return path;
 	}
 
@@ -147,13 +147,15 @@ class Haxelib
 	    	arguments.push("set");
 	   		arguments.push(name);
 	    	arguments.push(version);
+
+			install(); /// BUG FIX, to ensure the version is there, because exists is not working for versions
     	}
 
 
 	    var haxePath = Sys.getEnv("HAXEPATH");
 	    var systemCommand = haxePath != null && haxePath != "" ? false : true;
 
-        var process = new DuellProcess(haxePath, "haxelib", arguments, {systemCommand: true, errorMessage: "set haxelib version"});
+        var process = new DuellProcess(haxePath, "haxelib", arguments, {systemCommand: systemCommand, errorMessage: "set haxelib version"});
 
         if (Arguments.isSet("-yestoall"))
         {
@@ -174,7 +176,10 @@ class Haxelib
 	    	var args = ["install", name];
 	    	if (version != "")
 	    		args.push(version);
-	        CommandHelper.runHaxelib("", args, {errorMessage: 'installing the library "$name"'});
+
+		    var haxePath = Sys.getEnv("HAXEPATH");
+		    var systemCommand = haxePath != null && haxePath != "" ? false : true;
+	        var process = new DuellProcess(haxePath, "haxelib", args, {systemCommand: systemCommand, errorMessage: 'installing the library "$name"', mute: true, block: true});
     	}
     }
 
