@@ -71,7 +71,7 @@ expect {
 
 
 expect -c "
-spawn haxelib run duell setup android -verbose -v 3.0.0+
+spawn haxelib run duell setup android -verbose -v 3.0.0
 
 set timeout -1
 
