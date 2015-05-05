@@ -82,7 +82,7 @@ class DuellLibHelper
 
     	var haxePath = Sys.getEnv("HAXEPATH");
     	var systemCommand = haxePath != null && haxePath != "" ? false : true;
-		var proc = new DuellProcess(haxePath, "haxelib", ["path", name], {block: true, systemCommand: systemCommand, errorMessage: "getting path of library"});
+		var proc = new DuellProcess(haxePath, "haxelib", ["path", "duell_" + name], {block: true, systemCommand: systemCommand, errorMessage: "getting path of library"});
 		var output = proc.getCompleteStdout();
 		var stringOutput = output.toString();
 

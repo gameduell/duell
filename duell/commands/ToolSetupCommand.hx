@@ -53,7 +53,7 @@ import duell.objects.Arguments;
 class ToolSetupCommand implements IGDCommand
 {	
 	private static var haxeURL = "http://haxe.org/";
-    private static var defaultRepoListURL:String = "ssh://git@phabricator.office.gameduell.de:2222/diffusion/HAXMISCHAXEREPOLIST/haxe-repo-list.git";
+    private static var defaultRepoListURL:String = "ssh://git@github.com:gameduell/duell-repository-list.git";
 
     public function new()
     {
