@@ -50,7 +50,7 @@ import duell.commands.IGDCommand;
 class ToolSetupCommand implements IGDCommand
 {	
 	private static var haxeURL = "http://haxe.org/";
-    private static var defaultRepoListURL:String = "ssh://git@github.com:gameduell/duell-repository-list.git";
+    private static var defaultRepoListURL:String = "git@github.com:gameduell/duell-repository-list.git";
 
     public function new()
     {
