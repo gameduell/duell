@@ -30,16 +30,10 @@ import duell.helpers.PlatformHelper;
 import duell.helpers.LogHelper;
 import duell.helpers.DuellConfigHelper;
 
-import duell.objects.DuellProcess;
-
-import haxe.io.BytesOutput;
-import haxe.io.Eof;
 import haxe.io.Path;
-import sys.io.Process;
 import sys.FileSystem;
 import sys.io.FileOutput;
 import sys.io.File;
-import neko.Lib;
 
 using StringTools;
 

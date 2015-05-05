@@ -25,12 +25,10 @@
  */
 
 package duell.helpers;
-import sys.io.Process;
 import duell.helpers.PlatformHelper;
 import duell.objects.DuellProcess;
 
 import haxe.io.Path;
-import haxe.io.Eof;
 
 class ServerHelper
 {

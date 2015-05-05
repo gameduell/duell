@@ -35,12 +35,10 @@ import Sys;
 import duell.defines.DuellDefines;
 
 import duell.objects.DuellLib;
-import duell.objects.Haxelib;
 
 import duell.helpers.LogHelper;
 import duell.helpers.AskHelper;
 import duell.helpers.PathHelper;
-import duell.helpers.CommandHelper;
 import duell.helpers.DuellLibHelper;
 
 import duell.versioning.GitVers;

@@ -39,7 +39,6 @@ import duell.helpers.DuellLibHelper;
 import duell.objects.HXCPPConfigXML;
 import duell.objects.Haxelib;
 import duell.objects.DuellConfigJSON;
-import duell.objects.DuellLib;
 import duell.objects.DuellProcess;
 
 import haxe.CallStack;
@@ -47,8 +46,6 @@ import sys.io.File;
 import sys.FileSystem;
 
 import duell.commands.IGDCommand;
-
-import duell.objects.Arguments;
 
 class ToolSetupCommand implements IGDCommand
 {	

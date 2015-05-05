@@ -27,7 +27,6 @@
 package duell.versioning;
 
 import duell.helpers.GitHelper;
-import duell.helpers.LogHelper;
 import duell.objects.SemVer;
 
 enum VersionType

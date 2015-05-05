@@ -32,7 +32,6 @@ import haxe.io.BytesOutput;
 import haxe.io.Output;
 import haxe.io.Eof;
 import haxe.io.Bytes;
-import haxe.io.Path;
 import sys.io.Process;
 import sys.FileSystem;
 import neko.vm.Thread;

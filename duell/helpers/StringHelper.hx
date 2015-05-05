@@ -26,8 +26,8 @@
 
 package duell.helpers;
 
-import haxe.crypto.BaseCode;
-import haxe.io.Bytes;
+//import haxe.crypto.BaseCode;
+//import haxe.io.Bytes;
 
 
 class StringHelper 

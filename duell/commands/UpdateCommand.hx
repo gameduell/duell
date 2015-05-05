@@ -27,8 +27,6 @@
 package duell.commands;
 
 import duell.helpers.SchemaHelper;
-import duell.build.objects.Configuration;
-import duell.helpers.TemplateHelper;
 import duell.helpers.DuellConfigHelper;
 import duell.helpers.CommandHelper;
 import haxe.CallStack;
@@ -45,7 +43,6 @@ import duell.objects.DuellConfigJSON;
 import duell.helpers.LogHelper;
 import duell.helpers.AskHelper;
 import duell.helpers.PathHelper;
-import duell.helpers.CommandHelper;
 import duell.helpers.DuellLibHelper;
 
 import duell.versioning.GitVers;
@@ -60,11 +57,6 @@ import haxe.io.Path;
 import duell.commands.IGDCommand;
 
 import duell.objects.Arguments;
-
-import haxe.Serializer;
-import haxe.Unserializer;
-
-import duell.commands.BuildCommand;
 
 using StringTools;
 

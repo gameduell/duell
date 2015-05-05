@@ -27,7 +27,6 @@
 package duell.objects;
 
 import duell.helpers.LogHelper;
-import duell.helpers.CommandHelper;
 import duell.objects.DuellProcess;
 
 import sys.FileSystem;

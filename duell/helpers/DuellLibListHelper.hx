@@ -31,7 +31,6 @@ import duell.helpers.GitHelper;
 import duell.helpers.PathHelper;
 import duell.objects.DuellConfigJSON;
 import duell.objects.DuellLibReference;
-import duell.objects.Haxelib;
 
 import sys.io.File;
 import Reflect;

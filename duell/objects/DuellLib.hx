@@ -26,15 +26,7 @@
 
 package duell.objects;
 
-import duell.helpers.LogHelper;
-import duell.helpers.CommandHelper;
-import duell.helpers.DuellConfigHelper;
-import duell.helpers.DuellLibListHelper;
-import duell.helpers.GitHelper;
 import duell.helpers.DuellLibHelper;
-import duell.objects.SemVer;
-
-import sys.FileSystem;
 
 using StringTools;
 

@@ -29,7 +29,6 @@ package duell.helpers;
 import duell.helpers.PlatformHelper;
 import duell.objects.Arguments;
 
-import neko.Lib;
 import haxe.io.Bytes;
 import sys.io.Process;
 

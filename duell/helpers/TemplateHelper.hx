@@ -26,8 +26,6 @@
 
 package duell.helpers;
 
-import duell.build.objects.Configuration;
-
 import duell.helpers.LogHelper;
 import duell.helpers.FileHelper;
 import duell.helpers.PathHelper;

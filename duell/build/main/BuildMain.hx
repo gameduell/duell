@@ -26,7 +26,6 @@
 
 package duell.build.main;
 
-import duell.objects.DuellLib;
 import haxe.CallStack;
 
 import duell.build.objects.Configuration;
@@ -41,7 +40,6 @@ import duell.objects.Arguments;
 import duell.objects.DuellConfigJSON;
 
 import sys.io.File;
-import sys.FileSystem;
 
 import haxe.io.Path;
 
