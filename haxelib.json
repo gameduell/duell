@@ -1,11 +1,12 @@
 {
   "name": "duell",
-  "license": "closed",
-  "tags": ["duell", "tool"],
-  "description":
-      "This is a tool used for cross platform environment setup, building and sample creation in the Duell ecosystem.",
-  "version": "1.0.0",
-  "contributors": [],
+  "url": "https://github.com/gameduell/duell",
+  "license": "BSD",
+  "tags": ["duell", "utility", "cross"],
+  "description": "The Duell Tool is a command line tool for setting up, building and running applications on any platform.",
+  "version": "0.0.1",
+  "releasenote": "Initial setup",
+  "contributors": ["fluffybird"],
   "dependencies": {
   }
 }
