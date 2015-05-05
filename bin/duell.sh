@@ -1,2 +1,2 @@
 #!/bin/sh
-haxelib run duell "$@"
+haxelib run duell_duell "$@"
