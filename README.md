@@ -1,4 +1,4 @@
-= Description =
+## Description
 
 The Duell Tool is a command line tool for setting up, building and running applications on any platform.
 It can also be used for other general tasks within app development. It is made in a modular way via plugins,
@@ -11,8 +11,7 @@ then a plugin name like "ios" or "emptyProject". For example, "duell build ios" 
 execution by prefixing with "-", e.g. "duell build ios -verbose".
 
 
-= Release Log =
-
-== 0.0.1 ==
-
-- Initial setup for github
+## Release Log
+0.0.1
+----------------------------------------------
+* Initial setup for github
