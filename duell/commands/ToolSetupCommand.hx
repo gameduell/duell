@@ -257,8 +257,8 @@ class ToolSetupCommand implements IGDCommand
 				haxePath = "C:\\HaxeToolkit\\haxe\\";
 			}
 			
-			File.copy(Haxelib.getHaxelib("duell").getPath() + "\\bin\\duell.bat", haxePath + "\\duell.bat");
-			File.copy(Haxelib.getHaxelib("duell").getPath() + "\\bin\\duell.sh", haxePath + "\\duell");
+			File.copy(Haxelib.getHaxelib("duell_duell").getPath() + "\\bin\\duell.bat", haxePath + "\\duell.bat");
+			File.copy(Haxelib.getHaxelib("duell_duell").getPath() + "\\bin\\duell.sh", haxePath + "\\duell");
 		} 
 		else 
 		{			
@@ -287,7 +287,7 @@ class ToolSetupCommand implements IGDCommand
 				LogHelper.println(" a) Manually add an alias called \"duell\" to run \"haxelib run duell\"");
 				LogHelper.println(" b) Run the following commands:");
 				LogHelper.println("");
-				LogHelper.println("sudo cp \"" + Haxelib.getHaxelib("duell").getPath() + "/bin/duell.sh\" /usr/bin/duell");
+				LogHelper.println("sudo cp \"" + Haxelib.getHaxelib("duell_duell").getPath() + "/bin/duell.sh\" /usr/bin/duell");
 				LogHelper.println("sudo chmod 755 /usr/bin/duell");
 				LogHelper.println("");
 			}
