@@ -8,6 +8,8 @@
  */
 package duell.commands;
 
+import duell.defines.DuellDefines;
+import duell.versioning.GitVers;
 import duell.helpers.PlatformHelper;
 import duell.helpers.AskHelper;
 import duell.helpers.PathHelper;
@@ -225,6 +227,10 @@ class ToolSetupCommand implements IGDCommand
 		}
 
 		libMap.get("duell").install();
+
+        var gitvers: GitVers = new GitVers(DuellLib.getDuellLib("duell").getPath());
+        var version = gitvers.solveVersion(DuellDefines.DUELL_VERSION);
+        gitvers.changeToVersion(version);
 
 		LogHelper.println("installed!");
 	}
