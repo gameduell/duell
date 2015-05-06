@@ -68,6 +68,7 @@ class DuellLibListHelper
         }
 
         var repoListIndex = 1;
+
         for(repoURL in duellConfig.repoListURLs)
         {
             var path = libListFolder + "/" + repoListIndex;
@@ -87,6 +88,8 @@ class DuellLibListHelper
             {
                 LogHelper.error("Cannot Parse repo list. Check if this file is correct: " + path + "/haxe-repo-list.json");
             }
+
+            repoListIndex++;
         }
 
         return repoListCache;

@@ -76,6 +76,34 @@
 
     </command>
 
+    <command name="repo_list" class="RepoConfigCommand" hasPlugin="false" >
+        <documentation>
+            Shows the repository list. You can add and remove urls from it with the arguments you find in repo_list -help.
+        </documentation>
+
+        <args>
+            <arg name="-add" type="string">
+                <documentation>
+                    Add a new url to the repository list
+                </documentation>
+            </arg>
+
+            <arg name="-remove" type="string">
+                <documentation>
+                    Remove a url from the repository list
+                </documentation>
+            </arg>
+
+            <arg name="-removeAll" type="void">
+                <documentation>
+                    Removes all urls from the repository list. Except the default url.
+                </documentation>
+            </arg>
+
+        </args>
+
+    </command>
+
     <command name="build" class="BuildCommand" hasPlugin="true">
     	<documentation>
     		To be run inside a project that has a duell_project.xml. Will build the specified platform.
