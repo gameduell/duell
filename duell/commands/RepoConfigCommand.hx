@@ -26,6 +26,7 @@
 
 package duell.commands;
 
+import duell.objects.Arguments;
 import duell.helpers.PlatformHelper;
 import duell.helpers.AskHelper;
 import duell.helpers.PathHelper;
@@ -65,7 +66,34 @@ class RepoConfigCommand implements IGDCommand
 	    	LogHelper.info("------\x1b[0m");
 	    	LogHelper.info("");
 
-            LogHelper.info("Test Hello World");
+			// Always list repos
+
+			if (Arguments.isSet("-add"))
+			{
+				LogHelper.info("Adding");
+
+				var arguments: Array<String> = Arguments.getRawArguments();
+
+				var lastArgument: String = arguments.pop();
+
+				if (lastArgument == "-add")
+				{
+					// Was empty string
+					trace("Was empty String");
+				}
+				else
+				{
+					trace(lastArgument);
+				}
+			}
+			else if (Arguments.isSet("-removeAll"))
+			{
+				LogHelper.info("Remove EVERYTHING");
+			}
+			else if (Arguments.isSet("-remove"))
+			{
+				LogHelper.info("REMOVE ONE THING");
+			}
 
 	    	/*setupHaxe();
 
