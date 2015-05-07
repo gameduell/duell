@@ -119,6 +119,11 @@ class UpdateCommand implements IGDCommand
                 LogHelper.info("--------------------------\x1b[0m");
                 LogHelper.info("\n");
 
+				if (userFileHasDuellNamespace())
+				{
+					validateUserSchemaXml();
+				}
+
                 validateSchemaXml();
 
                 LogHelper.info("Success!");
@@ -736,6 +741,13 @@ class UpdateCommand implements IGDCommand
         return false;
     }
 
+	private static function userFileHasDuellNamespace(): Bool
+	{
+		var userFile: String = DuellConfigHelper.getDuellUserFileLocation();
+
+		return FileSystem.exists(userFile) && SchemaHelper.hasDuellNamespace(userFile);
+	}
+
     private static function validateSchemaXml(): Void
     {
         var projectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
@@ -750,6 +762,11 @@ class UpdateCommand implements IGDCommand
             SchemaHelper.validate(libFile);
         }
     }
+
+	private static function validateUserSchemaXml(): Void
+	{
+		SchemaHelper.validate(DuellConfigHelper.getDuellUserFileLocation());
+	}
 
 	private function resolvePath(path : String) : String
 	{
