@@ -82,24 +82,36 @@
         </documentation>
 
         <args>
+
             <arg name="-add" type="string">
                 <documentation>
-                    Add a new url to the repository list
+                    Adds a new url to the end of the repository list
+                </documentation>
+            </arg>
+
+            <arg name="-addFront" type="string">
+                <documentation>
+                    Adds a new url to front of the repository list
                 </documentation>
             </arg>
 
             <arg name="-remove" type="string">
                 <documentation>
-                    Remove a url from the repository list
+                    Removes a url from the repository list
                 </documentation>
             </arg>
 
             <arg name="-removeAll" type="void">
                 <documentation>
-                    Removes all urls from the repository list. Except the default url.
+                    Removes all urls from the repository list. Resets to the default url.
                 </documentation>
             </arg>
 
+            <arg name="-reverse" type="void">
+                <documentation>
+                    Reverses the order of all urls in the repository list.
+                </documentation>
+            </arg>
         </args>
 
     </command>
