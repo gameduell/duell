@@ -26,6 +26,7 @@
 
 package duell.build.objects;
 
+import duell.helpers.BuildTagHelper;
 import duell.objects.Arguments;
 import duell.helpers.DuellConfigHelper;
 import duell.defines.DuellDefines;
