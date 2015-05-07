@@ -89,7 +89,10 @@ class BuildMain
             {
                 deserializeCaches();
 
+                build.parse();
+                pluginHelper.resolveLibraryPlugins();
                 pluginHelper.fast();
+
                 build.fast();
                 return;
             }

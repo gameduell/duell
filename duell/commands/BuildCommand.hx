@@ -255,7 +255,13 @@ class BuildCommand implements IGDCommand
 
     private static function validateSchemaIfNamespaceSet(): Void
     {
+		var userFile: String = DuellConfigHelper.getDuellUserFileLocation();
         var projectFile: String = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
+
+		if (FileSystem.exists(userFile) && SchemaHelper.hasDuellNamespace(userFile))
+		{
+			SchemaHelper.validate(userFile);
+		}
 
         if (SchemaHelper.hasDuellNamespace(projectFile))
         {
