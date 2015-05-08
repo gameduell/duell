@@ -5,6 +5,7 @@
  */
 package duell.build.main;
 
+import duell.helpers.PathHelper;
 import duell.objects.DuellLib;
 import haxe.CallStack;
 
@@ -109,6 +110,8 @@ class BuildMain
 
             if (Arguments.isSet("-publish"))
             {
+                createPublishFolderIfNotExists();
+
                 build.publish();
             }
             else if (Arguments.isSet("-test"))
@@ -145,6 +148,16 @@ class BuildMain
         var s = File.read(serializedCachesFile, true).readAll().toString();
 
         DuellLibHelper.deserializeCaches(s);
+    }
+
+    private static function createPublishFolderIfNotExists()
+    {
+        var publishFolder: String = Configuration.getData().PUBLISH;
+
+        if (!FileSystem.exists(publishFolder))
+        {
+            PathHelper.mkdir(publishFolder);
+        }
     }
 }
 
