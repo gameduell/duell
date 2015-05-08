@@ -133,6 +133,7 @@ class BuildMain
                 createPublishFolderIfNotExists();
 
                 build.publish();
+                pluginHelper.postPublish();
             }
             else if (Arguments.isSet("-test"))
             {
@@ -247,6 +248,18 @@ class LibraryPluginHelper
         for (element in pluginArray)
         {
             var parseFunction : Dynamic = Reflect.field(element, "postBuild");
+            if (parseFunction != null)
+            {
+                Reflect.callMethod(element, parseFunction, []);
+            }
+        }
+    }
+
+    public function postPublish()
+    {
+        for (element in pluginArray)
+        {
+            var parseFunction : Dynamic = Reflect.field(element, "postPublish");
             if (parseFunction != null)
             {
                 Reflect.callMethod(element, parseFunction, []);
