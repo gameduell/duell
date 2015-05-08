@@ -45,6 +45,7 @@ typedef ConfigurationData = {
 	},
 
 	OUTPUT : String,
+	PUBLISH : String,
 	SOURCES : Array<String>,
 	MAIN : String,
 	PLATFORM : PlatformConfigurationData,
@@ -104,6 +105,7 @@ class Configuration
 
 
 					OUTPUT : haxe.io.Path.join([Sys.getCwd(), "Export"]),
+					PUBLISH: haxe.io.Path.join([Sys.getCwd(), "Publish"]),
 					SOURCES : [],
 					MAIN : "Main",
 					PLATFORM : PlatformConfiguration.getData(),
