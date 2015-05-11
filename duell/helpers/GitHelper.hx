@@ -228,6 +228,49 @@ class GitHelper
         return output.split("\n")[0];
     }
 
+    static public function listRemotes(destination: String): Map<String, String>
+    {
+        var gitProcess = new DuellProcess(
+                                        destination,
+                                        "git",
+                                        ["remote", "-v"],
+                                        {
+                                            systemCommand : true,
+                                            loggingPrefix : "[Git]",
+                                            block : true,
+                                            shutdownOnError : true,
+                                            errorMessage: "listing remotes on git"
+                                        });
+
+        var allRemotes: String = gitProcess.getCompleteStdout().toString();
+
+        var allRemoteList: Array<String> = allRemotes.split("\n");
+        var returnedMap: Map<String, String> = new Map();
+
+        for (line in allRemoteList)
+        {
+            // format: <remote name>	<url> (<fetch/push>)
+            // mind the tab!
+            var remoteParts: Array<String> = line.trim().split(" ");
+            remoteParts = remoteParts[0].split("\t");
+
+            if (remoteParts.length < 2)
+            {
+                continue;
+            }
+
+            var remoteName: String = remoteParts[0].trim();
+            var remoteUrl: String = remoteParts[1].trim();
+
+            if (!returnedMap.exists(remoteName))
+            {
+                returnedMap.set(remoteName, remoteUrl);
+            }
+        }
+
+        return returnedMap;
+    }
+
     static public function listBranches(destination : String) : Array<String>
     {
         var gitProcess = new DuellProcess(
