@@ -40,11 +40,11 @@ import duell.helpers.LogHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.PlatformHelper;
 
-typedef ProcessOptions = 
+typedef ProcessOptions =
 {
 	?loggingPrefix : String, /// defaults to ""
 	?logOnlyIfVerbose : Bool, /// defaults to true
-	?systemCommand : Bool, /// defaults to false. 
+	?systemCommand : Bool, /// defaults to false.
 	?timeout : Float, /// defaults to 0 (no timeout)
 	?block : Bool, /// defaults to false
 	?shutdownOnError : Bool, /// default to false, on timeout, exception or exitcode != 0
@@ -102,7 +102,7 @@ class DuellProcess
 	private var argString : String;
 
 	public function new(path : String, comm : String, args : Array<String>, options : ProcessOptions = null)
-	{	
+	{
 		/// PROCESS ARGUMENTS
 		command = PathHelper.escape(comm);
 		this.args = args;
@@ -129,13 +129,13 @@ class DuellProcess
 
 		/// CHANGE DIRECTORY
 		var oldPath:String = "";
-		if (path != null && path != "") 
+		if (path != null && path != "")
 		{
 			LogHelper.info ("", " - \x1b[1mChanging directory for running the process:\x1b[0m " + path + "");
-			
-			if(!FileSystem.exists(path)) 
+
+			if(!FileSystem.exists(path))
 			{
-				LogHelper.error("The path \"" + path + "\" does not exist");
+				throw "The path \"" + path + "\" does not exist";
 			}
 			oldPath = Sys.getCwd ();
 			Sys.setCwd (path);
@@ -143,14 +143,14 @@ class DuellProcess
 
 		/// FANCY PRINT
 		argString = "";
-		
-		for (arg in args) 
+
+		for (arg in args)
 		{
-			if (arg.indexOf (" ") > -1) 
+			if (arg.indexOf (" ") > -1)
 			{
 				argString += " \"" + arg + "\"";
-			} 
-			else 
+			}
+			else
 			{
 				argString += " " + arg;
 			}
@@ -169,7 +169,7 @@ class DuellProcess
 		startTimeoutListener();
 
 		/// SET THE PATH BACK
-		if (oldPath != "") 
+		if (oldPath != "")
 		{
 			Sys.setCwd (oldPath);
 		}
@@ -212,7 +212,7 @@ class DuellProcess
 				{
 					while(true)
 					{
-						var str = process.stdout.readString(1);	
+						var str = process.stdout.readString(1);
 
 						stdoutMutex.acquire();
 						stdout.writeString(str);
@@ -226,13 +226,13 @@ class DuellProcess
 						}
 						else
 						{
-							stdoutLineBuffer.writeString(str);	
+							stdoutLineBuffer.writeString(str);
 						}
 						timeoutTicker = true;
 					}
 				}
 				catch (e:Eof) {}
-				catch (e:Dynamic) 
+				catch (e:Dynamic)
 				{
 					LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));
 				}
@@ -241,7 +241,7 @@ class DuellProcess
 				log(stdoutLineBuffer.getBytes().toString());
 				finished = true;
 				stdoutFinished = true;
-				
+
 				waitingOnStdoutMutex.release();
 
 				/// checks for failure
@@ -279,13 +279,13 @@ class DuellProcess
 						}
 						else
 						{
-							stderrLineBuffer.writeString(str);	
+							stderrLineBuffer.writeString(str);
 						}
 						timeoutTicker = true;
 					}
 				}
 				catch (e:Eof) {}
-				catch (e:Dynamic) 
+				catch (e:Dynamic)
 				{
 					LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));
 				}
@@ -336,7 +336,7 @@ class DuellProcess
 	{
 		exitCodeBlocking();
 	}
-	
+
 	public function kill()
 	{
 		if(!finished && !killed)
@@ -411,7 +411,7 @@ class DuellProcess
 		waitingOnStderrMutex.release();
 
 		stderrMutex.acquire();
-		
+
 		var bytes = totalStderr.getBytes();
 		totalStderr = new haxe.io.BytesOutput();
 
@@ -460,14 +460,14 @@ class DuellProcess
 				var postfix = "";
 				if (errorMessage != null && errorMessage != "")
 				{
-					postfix = " - Action was: " + errorMessage;	
+					postfix = " - Action was: " + errorMessage;
 				}
 
 				var commandString = command + " " + argString;
 				var pathString = path != "" ? " - in path: " + path : "";
 
 				exitCodeMutex.release();
-				LogHelper.error('Process ${LogHelper.BOLD} $commandString ${LogHelper.NORMAL} $pathString $failureType $postfix');
+				throw 'Process ${LogHelper.BOLD} $commandString ${LogHelper.NORMAL} $pathString $failureType $postfix';
 			}
 		}
 		exitCodeMutex.release();
