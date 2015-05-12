@@ -45,7 +45,7 @@ import duell.commands.EnvironmentSetupCommand;
 import duell.commands.RepoConfigCommand;
 import duell.commands.ToolSetupCommand;
 
-class Duell 
+class Duell
 {
     public static var VERSION = "1.0.1";
 
@@ -64,57 +64,66 @@ class Duell
     **/
     public function run()
     {
-        if (!Arguments.validateArguments()) 
-            return;
+        try {
 
-        /// check for missing initial setup
-        var isMissingSelfSetup = false;
+            if (!Arguments.validateArguments())
+                return;
 
-        if (!sys.FileSystem.exists(DuellConfigHelper.getDuellConfigFileLocation()))
-        {
-            isMissingSelfSetup = true;
-        }
-        else
-        {
-            var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+            /// check for missing initial setup
+            var isMissingSelfSetup = false;
 
-            if (duellConfig.setupsCompleted.indexOf("self") == -1)
+            if (!sys.FileSystem.exists(DuellConfigHelper.getDuellConfigFileLocation()))
             {
                 isMissingSelfSetup = true;
             }
-        }
+            else
+            {
+                var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 
-        if (isMissingSelfSetup && Arguments.getSelectedCommand().name != "self_setup")
-        {
-            LogHelper.error('You are missing the initial setup. Please run the "self_setup" command. For more info run with "-help".');
-        }
+                if (duellConfig.setupsCompleted.indexOf("self") == -1)
+                {
+                    isMissingSelfSetup = true;
+                }
+            }
 
-        if (Arguments.getSelectedCommand().name != "self_setup")
-        {
-            setLocalJavaDistributionHome();
-        }
+            if (isMissingSelfSetup && Arguments.getSelectedCommand().name != "self_setup")
+            {
+                throw 'You are missing the initial setup. Please run the "self_setup" command. For more info run with "-help".';
+            }
 
-        printBanner();
+            if (Arguments.getSelectedCommand().name != "self_setup")
+            {
+                setLocalJavaDistributionHome();
+            }
 
-        if (isMissingSelfSetup)
-        {
-            new ToolSetupCommand().execute();
+            printBanner();
+
+            if (isMissingSelfSetup)
+            {
+                new ToolSetupCommand().execute();
+            }
+            else
+            {
+                var currentTime = Date.now().getTime();
+                Arguments.getSelectedCommand().commandHandler.execute();
+                LogHelper.println(' Time passed '+((Date.now().getTime()-currentTime)/1000)+' sec for command "${Arguments.getSelectedCommand().name}"');
+            }
+
         }
-        else
+        catch (error: Dynamic)
         {
-            var currentTime = Date.now().getTime();
-            Arguments.getSelectedCommand().commandHandler.execute();
-            LogHelper.println(' Time passed '+((Date.now().getTime()-currentTime)/1000)+' sec for command "${Arguments.getSelectedCommand().name}"');
+            LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
+            LogHelper.exitWithFormattedError(error);
         }
         return;
     }
 
     private static function printBanner()
     {
-        LogHelper.println("\x1b[33;1m                         ");         
-        LogHelper.println("    ____   __  __ ______ __     __ ");   
-        LogHelper.println("   / __ \\ / / / // ____// /    / / ");  
-        LogHelper.println("  / / / // / / // __/  / /    / /  ");    
+        LogHelper.println("\x1b[33;1m                         ");
+        LogHelper.println("    ____   __  __ ______ __     __ ");
+        LogHelper.println("   / __ \\ / / / // ____// /    / / ");
+        LogHelper.println("  / / / // / / // __/  / /    / /  ");
         LogHelper.println(" / /_/ // /_/ // /___ / /___ / /___");
         LogHelper.println("/_____/ \\____//_____//_____//_____/");
         LogHelper.println("                                   \x1b[0m");

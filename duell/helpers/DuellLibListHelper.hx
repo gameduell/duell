@@ -23,7 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 package duell.helpers;
 
 import duell.helpers.DuellConfigHelper;
@@ -56,12 +56,12 @@ class DuellLibListHelper
 
         if(duellConfig.repoListURLs == null || duellConfig.repoListURLs.length == 0)
         {
-            LogHelper.error("No repo urls are defined. Run \"duell setup\" to fix this.");
+            throw "No repo urls are defined. Run \"duell setup\" to fix this.";
         }
 
         /// we remove because if the user changes lib lists urls, the result will be very undefined. This way is a bit slower but cleaner.
         if(FileSystem.exists(libListFolder))
-        {    
+        {
             LogHelper.info("", "Cleaning up existing lib lists...");
 
             PathHelper.removeDirectory(libListFolder);
@@ -74,7 +74,7 @@ class DuellLibListHelper
             var path = libListFolder + "/" + repoListIndex;
             if(GitHelper.clone(repoURL, path) != 0)
             {
-                LogHelper.error("Can't access the repo list in " + repoURL + " or something is wrong with the folder " + path);
+                throw "Can't access the repo list in " + repoURL + " or something is wrong with the folder " + path;
             }
 
             try
@@ -86,7 +86,7 @@ class DuellLibListHelper
             }
             catch (e : Error)
             {
-                LogHelper.error("Cannot Parse repo list. Check if this file is correct: " + path + "/haxe-repo-list.json");
+                throw "Cannot Parse repo list. Check if this file is correct: " + path + "/haxe-repo-list.json";
             }
 
             repoListIndex++;
@@ -95,7 +95,7 @@ class DuellLibListHelper
         return repoListCache;
     }
 
-    private static function addLibsToTheRepoCache(configJSON : Dynamic) 
+    private static function addLibsToTheRepoCache(configJSON : Dynamic)
     {
         var listOfRepos = Reflect.fields(configJSON);
 
@@ -113,4 +113,3 @@ class DuellLibListHelper
         }
     }
 }
-

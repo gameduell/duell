@@ -43,7 +43,7 @@ typedef DuellLibHelperCaches = {
 }
 
 class DuellLibHelper
-{ 
+{
 	private static var caches: DuellLibHelperCaches = {
 		existsCache: [],
 		haxelibPathOutputCache: new Map(),
@@ -97,30 +97,30 @@ class DuellLibHelper
 
 		if (!isInstalled(name))
 		{
-			LogHelper.error ('Could not find duellLib \'' + name + '\'.');
+			throw 'Could not find duellLib \'' + name + '\'.';
 		}
 
 		var haxeLibPathOutput = getHaxelibPathOutput(name);
 
 		var lines = haxeLibPathOutput.split ('\n');
-			
+
 		for (i in 1...lines.length) {
-			
-			if (lines[i].trim().startsWith('-D')) 
+
+			if (lines[i].trim().startsWith('-D'))
 			{
 				caches.pathCache.set(name, lines[i - 1].trim());
 			}
-			
+
 		}
 
-		if (caches.pathCache.get(name) == '') 
+		if (caches.pathCache.get(name) == '')
 		{
 			try {
-				for (line in lines) 
+				for (line in lines)
 				{
-					if (line != '' && line.substr(0, 1) != '-') 
+					if (line != '' && line.substr(0, 1) != '-')
 					{
-						if (FileSystem.exists(line)) 
+						if (FileSystem.exists(line))
 						{
 							caches.pathCache.set(name, line);
 							break;
@@ -128,9 +128,9 @@ class DuellLibHelper
 					}
 				}
 			} catch (e:Dynamic) {}
-			
+
 		}
-		
+
 		return caches.pathCache.get(name);
 	}
 
@@ -158,7 +158,7 @@ class DuellLibHelper
         }
         else
         {
-            LogHelper.error('Couldn\'t find the Duell Library reference in the repo list for $name. Can\'t install it.');
+            throw 'Couldn\'t find the Duell Library reference in the repo list for $name. Can\'t install it.';
         }
     }
 

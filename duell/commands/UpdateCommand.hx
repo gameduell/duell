@@ -102,65 +102,57 @@ class UpdateCommand implements IGDCommand
 
     public function execute() : String
     {
-    	try
-    	{
-	    	LogHelper.info("\n");
-	    	LogHelper.info("\x1b[2m------------");
-	    	LogHelper.info("Update Dependencies");
-	    	LogHelper.info("------------\x1b[0m");
-	    	LogHelper.info("\n");
+    	LogHelper.info("\n");
+    	LogHelper.info("\x1b[2m------------");
+    	LogHelper.info("Update Dependencies");
+    	LogHelper.info("------------\x1b[0m");
+    	LogHelper.info("\n");
 
-	    	determineAndValidateDependenciesAndDefines();
+    	determineAndValidateDependenciesAndDefines();
 
-	    	LogHelper.info("\x1b[2m------");
+    	LogHelper.info("\x1b[2m------");
 
-	    	LogHelper.info("\n");
-	    	LogHelper.info("\x1b[2m-------------------------");
-	    	LogHelper.info("Resulting dependencies update and resolution");
-	    	LogHelper.info("--------------------------\x1b[0m");
-	    	LogHelper.info("\n");
+    	LogHelper.info("\n");
+    	LogHelper.info("\x1b[2m-------------------------");
+    	LogHelper.info("Resulting dependencies update and resolution");
+    	LogHelper.info("--------------------------\x1b[0m");
+    	LogHelper.info("\n");
 
-	    	printFinalResult();
+    	printFinalResult();
 
-            if (duellFileHasDuellNamespace())
-            {
-                LogHelper.info("\x1b[2m------");
+        if (duellFileHasDuellNamespace())
+        {
+            LogHelper.info("\x1b[2m------");
 
-                LogHelper.info("\n");
-                LogHelper.info("\x1b[2m-------------------------");
-                LogHelper.info("Validating XML schema");
-                LogHelper.info("--------------------------\x1b[0m");
-                LogHelper.info("\n");
+            LogHelper.info("\n");
+            LogHelper.info("\x1b[2m-------------------------");
+            LogHelper.info("Validating XML schema");
+            LogHelper.info("--------------------------\x1b[0m");
+            LogHelper.info("\n");
 
-				if (userFileHasDuellNamespace())
-				{
-					validateUserSchemaXml();
-				}
-
-                validateSchemaXml();
-
-                LogHelper.info("Success!");
-            }
-
-	    	saveUpdateExecution();
-
-	    	LogHelper.println("");
-	    	LogHelper.info("\x1b[2m------");
-	    	LogHelper.info("end");
-	    	LogHelper.info("------\x1b[0m");
-
-
-			if (isDifferentDuellToolVersion)
+			if (userFileHasDuellNamespace())
 			{
-                	LogHelper.info("Rerunning the update because the duell tool version changed.");
-					CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell"].concat(Arguments.getRawArguments()), {});
+				validateUserSchemaXml();
 			}
-    	}
-    	catch(error : Dynamic)
-    	{
-    		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-    		LogHelper.error(error);
-    	}
+
+            validateSchemaXml();
+
+            LogHelper.info("Success!");
+        }
+
+    	saveUpdateExecution();
+
+    	LogHelper.println("");
+    	LogHelper.info("\x1b[2m------");
+    	LogHelper.info("end");
+    	LogHelper.info("------\x1b[0m");
+
+
+		if (isDifferentDuellToolVersion)
+		{
+            	LogHelper.info("Rerunning the update because the duell tool version changed.");
+				CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell"].concat(Arguments.getRawArguments()), {});
+		}
 
 	    return "success";
     }
@@ -354,7 +346,7 @@ class UpdateCommand implements IGDCommand
 
 		if (!SemVer.areCompatible(haxeVersion, haxeVersionRequested))
 		{
-			LogHelper.error("Requested Haxe Version " + haxeVersionRequested.toString() + " and current version " + haxeVersion.toString() + " are not compatible. Please install a haxe version that is compatible.");
+			throw "Requested Haxe Version " + haxeVersionRequested.toString() + " and current version " + haxeVersion.toString() + " are not compatible. Please install a haxe version that is compatible.";
 		}
 
         finalToolList.push({name: "haxe", version: versionString});
@@ -592,7 +584,7 @@ class UpdateCommand implements IGDCommand
 					{
 						if (!SemVer.areCompatible(haxeVersionRequested, semVer))
 						{
-							LogHelper.error("Requested Haxe Versions " + haxeVersionRequested.toString() + " and " + semVer.toString() + " are not compatible.");
+							throw "Requested Haxe Versions " + haxeVersionRequested.toString() + " and " + semVer.toString() + " are not compatible.";
 						}
 
 
@@ -623,12 +615,12 @@ class UpdateCommand implements IGDCommand
 			if (answer)
 				DuellLibHelper.install(newDuellLib.name);
 			else
-				LogHelper.error('Cannot continue with an uninstalled lib.');
+				throw 'Cannot continue with an uninstalled lib.';
 		}
 
 		if (!DuellLibHelper.isPathValid(newDuellLib.name))
 		{
-			LogHelper.error('DuellLib ${newDuellLib.name} has an invalid path - ${DuellLibHelper.getPath(newDuellLib.name)} - check your "haxelib list"');
+			throw 'DuellLib ${newDuellLib.name} has an invalid path - ${DuellLibHelper.getPath(newDuellLib.name)} - check your "haxelib list"';
 		}
 
 		for (duellLibName in duellLibVersions.keys())
@@ -678,7 +670,7 @@ class UpdateCommand implements IGDCommand
 				if (answer)
 					haxelib.install();
 				else
-					LogHelper.error('Cannot continue with an uninstalled lib.');
+					throw 'Cannot continue with an uninstalled lib.';
 			}
 
 			haxelib.selectVersion();
@@ -692,7 +684,7 @@ class UpdateCommand implements IGDCommand
 
 			if(solvedlib == null) /// version doesn't need to be checked
 			{
-				LogHelper.error('Tried to compile with two incompatible versions ("$haxelib" and "$existingHaxelib") of the same library ${haxelib.name}');
+				throw 'Tried to compile with two incompatible versions ("$haxelib" and "$existingHaxelib") of the same library ${haxelib.name}';
 			}
 
 			if (solvedlib != existingHaxelib)

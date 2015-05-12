@@ -45,119 +45,111 @@ class RepoConfigCommand implements IGDCommand
 
     public function execute() : String
     {
-    	try
-    	{
-			LogHelper.info("\n");
+		LogHelper.info("\n");
 
-			var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+		var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 
-			if (Arguments.isSet("-addFront"))
+		if (Arguments.isSet("-addFront"))
+		{
+			var arguments: Array<String> = Arguments.getRawArguments();
+			var lastArgument: String = arguments.pop();
+
+			if (lastArgument == "-addFront")
 			{
-				var arguments: Array<String> = Arguments.getRawArguments();
-				var lastArgument: String = arguments.pop();
-
-				if (lastArgument == "-addFront")
+				LogHelper.info("Was empty String");
+			}
+			else
+			{
+				if(duellConfig.repoListURLs.indexOf(lastArgument) == -1)
 				{
-					LogHelper.info("Was empty String");
+					duellConfig.repoListURLs.insert(0, lastArgument);
+					duellConfig.writeToConfig();
 				}
 				else
 				{
-					if(duellConfig.repoListURLs.indexOf(lastArgument) == -1)
+					LogHelper.info("This entry was already in");
+				}
+
+			}
+		}
+		else if (Arguments.isSet("-add"))
+		{
+			var arguments: Array<String> = Arguments.getRawArguments();
+			var lastArgument: String = arguments.pop();
+
+			if (lastArgument == "-add")
+			{
+				LogHelper.info("Was empty String");
+			}
+			else
+			{
+				if(duellConfig.repoListURLs.indexOf(lastArgument) == -1)
+				{
+					duellConfig.repoListURLs.push(lastArgument);
+					duellConfig.writeToConfig();
+				}
+				else
+				{
+					LogHelper.info("This entry was already in");
+				}
+			}
+		}
+		else if (Arguments.isSet("-removeAll"))
+		{
+			while (duellConfig.repoListURLs.length > 0)
+			{
+				duellConfig.repoListURLs.pop();
+			}
+
+			duellConfig.repoListURLs.push(defaultRepoListURL);
+
+			duellConfig.writeToConfig();
+
+			LogHelper.info("Removed all entries, but the default url");
+		}
+		else if (Arguments.isSet("-remove"))
+		{
+			var arguments: Array<String> = Arguments.getRawArguments();
+			var lastArgument: String = arguments.pop();
+
+			if (lastArgument == "-remove")
+			{
+				LogHelper.info("URL was empty string. Did not remove anything.");
+			}
+			else
+			{
+				if (lastArgument != defaultRepoListURL)
+				{
+					if (duellConfig.repoListURLs.remove(lastArgument))
 					{
-						duellConfig.repoListURLs.insert(0, lastArgument);
 						duellConfig.writeToConfig();
+						LogHelper.info("Succefully removed " + lastArgument);
 					}
 					else
 					{
-						LogHelper.info("This entry was already in");
+						LogHelper.info(lastArgument + " was not in the repo list");
 					}
-
-				}
-			}
-			else if (Arguments.isSet("-add"))
-			{
-				var arguments: Array<String> = Arguments.getRawArguments();
-				var lastArgument: String = arguments.pop();
-
-				if (lastArgument == "-add")
-				{
-					LogHelper.info("Was empty String");
 				}
 				else
 				{
-					if(duellConfig.repoListURLs.indexOf(lastArgument) == -1)
-					{
-						duellConfig.repoListURLs.push(lastArgument);
-						duellConfig.writeToConfig();
-					}
-					else
-					{
-						LogHelper.info("This entry was already in");
-					}
+					LogHelper.info("It is not allowed to remove the default URL");
 				}
 			}
-			else if (Arguments.isSet("-removeAll"))
-			{
-				while (duellConfig.repoListURLs.length > 0)
-				{
-					duellConfig.repoListURLs.pop();
-				}
+		}
+		else if (Arguments.isSet("-reverse"))
+		{
+			duellConfig.repoListURLs.reverse();
+			duellConfig.writeToConfig();
+			LogHelper.info("Reversed all entries");
+		}
 
-				duellConfig.repoListURLs.push(defaultRepoListURL);
+		LogHelper.info("\n");
+		LogHelper.info("\x1b[2m------");
+		LogHelper.info("Repository List");
+		LogHelper.info("------\x1b[0m");
+		printRepoList(duellConfig.repoListURLs);
+		LogHelper.info("\n");
 
-				duellConfig.writeToConfig();
-
-				LogHelper.info("Removed all entries, but the default url");
-			}
-			else if (Arguments.isSet("-remove"))
-			{
-				var arguments: Array<String> = Arguments.getRawArguments();
-				var lastArgument: String = arguments.pop();
-
-				if (lastArgument == "-remove")
-				{
-					LogHelper.info("URL was empty string. Did not remove anything.");
-				}
-				else
-				{
-					if (lastArgument != defaultRepoListURL)
-					{
-						if (duellConfig.repoListURLs.remove(lastArgument))
-						{
-							duellConfig.writeToConfig();
-							LogHelper.info("Succefully removed " + lastArgument);
-						}
-						else
-						{
-							LogHelper.info(lastArgument + " was not in the repo list");
-						}
-					}
-					else
-					{
-						LogHelper.info("It is not allowed to remove the default URL");
-					}
-				}
-			}
-			else if (Arguments.isSet("-reverse"))
-			{
-				duellConfig.repoListURLs.reverse();
-				duellConfig.writeToConfig();
-				LogHelper.info("Reversed all entries");
-			}
-
-			LogHelper.info("\n");
-			LogHelper.info("\x1b[2m------");
-			LogHelper.info("Repository List");
-			LogHelper.info("------\x1b[0m");
-			printRepoList(duellConfig.repoListURLs);
-			LogHelper.info("\n");
-
-    	} catch(error : Dynamic)
-    	{
-    		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-    		LogHelper.error(error);
-    	}
-	    
 	    return "success";
     }
 

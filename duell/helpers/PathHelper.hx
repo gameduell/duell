@@ -39,11 +39,11 @@ using StringTools;
 
 class PathHelper
 {
-	public static function mkdir(directory : String) : Void 
+	public static function mkdir(directory : String) : Void
 	{
 		directory = StringTools.replace(directory, "\\", "/");
 		var total = "";
-		
+
 		if (!isPathRooted(directory))
 		{
 			total = Sys.getCwd();
@@ -70,75 +70,75 @@ class PathHelper
 		}
 
 		var oldPath = "";
-		
-		for(part in parts) 
+
+		for(part in parts)
 		{
-			if(part != "." && part != "") 
+			if(part != "." && part != "")
 			{
 				total = haxe.io.Path.join([total, part]);
-				
-				if(!FileSystem.exists(total)) 
+
+				if(!FileSystem.exists(total))
 				{
 					LogHelper.info("", " - \x1b[1mCreating directory:\x1b[0m " + total);
-					
+
 					FileSystem.createDirectory(total);
 				}
 			}
 		}
 	}
 
-	public static function unescape(path : String) : String 
+	public static function unescape(path : String) : String
 	{
 		path = StringTools.replace(path, "\\ ", " ");
-		
-		if (PlatformHelper.hostPlatform != Platform.WINDOWS && StringTools.startsWith(path, "~/")) 
+
+		if (PlatformHelper.hostPlatform != Platform.WINDOWS && StringTools.startsWith(path, "~/"))
 		{
 			path = Path.join([getHomeFolder(), path.substr(2)]);
 		}
-		
+
 		return path;
 	}
-	
-	public static function escape(path : String) : String 
+
+	public static function escape(path : String) : String
 	{
-		if(PlatformHelper.hostPlatform != Platform.WINDOWS) 
+		if(PlatformHelper.hostPlatform != Platform.WINDOWS)
 		{
 			path = StringTools.replace (path, "\\ ", " ");
 			path = StringTools.replace (path, " ", "\\ ");
 			path = StringTools.replace (path, "\\'", "'");
 			path = StringTools.replace (path, "'", "\\'");
 		}
-		
+
 		return expand(path);
 	}
 
-	public static function expand(path : String) : String 
+	public static function expand(path : String) : String
 	{
-		if(path == null) 
+		if(path == null)
 		{
 			path = "";
 		}
-		
-		if(PlatformHelper.hostPlatform != Platform.WINDOWS) 
+
+		if(PlatformHelper.hostPlatform != Platform.WINDOWS)
 		{
-			if(StringTools.startsWith(path, "~/")) 
+			if(StringTools.startsWith(path, "~/"))
 			{
 				path = Sys.getEnv("HOME") + "/" + path.substr(2);
 			}
 		}
-		
+
 		return path;
 	}
-	
-	public static function stripQuotes(path : String) : String 
+
+	public static function stripQuotes(path : String) : String
 	{
-		if (path != null) 
+		if (path != null)
 		{
 			return path.split ("\"").join ("");
 		}
-		
+
 		return path;
-	}	
+	}
 
 	public static function isLink(path : String) : Bool
 	{
@@ -160,28 +160,28 @@ class PathHelper
 	}
 
 
-	public static function removeDirectory(directory : String) : Void 
+	public static function removeDirectory(directory : String) : Void
 	{
-		if (FileSystem.exists(directory)) 
+		if (FileSystem.exists(directory))
 		{
 			var files;
-			try 
+			try
 			{
 				files = FileSystem.readDirectory(directory);
-			} 
-			catch(e : Dynamic) 
-			{
-				duell.helpers.LogHelper.error("An error occurred while deleting the directory " + directory);
 			}
-			
-			for (file in FileSystem.readDirectory(directory)) 
+			catch(e : Dynamic)
+			{
+				throw "An error occurred while deleting the directory " + directory;
+			}
+
+			for (file in FileSystem.readDirectory(directory))
 			{
 				var path = Path.join([directory, file]);
-				
+
 				try {
 
 
-					if (FileSystem.isDirectory(path)) 
+					if (FileSystem.isDirectory(path))
 					{
 						if (isLink(path))
 						{
@@ -191,10 +191,10 @@ class PathHelper
 						{
 							removeDirectory(path);
 						}
-					} 
-					else 
+					}
+					else
 					{
-						try 
+						try
 						{
 							FileSystem.deleteFile(path);
 						}
@@ -211,25 +211,25 @@ class PathHelper
 						}
 					}
 				}
-				catch (e:Dynamic) 
+				catch (e:Dynamic)
 				{
-					duell.helpers.LogHelper.error("An error occurred while deleting the directory " + directory);
+					throw "An error occurred while deleting the directory " + directory;
 				}
 			}
-			
+
 			LogHelper.info("", " - \x1b[1mRemoving directory:\x1b[0m " + directory);
-			
-			try 
+
+			try
 			{
 				FileSystem.deleteDirectory (directory);
-			} 
-			catch (e:Dynamic) 
-			{
-				duell.helpers.LogHelper.error("An error occurred while deleting the directory " + directory);
 			}
-			
+			catch (e:Dynamic)
+			{
+				throw "An error occurred while deleting the directory " + directory;
+			}
+
 		}
-		
+
 	}
 
 	/// gathered file list, and prefix are is used in the recursion.
@@ -239,16 +239,16 @@ class PathHelper
 			gatheredFileList = [];
 
 		var files = [];
-		try 
+		try
 		{
 			files = FileSystem.readDirectory(folder);
-		} 
-		catch (e:Dynamic) 
-		{
-			LogHelper.error("Could not find folder directory \"" + folder + "\"");
 		}
-		
-		for (file in files) 
+		catch (e:Dynamic)
+		{
+			throw "Could not find folder directory \"" + folder + "\"";
+		}
+
+		for (file in files)
 		{
 			if (file.substr(0, 1) != ".") /// hidden file
 			{
@@ -256,7 +256,7 @@ class PathHelper
 				if (FileSystem.isDirectory(fullPath))
 				{
 					getRecursiveFileListUnderFolder(fullPath, gatheredFileList, haxe.io.Path.join([prefix, file]));
-				} 
+				}
 				else
 				{
 					gatheredFileList.push(haxe.io.Path.join([prefix, file]));
@@ -281,7 +281,7 @@ class PathHelper
         }
         catch (e:Dynamic)
         {
-            LogHelper.error("Could not find folder directory \"" + folder + "\"");
+            throw "Could not find folder directory \"" + folder + "\"";
         }
 
         for (file in files)
@@ -304,16 +304,16 @@ class PathHelper
 	public static function getHomeFolder() : String
 	{
 		var env = Sys.environment();
-		if (env.exists ("HOME")) 
+		if (env.exists ("HOME"))
 		{
 			return env.get("HOME");
-		} 
-		else if(env.exists("USERPROFILE")) 
+		}
+		else if(env.exists("USERPROFILE"))
 		{
 			return env.get("USERPROFILE");
-		} 
-		else 
-		{	
+		}
+		else
+		{
 			throw 'No home variable is set!!';
 		}
 	}

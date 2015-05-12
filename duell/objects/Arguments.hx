@@ -43,10 +43,10 @@ import sys.io.File;
 class NoArgumentValue {}
 
 @:generic
-class ArgumentSpec <T> 
+class ArgumentSpec <T>
 {
 	/// used as key in lookup dictionary
-	public var name: String; 
+	public var name: String;
 
 	public var documentation: String;
 
@@ -65,10 +65,10 @@ class ArgumentSpec <T>
 
 typedef AnyArgumentSpec = Dynamic;
 
-class CommandSpec 
+class CommandSpec
 {
 	/// used as key in lookup dictionary
-	public var name: String; 
+	public var name: String;
 
 	public var hasPlugin: Bool;
 	public var documentation: String;
@@ -110,7 +110,7 @@ class Arguments
 	private static var rawArgs: Array<String>;
 
 	public static function validateArguments(): Bool
-	{	
+	{
 		/// force compilation of at least these generics:
 		var argSpecInt = new ArgumentSpec<Int>("something", "something else");
 		var argSpecNoArgumentValue = new ArgumentSpec<NoArgumentValue>("something", "something else");
@@ -222,7 +222,7 @@ class Arguments
 				argSpec.set = true;
 				if (Type.getClass(argSpec) == Type.getClass(argSpecNoArgumentValue))
 				{
-				} 
+				}
 				else if (Type.getClass(argSpec) == Type.getClass(argSpecInt))
 				{
 					if (args.length == index)
@@ -261,7 +261,7 @@ class Arguments
 		}
 
 		return true;
-	} 
+	}
 
 	private static function parseDefine(str: String): Void
 	{
@@ -272,14 +272,14 @@ class Arguments
 		}
 		else if (array.length > 2)
 		{
-			LogHelper.error("Argument define " + str + " has incorrect structure, should be like -D SOMETHING or -D SOMETHING=2");
+			throw "Argument define " + str + " has incorrect structure, should be like -D SOMETHING or -D SOMETHING=2";
 		}
 		else
 		{
 			defines.set(array[0], array[1]);
 		}
 
-	} 
+	}
 
 	private static function parseConfig(): Void
 	{
@@ -288,7 +288,7 @@ class Arguments
 
 
 
-		for (element in xml.elements) 
+		for (element in xml.elements)
 		{
 			switch element.name
 			{
@@ -310,7 +310,7 @@ class Arguments
 	{
 		var xml = new Fast(Xml.parse(fileString).firstElement());
 
-		for (element in xml.elements) 
+		for (element in xml.elements)
 		{
 			switch element.name
 			{
@@ -341,12 +341,12 @@ class Arguments
 	{
 		var name = command.att.name;
 		var hasPlugin = command.att.hasPlugin == "true" ? true : false;
-		
+
 		var klassName = "duell.commands." + command.att.resolve("class");
 		var klass = Type.resolveClass(klassName);
 		var commandHandler = Type.createInstance(klass, []);
 		var documentation = StringTools.htmlUnescape(StringTools.trim(command.node.documentation.innerData));
-		
+
 		var args = null;
 
 		if (command.hasNode.args)

@@ -62,8 +62,8 @@ class LogHelper
 	{
 		return Arguments.isSet("-verbose");
 	}
-	
-	public static function error(message : String, verboseMessage : String = "", e : Dynamic = null) : Void
+
+	public static function exitWithFormattedError(message : String, verboseMessage : String = "", e : Dynamic = null) : Void
 	{
 		if (message != "" && !mute)
 		{

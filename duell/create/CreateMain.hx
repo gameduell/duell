@@ -30,6 +30,8 @@ import duell.helpers.LogHelper;
 
 import duell.objects.Arguments;
 
+import duell.helpers.LogHelper;
+
 class CreateMain
 {
     public static function main()
@@ -44,7 +46,7 @@ class CreateMain
         catch(error : Dynamic)
         {
             LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-            LogHelper.error(error);
+            LogHelper.exitWithFormattedError(error);
         }
 
     }

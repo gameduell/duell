@@ -48,7 +48,7 @@ import sys.FileSystem;
 import duell.commands.IGDCommand;
 
 class ToolSetupCommand implements IGDCommand
-{	
+{
 	private static var haxeURL = "http://haxe.org/";
     private static var defaultRepoListURL:String = "git@github.com:gameduell/duell-repository-list.git";
 
@@ -59,53 +59,46 @@ class ToolSetupCommand implements IGDCommand
 
     public function execute() : String
     {
-    	try
-    	{
-	    	LogHelper.info("");
-	    	LogHelper.info("\x1b[2m------");
-	    	LogHelper.info("Base Setup");
-	    	LogHelper.info("------\x1b[0m");
-	    	LogHelper.info("");
+    	LogHelper.info("");
+    	LogHelper.info("\x1b[2m------");
+    	LogHelper.info("Base Setup");
+    	LogHelper.info("------\x1b[0m");
+    	LogHelper.info("");
 
-	    	setupHaxe();
+    	setupHaxe();
 
-	    	LogHelper.println("");
+    	LogHelper.println("");
 
-	    	setupHaxelib();
+    	setupHaxelib();
 
-	    	LogHelper.println("");
+    	LogHelper.println("");
 
-	    	setupDuellSettingsDirectory();
+    	setupDuellSettingsDirectory();
 
-	    	LogHelper.println("");
+    	LogHelper.println("");
 
-	    	installDuell();
+    	installDuell();
 
-	    	LogHelper.println("");
+    	LogHelper.println("");
 
-	    	setupHXCPP();
+    	setupHXCPP();
 
-	    	LogHelper.println("");
+    	LogHelper.println("");
 
-	    	writeHXCPPDefinitions();
+    	writeHXCPPDefinitions();
 
-	    	LogHelper.println("");
+    	LogHelper.println("");
 
-	    	savingSetupDone();
-	    	
-	    	LogHelper.println("");
+    	savingSetupDone();
 
-	    	installCommandLine();
+    	LogHelper.println("");
 
-	    	LogHelper.info("\x1b[2m------");
-	    	LogHelper.info("end");
-	    	LogHelper.info("------\x1b[0m");
-    	} catch(error : Dynamic)
-    	{
-    		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-    		LogHelper.error(error);
-    	}
-	    
+    	installCommandLine();
+
+    	LogHelper.info("\x1b[2m------");
+    	LogHelper.info("end");
+    	LogHelper.info("------\x1b[0m");
+
 	    return "success";
     }
 
@@ -178,7 +171,7 @@ class ToolSetupCommand implements IGDCommand
 		if (!FileSystem.exists(DuellConfigHelper.getDuellConfigFileLocation()))
 		{
 			var fileContent : String = "{}";
-			
+
 			var output = File.write(DuellConfigHelper.getDuellConfigFileLocation(), false);
 			output.writeString(fileContent);
 			output.close();
@@ -201,7 +194,7 @@ class ToolSetupCommand implements IGDCommand
 
 		duellConfig.localLibraryPath = PathHelper.unescape(repoPath);
 		PathHelper.mkdir(duellConfig.localLibraryPath);
-		
+
 		duellConfig.localLibraryPath = FileSystem.fullPath(duellConfig.localLibraryPath);
 
 		if(duellConfig.repoListURLs.indexOf(repoListURL) == -1)
@@ -236,7 +229,7 @@ class ToolSetupCommand implements IGDCommand
 
 		if(!libMap.exists("duell"))
 		{
-			LogHelper.error("Could not find \"duell\" in " + duellConfig.repoListURLs.join(", "));
+			throw "Could not find \"duell\" in " + duellConfig.repoListURLs.join(", ");
 		}
 
 		libMap.get("duell").install();
@@ -249,37 +242,37 @@ class ToolSetupCommand implements IGDCommand
     	LogHelper.println("Checking duell command line installation... ");
 
 		var haxePath = Sys.getEnv("HAXEPATH");
-		
+
 		if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
-			
-			if (haxePath == null || haxePath == "") 
+
+			if (haxePath == null || haxePath == "")
 			{
 				haxePath = "C:\\HaxeToolkit\\haxe\\";
 			}
-			
+
 			File.copy(Haxelib.getHaxelib("duell_duell").getPath() + "\\bin\\duell.bat", haxePath + "\\duell.bat");
 			File.copy(Haxelib.getHaxelib("duell_duell").getPath() + "\\bin\\duell.sh", haxePath + "\\duell");
-		} 
-		else 
-		{			
-			if (haxePath == null || haxePath == "") 
+		}
+		else
+		{
+			if (haxePath == null || haxePath == "")
 			{
 				haxePath = "/usr/lib/haxe";
 			}
-			
+
 			var installedCommand = false;
 			var answer = null;
-			
+
 			answer = AskHelper.askYesOrNo("Do you want to install the \"duell\" command?");
-			
-			if (answer) 
+
+			if (answer)
 			{
 				CommandHelper.runCommand("", "sudo", ["cp", "-f", DuellLibHelper.getPath("duell") + "/bin/duell.sh", "/usr/bin/duell"], {errorMessage: "copying duell executable to the path"});
 				CommandHelper.runCommand("", "sudo", ["chmod", "755", "/usr/bin/duell"], {errorMessage: "setting permissions on the duell executable"});
 				installedCommand = true;
 			}
-			
-			if (!installedCommand) 
+
+			if (!installedCommand)
 			{
 				LogHelper.println("");
 				LogHelper.println("To finish setup, we recommend you either...");
@@ -314,7 +307,7 @@ class ToolSetupCommand implements IGDCommand
 			}
 			else
 			{
-				LogHelper.error("Still not installed, unknown error occurred...");
+				throw "Still not installed, unknown error occurred...";
 			}
 		}
 		else
@@ -330,13 +323,13 @@ class ToolSetupCommand implements IGDCommand
 
 	private function writeHXCPPDefinitions()
 	{
-		if (PlatformHelper.hostPlatform == Platform.MAC) 
+		if (PlatformHelper.hostPlatform == Platform.MAC)
 		{
 	    	var hxcppConfigPath = HXCPPConfigXMLHelper.getProbableHXCPPConfigLocation();
 
 	    	if(hxcppConfigPath == null)
 	    	{
-				LogHelper.error("Could not find the home folder, no HOME variable is set. Can't find hxcpp_config.xml");
+				throw "Could not find the home folder, no HOME variable is set. Can't find hxcpp_config.xml";
 	    	}
 
 			var hxcppXML = HXCPPConfigXML.getConfig(hxcppConfigPath);

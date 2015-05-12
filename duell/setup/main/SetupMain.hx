@@ -28,14 +28,23 @@ package duell.setup.main;
 
 import duell.setup.plugin.EnvironmentSetup;
 
+import duell.helpers.LogHelper;
+
 class SetupMain
 {
     public static function main()
     {
-    	duell.objects.Arguments.validateArguments();
+        try {
+        	duell.objects.Arguments.validateArguments();
 
-        var environment = new EnvironmentSetup();
-        environment.setup();
+            var environment = new EnvironmentSetup();
+            environment.setup();
+        }
+        catch (error : Dynamic)
+        {
+    		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
+    		LogHelper.exitWithFormattedError(error);
+        }
     }
 
 }

@@ -45,6 +45,8 @@ import sys.FileSystem;
 
 import haxe.io.Path;
 
+import duell.helpers.LogHelper;
+
 class BuildMain
 {
     private static inline var SERIALIZED_CACHES_FILENAME = 'serialized_duelllib_caches.cache';
@@ -153,7 +155,7 @@ class BuildMain
                 build.handleError();
             }
     		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-    		LogHelper.error(error);
+    		LogHelper.exitWithFormattedError(error);
     	}
     }
 

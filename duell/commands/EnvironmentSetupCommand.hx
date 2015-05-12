@@ -59,31 +59,22 @@ class EnvironmentSetupCommand implements IGDCommand
 
     public function execute() : String
     {
-        try
-        {
-            LogHelper.info("");
-            LogHelper.info("\x1b[2m------");
-            LogHelper.info("Setup");
-            LogHelper.info("------\x1b[0m");
-            LogHelper.info("");
+        LogHelper.info("");
+        LogHelper.info("\x1b[2m------");
+        LogHelper.info("Setup");
+        LogHelper.info("------\x1b[0m");
+        LogHelper.info("");
 
-            determinePlatformToSetupFromArguments();
+        determinePlatformToSetupFromArguments();
 
-            LogHelper.println("");
+        LogHelper.println("");
 
-            buildNewEnvironmentWithSetupLib();
+        buildNewEnvironmentWithSetupLib();
 
-            LogHelper.println("");
-            LogHelper.info("\x1b[2m------");
-            LogHelper.info("end");
-            LogHelper.info("------\x1b[0m");
-        }
-        catch(error : Dynamic)
-        {
-            LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-            LogHelper.error(error);
-        }
-
+        LogHelper.println("");
+        LogHelper.info("\x1b[2m------");
+        LogHelper.info("end");
+        LogHelper.info("------\x1b[0m");
         return "success";
     }
 
@@ -94,7 +85,7 @@ class EnvironmentSetupCommand implements IGDCommand
         var platformNameCorrectnessCheck = ~/^[a-z0-9]+$/;
 
         if (!platformNameCorrectnessCheck.match(platformName))
-            LogHelper.error('Unknown platform $platformName, should be composed of only letters or numbers, no spaces of other characters. Example: \"duell setup mac\" or \"duell setup android\"');
+            throw 'Unknown platform $platformName, should be composed of only letters or numbers, no spaces of other characters. Example: \"duell setup mac\" or \"duell setup android\"';
 
         var pluginLibName = "duellsetup" + platformName;
         setupLib = DuellLib.getDuellLib(pluginLibName);
@@ -122,7 +113,7 @@ class EnvironmentSetupCommand implements IGDCommand
         }
         else
         {
-            LogHelper.error("You must always specify a version. E.g. duell setup android -v 1.0.0");
+            throw "You must always specify a version. E.g. duell setup android -v 1.0.0";
         }
     }
 

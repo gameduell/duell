@@ -37,7 +37,7 @@ import sys.io.File;
 
 using StringTools;
 
-typedef CommandOptions = 
+typedef CommandOptions =
 {
 	?logOnlyIfVerbose : Bool, /// defaults to true
 	?systemCommand : Bool, /// defaults to true
@@ -45,106 +45,106 @@ typedef CommandOptions =
 	?errorMessage : String /// defaults to nothing
 }
 
-class CommandHelper 
+class CommandHelper
 {
-	public static function openFile(workingDirectory : String, targetPath : String, executable : String = "") : Void 
+	public static function openFile(workingDirectory : String, targetPath : String, executable : String = "") : Void
 	{
-		if(executable == null) 
-		{ 
+		if(executable == null)
+		{
 			executable = "";
 		}
-		
-		if(PlatformHelper.hostPlatform == Platform.WINDOWS) 
+
+		if(PlatformHelper.hostPlatform == Platform.WINDOWS)
 		{
-			if (executable == "") 
+			if (executable == "")
 			{
-				if(targetPath.indexOf(":\\") == -1) 
+				if(targetPath.indexOf(":\\") == -1)
 				{
 					runCommand(workingDirectory, targetPath, []);
-				} 
-				else 
+				}
+				else
 				{
 					runCommand(workingDirectory, ".\\" + targetPath, []);
 				}
-				
-			} 
-			else 
+
+			}
+			else
 			{
-				if(targetPath.indexOf (":\\") == -1) 
+				if(targetPath.indexOf (":\\") == -1)
 				{
 					runCommand(workingDirectory, executable, [targetPath]);
-				} 
-				else 
+				}
+				else
 				{
 					runCommand(workingDirectory, executable, [".\\" + targetPath]);
 				}
 			}
-		} 
-		else if(PlatformHelper.hostPlatform == Platform.MAC) 
+		}
+		else if(PlatformHelper.hostPlatform == Platform.MAC)
 		{
-			if(executable == "") 
+			if(executable == "")
 			{
 				executable = "/usr/bin/open";
 			}
-			
-			if(targetPath.substr (0, 1) == "/") 
+
+			if(targetPath.substr (0, 1) == "/")
 			{
 				runCommand(workingDirectory, executable, [targetPath]);
-			} 
-			else 
+			}
+			else
 			{
 				runCommand(workingDirectory, executable, ["./" + targetPath]);
 			}
-		} 
-		else 
+		}
+		else
 		{
-			if(executable == "") 
+			if(executable == "")
 			{
 				executable = "/usr/bin/xdg-open";
 			}
-			
-			if (targetPath.substr(0, 1) == "/") 
+
+			if (targetPath.substr(0, 1) == "/")
 			{
 				runCommand(workingDirectory, executable, [ targetPath ]);
-			} 
-			else 
+			}
+			else
 			{
 				runCommand(workingDirectory, executable, [ "./" + targetPath ]);
 			}
 		}
 	}
 
-	public static function openURL(url : String) : Int 
+	public static function openURL(url : String) : Int
 	{
 		var result : Int = 0;
-		if(PlatformHelper.hostPlatform == Platform.WINDOWS) 
+		if(PlatformHelper.hostPlatform == Platform.WINDOWS)
 		{
 			result = runCommand ("", "start", [url]);
-		} 
-		else if (PlatformHelper.hostPlatform == Platform.MAC) 
+		}
+		else if (PlatformHelper.hostPlatform == Platform.MAC)
 		{
 			result = runCommand ("", "/usr/bin/open", [url]);
-		} 
-		else 
+		}
+		else
 		{
 			result = runCommand ("", "/usr/bin/xdg-open", [url, "&"]);
 		}
 		return result;
 	}
 
-	public static function runCommand(path : String, command : String, args : Array <String>, ?options: CommandOptions) : Int 
+	public static function runCommand(path : String, command : String, args : Array <String>, ?options: CommandOptions) : Int
 	{
 		command = PathHelper.escape(command);
 
 		var argString = "";
-		
-		for (arg in args) 
+
+		for (arg in args)
 		{
-			if (arg.indexOf (" ") > -1) 
+			if (arg.indexOf (" ") > -1)
 			{
 				argString += " \"" + arg + "\"";
-			} 
-			else 
+			}
+			else
 			{
 				argString += " " + arg;
 			}
@@ -173,17 +173,16 @@ class CommandHelper
 		{
 			command = "./" + command;
 		}
-		
+
 		/// CHANGE DIRECTORY
 		var oldPath:String = "";
 		if (path != null && path != "") {
-			
+
 			LogHelper.info ("", " - " + LogHelper.BOLD + "Changing directory: " + LogHelper.NORMAL + path + "");
-			
-			if(!FileSystem.exists(path)) 
+
+			if(!FileSystem.exists(path))
 			{
-				LogHelper.error("The path \"" + path + "\" does not exist");
-				return 1;
+				throw "The path \"" + path + "\" does not exist";
 			}
 			oldPath = Sys.getCwd ();
 			Sys.setCwd (path);
@@ -191,12 +190,12 @@ class CommandHelper
 
 		/// RUN COMMAND
 		var result = 0;
-		
-		if(args != null && args.length > 0) 
+
+		if(args != null && args.length > 0)
 		{
 			result = Sys.command (command, args);
 		}
-		else 
+		else
 		{
 			result = Sys.command (command);
 		}
@@ -205,11 +204,11 @@ class CommandHelper
 		{
 			var pathString = path != null && path != "" ? " - in path: " + path : "";
 			var additionalMessage = errorMessage != null ? " - Action was: " + errorMessage : "";
-			LogHelper.error("Failed to run command " + LogHelper.BOLD + commandString + LogHelper.NORMAL + " " + pathString + " -  Exit code:" + result + additionalMessage);
+			throw "Failed to run command " + LogHelper.BOLD + commandString + LogHelper.NORMAL + " " + pathString + " -  Exit code:" + result + additionalMessage;
 		}
-		
+
 		/// RESET WORKING DIRECTORY
-		if (oldPath != "") 
+		if (oldPath != "")
 		{
 			Sys.setCwd (oldPath);
 		}
@@ -217,7 +216,7 @@ class CommandHelper
 		return result;
 	}
 
-	public static function runNeko(path: String, args : Array <String>, ?options: CommandOptions) : Int 
+	public static function runNeko(path: String, args : Array <String>, ?options: CommandOptions) : Int
 	{
     	var haxePath = Sys.getEnv("NEKO_INSTPATH");
     	if (options == null)
@@ -231,7 +230,7 @@ class CommandHelper
 		return CommandHelper.runCommand(path, Path.join([haxePath, "neko"]), args, options);
 	}
 
-	public static function runHaxe(path: String, args : Array <String>, ?options: CommandOptions) : Int 
+	public static function runHaxe(path: String, args : Array <String>, ?options: CommandOptions) : Int
 	{
     	var haxePath = Sys.getEnv("HAXEPATH");
     	if (options == null)
@@ -260,7 +259,7 @@ class CommandHelper
     	}
 	}
 
-	public static function runHaxelib(path: String, args : Array <String>, ?options: CommandOptions) : Int 
+	public static function runHaxelib(path: String, args : Array <String>, ?options: CommandOptions) : Int
 	{
     	var haxePath = Sys.getEnv("HAXEPATH");
     	if (options == null)

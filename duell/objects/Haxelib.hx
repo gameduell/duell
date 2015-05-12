@@ -95,11 +95,11 @@ class Haxelib
 		{
 			if (version != "")
 			{
-				LogHelper.error ("Could not find haxelib \"" + name + "\" version \"" + version + "\", does it need to be installed?");
+				throw "Could not find haxelib \"" + name + "\" version \"" + version + "\", does it need to be installed?";
 			}
 			else
 			{
-				LogHelper.error ("Could not find haxelib \"" + name + "\", does it need to be installed?");
+				throw "Could not find haxelib \"" + name + "\", does it need to be installed?";
 			}
 		}
 

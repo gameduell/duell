@@ -45,31 +45,22 @@ class CreateCommand implements IGDCommand
 
     public function execute() : String
     {
+        LogHelper.info("");
+        LogHelper.info("\x1b[2m------");
+        LogHelper.info("Create");
+        LogHelper.info("------\x1b[0m");
+        LogHelper.info("");
 
-        try
-        {
-            LogHelper.info("");
-            LogHelper.info("\x1b[2m------");
-            LogHelper.info("Create");
-            LogHelper.info("------\x1b[0m");
-            LogHelper.info("");
+        determineDuellLibraryFromArguments();
 
-            determineDuellLibraryFromArguments();
+        LogHelper.println("");
 
-            LogHelper.println("");
+        runPluginLib();
 
-            runPluginLib();
-
-            LogHelper.println("");
-            LogHelper.info("\x1b[2m------");
-            LogHelper.info("end");
-            LogHelper.info("------\x1b[0m");
-        }
-        catch(error : Dynamic)
-        {
-            LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-            LogHelper.error(error);
-        }
+        LogHelper.println("");
+        LogHelper.info("\x1b[2m------");
+        LogHelper.info("end");
+        LogHelper.info("------\x1b[0m");
 
         return "success";
     }
@@ -81,7 +72,7 @@ class CreateCommand implements IGDCommand
         var pluginNameCorrectnessCheck = ~/^[A-Za-z0-9]+$/;
 
         if (!pluginNameCorrectnessCheck.match(pluginName))
-            LogHelper.error('Unknown plugin $pluginName, should be composed of only letters or numbers, no spaces of other characters. Example: \"duell create emptyProject\" or \"duell create helloWorld\"');
+            throw 'Unknown plugin $pluginName, should be composed of only letters or numbers, no spaces of other characters. Example: \"duell create emptyProject\" or \"duell create helloWorld\"';
 
         var pluginLibName = "duellcreate" + pluginName;
 

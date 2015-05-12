@@ -65,14 +65,14 @@ class DuellLibReference
         {
             if (GitHelper.pull(path) != 0 )
             {
-                LogHelper.error("Can't Install library " + name);
+                throw "Can't Install library " + name;
             }
         }
         else
         {
             if(GitHelper.clone(gitPath, path) != 0 )
             {
-                LogHelper.error("Can't Install library " + name);
+                throw "Can't Install library " + name;
             }
         }
 

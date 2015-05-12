@@ -81,56 +81,47 @@ class BuildCommand implements IGDCommand
 
     public function execute() : String
     {
-    	try
+    	LogHelper.info("\n");
+    	LogHelper.info("\x1b[2m------");
+    	LogHelper.info("Build");
+    	LogHelper.info("------\x1b[0m");
+    	LogHelper.info("\n");
+
+    	if (Arguments.isSet("-fast"))
     	{
-	    	LogHelper.info("\n");
-	    	LogHelper.info("\x1b[2m------");
-	    	LogHelper.info("Build");
-	    	LogHelper.info("------\x1b[0m");
-	    	LogHelper.info("\n");
+    		runFast();
+    	}
+    	else
+    	{
+	    	LogHelper.println("");
 
-	    	if (Arguments.isSet("-fast"))
-	    	{
-	    		runFast();
-	    	}
-	    	else
-	    	{
-		    	LogHelper.println("");
-
-		    	checkIfItIsAProjectFolder();
-
-		    	LogHelper.println("");
-
-		    	checkUpdateTime();
-
-		    	LogHelper.println("");
-
-		    	determinePlatformToBuildFromArguments();
-
-		    	LogHelper.println("");
-
-		    	determineAndValidateDependenciesAndDefines();
-
-		    	LogHelper.println("");
-
-                validateSchemaIfNamespaceSet();
-
-                LogHelper.println("");
-
-		    	buildNewExecutableWithBuildLibAndDependencies();
-	    	}
+	    	checkIfItIsAProjectFolder();
 
 	    	LogHelper.println("");
-	    	LogHelper.info("\x1b[2m------");
-	    	LogHelper.info("end");
-	    	LogHelper.info("------\x1b[0m");
-    	}
-    	catch(error : Dynamic)
-    	{
-    		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-    		LogHelper.error(error);
+
+	    	checkUpdateTime();
+
+	    	LogHelper.println("");
+
+	    	determinePlatformToBuildFromArguments();
+
+	    	LogHelper.println("");
+
+	    	determineAndValidateDependenciesAndDefines();
+
+	    	LogHelper.println("");
+
+            validateSchemaIfNamespaceSet();
+
+            LogHelper.println("");
+
+	    	buildNewExecutableWithBuildLibAndDependencies();
     	}
 
+    	LogHelper.println("");
+    	LogHelper.info("\x1b[2m------");
+    	LogHelper.info("end");
+    	LogHelper.info("------\x1b[0m");
 	    return "success";
     }
 
@@ -138,7 +129,7 @@ class BuildCommand implements IGDCommand
     {
     	if (!FileSystem.exists(DuellDefines.PROJECT_CONFIG_FILENAME))
     	{
-    		LogHelper.error('Running from a folder without a project file ${DuellDefines.PROJECT_CONFIG_FILENAME}');
+    		throw 'Running from a folder without a project file ${DuellDefines.PROJECT_CONFIG_FILENAME}';
     	}
     }
 
@@ -149,7 +140,7 @@ class BuildCommand implements IGDCommand
     	var platformNameCorrectnessCheck = ~/^[a-z0-9]+$/;
 
     	if (!platformNameCorrectnessCheck.match(platformName))
-    		LogHelper.error('Unknown platform $platformName, should be composed of only letters or numbers, no spaces of other characters. Example: \"duell build ios\" or \"duell build android\"');
+    		throw 'Unknown platform $platformName, should be composed of only letters or numbers, no spaces of other characters. Example: \"duell build ios\" or \"duell build android\"';
 
     	buildLib = DuellLib.getDuellLib("duellbuild" + platformName);
 
@@ -349,7 +340,7 @@ class BuildCommand implements IGDCommand
 
 		if (FileSystem.exists(outputRun))
 		{
-			LogHelper.error("Could not find a previous execution for this platform in order to run it fast.");
+			throw "Could not find a previous execution for this platform in order to run it fast.";
 		}
 
 		var s = File.read(outputRunArguments, true).readAll().toString();
