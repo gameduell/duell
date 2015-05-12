@@ -45,7 +45,7 @@ import sys.FileSystem;
 
 import haxe.io.Path;
 
-class BuildMain 
+class BuildMain
 {
     private static inline var SERIALIZED_CACHES_FILENAME = 'serialized_duelllib_caches.cache';
     public static function main()
@@ -56,7 +56,7 @@ class BuildMain
         {
             Configuration.addParsingDefine(define);
         }
-		try 
+		try
         {
 	 		var build = new PlatformBuild();
             var pluginHelper : LibraryPluginHelper = new LibraryPluginHelper();
@@ -146,6 +146,7 @@ class BuildMain
 		}
     	catch(error : Dynamic)
     	{
+            build.handleError();
     		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
     		LogHelper.error(error);
     	}

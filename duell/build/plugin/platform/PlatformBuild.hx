@@ -46,4 +46,6 @@ extern class PlatformBuild
 	public function fast() : Void;
 
 	public function clean() : Void;
+
+	public function handleError() : Void;
 }
