@@ -69,7 +69,7 @@ class BuildMain
 
             if (build.supportedHostPlatforms.indexOf(PlatformHelper.hostPlatform) == -1)
             {
-                LogHelper.error("The current host platform '" + PlatformHelper.hostPlatform + "' is not supported for this build.");
+                throw "The current host platform '" + PlatformHelper.hostPlatform + "' is not supported for this build.";
             }
 
 	 		for (requiredSetup in build.requiredSetups)
@@ -86,7 +86,7 @@ class BuildMain
                     }
                     else
                     {
-                        LogHelper.error('You are missing a setup. Please run duell setup ${requiredSetup.name} -v ${requiredSetup.version}');
+                        throw 'You are missing a setup. Please run duell setup ${requiredSetup.name} -v ${requiredSetup.version}';
                     }
 		        }
 	 		}

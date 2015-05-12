@@ -32,7 +32,7 @@ using StringTools;
 
 class XMLHelper
 {
-	public static function isValidElement(element : Fast, validatingConditions : Array<String>) : Bool 
+	public static function isValidElement(element : Fast, validatingConditions : Array<String>) : Bool
 	{
         var processValue = function(value : String) : Array<Array<String>>
         {
@@ -48,10 +48,9 @@ class XMLHelper
 
             if (optionalDefines.length > 1 && andDefines.length > 1)
             {
-                LogHelper.error('Chaining of [and] and [or] defines is not supported in element: "$value"');
-                return null;
+                throw 'Chaining of [and] and [or] defines is not supported in element: "$value"';
             }
-            
+
             var result = [];
 
             if (andDefines.length > 1)
@@ -77,21 +76,21 @@ class XMLHelper
 		var evaluateValue = function(optionalDefines : Array<Array<String>>) : Bool
 		{
 			var matchOptional = false;
-			
-			for (requiredDefines in optionalDefines) 
+
+			for (requiredDefines in optionalDefines)
 			{
 				var matchRequired = true;
 
-				for (required in requiredDefines) 
+				for (required in requiredDefines)
 				{
-					if (validatingConditions.indexOf(required) == -1) 
+					if (validatingConditions.indexOf(required) == -1)
 					{
 						matchRequired = false;
 						break;
 					}
 				}
-				
-				if (matchRequired) 
+
+				if (matchRequired)
 				{
 					matchOptional = true;
 					break;

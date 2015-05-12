@@ -92,7 +92,7 @@ class DuellProjectXML
 
 		if (!FileSystem.exists(DuellDefines.PROJECT_CONFIG_FILENAME))
 		{
-			LogHelper.error('Project config file not found. There should be a ${DuellDefines.PROJECT_CONFIG_FILENAME} here');
+			throw 'Project config file not found. There should be a ${DuellDefines.PROJECT_CONFIG_FILENAME} here';
 		}
 
 		parseFile(Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]));
@@ -103,7 +103,7 @@ class DuellProjectXML
 	private function parseFile(file : String)
 	{
 		if (!PathHelper.isPathRooted(file))
-			LogHelper.error("internal error, parseFile should only receive rooted paths.");
+			throw "internal error, parseFile should only receive rooted paths.";
 
 		currentXMLPath.push(Path.directory(file));
 
@@ -441,16 +441,14 @@ class DuellProjectXML
 
                 if (classInstance == null)
                 {
-                    LogHelper.error('Class "$className" could not be resolved while parsing call0 macro');
-                    return null;
+                    throw 'Class "$className" could not be resolved while parsing call0 macro';
                 }
 
                 var func: Dynamic = Reflect.field(classInstance, methodName);
 
                 if (func == null)
                 {
-                    LogHelper.error('Function "$methodName" not found for class "$className" while parsing call0 macro');
-                    return null;
+                    throw 'Function "$methodName" not found for class "$className" while parsing call0 macro';
                 }
 
                 return Reflect.callMethod(classInstance, func, []);
