@@ -153,7 +153,7 @@ class UpdateCommand implements IGDCommand
 			if (isDifferentDuellToolVersion)
 			{
                 	LogHelper.info("Rerunning the update because the duell tool version changed.");
-					CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell"].concat(Arguments.getRawArguments()), {});
+					CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell"].concat(Arguments.getRawArguments()), {});
 			}
     	}
     	catch(error : Dynamic)
