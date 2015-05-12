@@ -35,7 +35,7 @@ import sys.FileSystem;
 
 import haxe.io.Path;
 
-class DuellLibReference 
+class DuellLibReference
 {
 	public var name : String;
 	public var gitPath : String;
@@ -59,8 +59,8 @@ class DuellLibReference
 
         var path = Path.join([duellConfigJSON.localLibraryPath, destinationPath]);
 
-
-        /// checkout 
+		LogHelper.println("Checking out library in directory : [" + destinationPath + "]");
+        /// checkout
         if (FileSystem.exists(path))
         {
             if (GitHelper.pull(path) != 0 )

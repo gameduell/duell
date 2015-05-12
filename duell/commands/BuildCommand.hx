@@ -124,13 +124,13 @@ class BuildCommand implements IGDCommand
 	    	LogHelper.info("\x1b[2m------");
 	    	LogHelper.info("end");
 	    	LogHelper.info("------\x1b[0m");
-    	} 
+    	}
     	catch(error : Dynamic)
     	{
     		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
     		LogHelper.error(error);
     	}
-	    
+
 	    return "success";
     }
 
@@ -166,7 +166,7 @@ class BuildCommand implements IGDCommand
 
                 if (update)
                 {
-                    CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell", "update"], {});
+                    CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell", "update"], {});
                     stopBuild = false;
                 }
     		}
@@ -214,9 +214,9 @@ class BuildCommand implements IGDCommand
                 return Arguments.isGeneralArgument(argument);
             });
 
-			CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell", "update"].concat(updateArguments), {});
+			CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell", "update"].concat(updateArguments), {});
 
-            CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell"].concat(Arguments.getRawArguments()), {});
+            CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell"].concat(Arguments.getRawArguments()), {});
 
             Sys.exit(0);
         }
@@ -237,7 +237,7 @@ class BuildCommand implements IGDCommand
 
 		parseXML(Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]));
 
-		
+
 		while (true)
 		{
 			var filtered = libList.filter(function (l) return !l.parsed);
@@ -385,11 +385,11 @@ class BuildCommand implements IGDCommand
 
 	private var currentXMLPath : Array<String> = []; /// used to resolve paths. Is used by all XML parsers (library and platform)
 	private function parseXML(path : String):Void
-	{ 
+	{
 		var xml = new Fast(Xml.parse(File.getContent(path)).firstElement());
 		currentXMLPath.push(Path.directory(path));
 
-		for (element in xml.elements) 
+		for (element in xml.elements)
 		{
 			switch element.name
 			{
@@ -444,7 +444,7 @@ class BuildCommand implements IGDCommand
 	private function resolvePath(path : String) : String
 	{
 		path = PathHelper.unescape(path);
-		
+
 		if (PathHelper.isPathRooted(path))
 			return path;
 
