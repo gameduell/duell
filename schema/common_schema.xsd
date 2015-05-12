@@ -149,6 +149,11 @@
         <!-- XSD 1.1 <xs:assert test="(@if and not(@unless)) or (not(@if) and @unless)"/> -->
     </xs:complexType>
 
+    <xs:attributeGroup name="Conditional">
+        <xs:attribute name="if" type="xs:string" use="optional"/>
+        <xs:attribute name="unless" type="xs:string" use="optional"/>
+    </xs:attributeGroup>
+
     <xs:simpleType name="NonEmptyString">
         <xs:restriction base="xs:string">
             <xs:minLength value="1"/>
