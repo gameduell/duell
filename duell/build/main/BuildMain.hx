@@ -52,13 +52,15 @@ class BuildMain
     {
         Arguments.validateArguments();
 
+        var build: PlatformBuild = null;
+
         for (define in Arguments.defines.keys())
         {
             Configuration.addParsingDefine(define);
         }
 		try
         {
-	 		var build = new PlatformBuild();
+	 	    build = new PlatformBuild();
             var pluginHelper : LibraryPluginHelper = new LibraryPluginHelper();
 
 	 		var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
@@ -146,7 +148,10 @@ class BuildMain
 		}
     	catch(error : Dynamic)
     	{
-            build.handleError();
+            if (build != null)
+            {
+                build.handleError();
+            }
     		LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
     		LogHelper.error(error);
     	}
