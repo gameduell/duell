@@ -74,7 +74,6 @@
 
     <xs:group name="ToolVersions">
         <xs:sequence>
-            <xs:element name="supported-haxe-version" minOccurs="0" maxOccurs="1" type="d:Version"/>
             <xs:element name="supported-duell-tool" minOccurs="0" maxOccurs="1" type="d:Version"/>
             <xs:element name="supported-build-plugin" minOccurs="0" maxOccurs="unbounded" type="d:VersionName"/>
         </xs:sequence>

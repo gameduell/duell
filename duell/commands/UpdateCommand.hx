@@ -93,9 +93,6 @@ class UpdateCommand implements IGDCommand
 
 	var isDifferentDuellToolVersion: Bool = false;
 
-	var haxeVersionRequested: SemVer = null;
-
-
     public function new()
     {
     }
@@ -326,9 +323,6 @@ class UpdateCommand implements IGDCommand
 
 	private function checkHaxeVersion()
 	{
-		if (haxeVersionRequested == null)
-			return;
-
 		LogHelper.info("checking version of " + LogHelper.BOLD + "haxe" + LogHelper.NORMAL);
 
 		var haxePath = Sys.getEnv("HAXEPATH");
@@ -344,14 +338,12 @@ class UpdateCommand implements IGDCommand
 
 		var haxeVersion = SemVer.ofString(versionString);
 
-		if (!SemVer.areCompatible(haxeVersion, haxeVersionRequested))
+		if (!SemVer.areCompatible(haxeVersion, SemVer.ofString(DuellDefines.HAXE_VERSION)))
 		{
-			throw "Requested Haxe Version " + haxeVersionRequested.toString() + " and current version " + haxeVersion.toString() + " are not compatible. Please install a haxe version that is compatible.";
+			throw "DuellTool Haxe Version " + DuellDefines.HAXE_VERSION + " and current version " + haxeVersion.toString() + " are not compatible. Please install a haxe version that is compatible.";
 		}
 
         finalToolList.push({name: "haxe", version: versionString});
-
-		LogHelper.info("  - using version " + LogHelper.BOLD + haxeVersion.toString() + LogHelper.NORMAL + " which is compatible with requested version " + LogHelper.BOLD + haxeVersionRequested.toString() + LogHelper.NORMAL);
 	}
 
 	private function printFinalResult(): Void
@@ -570,26 +562,6 @@ class UpdateCommand implements IGDCommand
 								neko.Lib.rethrow('Duell tool version conflict: ' + e);
 							}
 						}
-					}
-
-				case 'supported-haxe-version':
-					var version = element.att.version;
-					var semVer = SemVer.ofString(version);
-
-					if (haxeVersionRequested == null)
-					{
-						haxeVersionRequested = semVer;
-					}
-					else
-					{
-						if (!SemVer.areCompatible(haxeVersionRequested, semVer))
-						{
-							throw "Requested Haxe Versions " + haxeVersionRequested.toString() + " and " + semVer.toString() + " are not compatible.";
-						}
-
-
-        				haxeVersionRequested = SemVer.getMostSpecific(haxeVersionRequested, semVer);
-
 					}
 
 				case 'include':

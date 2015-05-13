@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <args>
     <documentation>
-  The Duell Tool is a command line tool for setting up, building and running applications on any platform. 
-  It can also be used for other general tasks within app development. It is made in a modular way via plugins, and each plugin is a separate from the tool itself. The tool merges the needed plugin on execution. 
+  The Duell Tool is a command line tool for setting up, building and running applications on any platform.
+  It can also be used for other general tasks within app development. It is made in a modular way via plugins, and each plugin is a separate from the tool itself. The tool merges the needed plugin on execution.
   The execution of the tool is always "duell" followed by a command such as "build" or "setup" and then a plugin name like "ios" or "emptyProject". For example, "duell build ios" will run the command "build" with the "ios" plugin. For a listing of the possible commands, look below. You can also pass additional parameters to execution by prefixing with "-", e.g. "duell build ios -verbose". Look below for a list of arguments that are general to any command or plugin.
     </documentation>
 	<arg name="-nocolor" type="void">
@@ -36,14 +36,14 @@
     </arg>
 
 	<command name="create" class="CreateCommand" hasPlugin="true">
-    	<documentation> 
+    	<documentation>
     		Can be used for creating a default project in current folder like: duell create emptyProject.
     	</documentation>
 	</command>
 
 	<command name="setup" class="EnvironmentSetupCommand" hasPlugin="true" >
     	<documentation>
-    		Runs a specified setup. This is usually and environment setup that needs to be run once for a specified platform. Such as, setup android to be able to build for android. 
+    		Runs a specified setup. This is usually and environment setup that needs to be run once for a specified platform. Such as, setup android to be able to build for android.
     	</documentation>
         <args>
             <arg name="-v" type="string" >
@@ -56,13 +56,13 @@
 	</command>
 
 	<command name="self_setup" class="ToolSetupCommand" hasPlugin="false" >
-    	<documentation> 
+    	<documentation>
             Basic setup for the duell tool. It checks/creates a folder .duell in your home folder. Inside that folder a config file is created and the tool itself is downloaded, installed into haxelib and 'duell' command installed into the command line environment.
     	</documentation>
 	</command>
 
     <command name="update" class="UpdateCommand" hasPlugin="false" >
-        <documentation> 
+        <documentation>
             This command will check all the dependencies of the current project in the current directory and update accordingly. This command will run automatically on the build command every time you change project and every 4 hours.
         </documentation>
 
@@ -168,57 +168,53 @@
             </elem>
 
             <elem name="main">
-                Use this to set the class name of the Main Class in your application. E.g.: &lt;main name="super.game.Main" /&gt;. 
+                Use this to set the class name of the Main Class in your application. E.g.: &lt;main name="super.game.Main" /&gt;.
             </elem>
 
             <elem name="output">
-                Use this to set where the output of your build will go to. By default this is "Export". E.g.: &lt;output path="Some/Folder" /&gt;. 
+                Use this to set where the output of your build will go to. By default this is "Export". E.g.: &lt;output path="Some/Folder" /&gt;.
             </elem>
 
             <elem name="supported-build-plugin">
-                Use this to specify that your project or library requires/supports a version of a build plugin. E.g.: &lt;supported-build-plugin name="ios" version="1.5.0+" /&gt;. 
+                Use this to specify that your project or library requires/supports a version of a build plugin. E.g.: &lt;supported-build-plugin name="ios" version="1.5.0+" /&gt;.
             </elem>
 
             <elem name="supported-duell-tool">
-                Use this to specify that your project or library requires/supports a version of a duell tool. E.g.: &lt;supported-duell-tool version="1.5.0+" /&gt;. 
-            </elem>
-
-            <elem name="supported-haxe-version">
-                Use this to specify that your project or library requires/supports a version of the haxe compiler. E.g.: &lt;supported-haxe-version version="3.1.0+" /&gt;. 
+                Use this to specify that your project or library requires/supports a version of a duell tool. E.g.: &lt;supported-duell-tool version="1.5.0+" /&gt;.
             </elem>
 
             <elem name="source">
-                Use this to set additional folders as Source folders for your build. By default the path where the configuration file is automatically set as a class path, so you probably only need to use this when you have a unstandard setup. E.g.: &lt;source path="Some/Folder" /&gt;. 
+                Use this to set additional folders as Source folders for your build. By default the path where the configuration file is automatically set as a class path, so you probably only need to use this when you have a unstandard setup. E.g.: &lt;source path="Some/Folder" /&gt;.
             </elem>
 
             <elem name="haxe-compile-arg">
-                Use this tag to add additional arguments to the haxe compilation. E.g.: &lt;haxe-compile-arg value="--no-opt" /&gt;. 
+                Use this tag to add additional arguments to the haxe compilation. E.g.: &lt;haxe-compile-arg value="--no-opt" /&gt;.
             </elem>
 
             <elem name="platform-config">
-                Inside this tag there will be configurations specific to each platform. To learn about them use "duell build 'platform' -help" for a complete list. Under this tag there will be one node for each platform and then under that node will be the configurations specific to the platform. E.g.: &lt;platform-config&gt; &lt;ios&gt; &lt;icon path="Iconys/ios" /&gt; &lt;/ios&gt; &lt;/platform-config&gt;. 
+                Inside this tag there will be configurations specific to each platform. To learn about them use "duell build 'platform' -help" for a complete list. Under this tag there will be one node for each platform and then under that node will be the configurations specific to the platform. E.g.: &lt;platform-config&gt; &lt;ios&gt; &lt;icon path="Iconys/ios" /&gt; &lt;/ios&gt; &lt;/platform-config&gt;.
             </elem>
 
             <elem name="library-config">
-                Inside this tag there will be configurations specific to a library. To learn about them consult the library documentation which is not currently integrated in the tool. Under this tag there will be one node for each library and then under that node will be the configurations specific to the library. E.g.: &lt;library-config&gt; &lt;opengl&gt; &lt;depthbuffer value="true" /&gt; &lt;/opengl&gt; &lt;/library-config&gt;. 
+                Inside this tag there will be configurations specific to a library. To learn about them consult the library documentation which is not currently integrated in the tool. Under this tag there will be one node for each library and then under that node will be the configurations specific to the library. E.g.: &lt;library-config&gt; &lt;opengl&gt; &lt;depthbuffer value="true" /&gt; &lt;/opengl&gt; &lt;/library-config&gt;.
             </elem>
 
             <elem name="haxelib">
-                Use this to use a haxelib. If its not installed, you will be prompted if you want to. You can also optionally request a specific version. E.g.: &lt;haxelib name="format" version="1.0.0" /&gt;. 
+                Use this to use a haxelib. If its not installed, you will be prompted if you want to. You can also optionally request a specific version. E.g.: &lt;haxelib name="format" version="1.0.0" /&gt;.
             </elem>
 
             <elem name="duelllib">
-                Use this to use a duelllib. If its not installed, you will be prompted if you want to. You can also optionally request a specific version. For an explanation of the versioning system check https://confluence.gameduell.de/display/SGF/Duell+Tool+versioning . E.g.: &lt;duelllib name="opengl" version="1.*.*" /&gt;. 
+                Use this to use a duelllib. If its not installed, you will be prompted if you want to. You can also optionally request a specific version. For an explanation of the versioning system check https://confluence.gameduell.de/display/SGF/Duell+Tool+versioning . E.g.: &lt;duelllib name="opengl" version="1.*.*" /&gt;.
             </elem>
-            
+
             <elem name="ndll">
-                Use this flag to link against a native library. This is usually used inside libraries. E.g.: &lt;ndll name=&quot;openglcontextandroid&quot; build-file-path=&quot;project/Build.xml&quot; bin-path=&quot;ndll&quot; /&gt; . 
+                Use this flag to link against a native library. This is usually used inside libraries. E.g.: &lt;ndll name=&quot;openglcontextandroid&quot; build-file-path=&quot;project/Build.xml&quot; bin-path=&quot;ndll&quot; /&gt; .
             </elem>
-            
+
             <elem name="include">
-                Use this to include another configuration file. This is specially used in backends of libraries to have specific configurations for a platform.  E.g.: &lt;include path=&quot;backends/openglcontext_android/duell_library.xml&quot;  /&gt;. 
+                Use this to include another configuration file. This is specially used in backends of libraries to have specific configurations for a platform.  E.g.: &lt;include path=&quot;backends/openglcontext_android/duell_library.xml&quot;  /&gt;.
             </elem>
-            
+
         </configuration>
     </command>
 </args>
