@@ -68,8 +68,10 @@ class DuellLibListHelper
         }
 
         var repoListIndex = 1;
-
-        for(repoURL in duellConfig.repoListURLs)
+        /// reversed to give priority to the ones which are first on the list
+        var reverseRepoListduellConfig = duellConfig.repoListURLs.copy();
+        reverseRepoListduellConfig.reverse();
+        for(repoURL in reverseRepoListduellConfig)
         {
             var path = libListFolder + "/" + repoListIndex;
             if(GitHelper.clone(repoURL, path) != 0)
