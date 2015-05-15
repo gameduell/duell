@@ -1,5 +1,7 @@
 ## Description
 
+[![Join the chat at https://gitter.im/gameduell/duell](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/gameduell/duell?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 The Duell Tool is a command line tool for setting up, building and running applications on any platform.
 It can also be used for other general tasks within app development. It is made in a modular way via plugins,
 and each plugin is separate from the tool itself. The tool merges the needed plugin on execution.
