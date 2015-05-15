@@ -111,7 +111,14 @@ expect {
 		exp_continue
 	}
 
-	\"Do you wish to create a custom hardware profile\" {
+	\"Duell Android emulators\" {
+
+		send \"y\r\"
+
+		exp_continue
+	}
+
+    \"Do you wish to create a custom hardware profile\" {
 
 		send \"\r\"
 
