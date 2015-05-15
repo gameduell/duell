@@ -24,7 +24,7 @@ expect eof
 "
 
 expect -c "
-spawn haxelib run duell setup mac -verbose -v 1.0.0
+spawn haxelib run duell setup mac -verbose -v 2.0.0
 set timeout -1
 
 expect \"A library for setup of mac environment is not currently installed.\"
@@ -33,7 +33,7 @@ send \"y\r\"
 expect eof
 "
 expect -c "
-spawn haxelib run duell setup flash -verbose -v 1.0.0
+spawn haxelib run duell setup flash -verbose -v 2.0.0
 set timeout -1
 
 expect \"A library for setup of flash environment is not currently installed.\"
@@ -71,7 +71,7 @@ expect {
 
 
 expect -c "
-spawn haxelib run duell setup android -verbose -v 3.0.0
+spawn haxelib run duell setup android -verbose -v 4.0.0
 
 set timeout -1
 
