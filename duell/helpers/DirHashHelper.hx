@@ -36,7 +36,7 @@ using duell.helpers.HashHelper;
 class DirHashHelper
 {
 
-	public static function getHashOfDirectory(path: String): Int
+	public static function getHashOfDirectory(path: String, filters: Array<EReg> = null): Int
 	{
 		var process: DuellProcess;
 
@@ -54,7 +54,7 @@ class DirHashHelper
 		}
 		else
 		{
-			process = new DuellProcess(null, "ls", ["-Rl", path],
+			process = new DuellProcess(null, "ls", ["-Rlt", path],
 			{
 				systemCommand : true,
 				block : true,
@@ -63,6 +63,24 @@ class DirHashHelper
 			});
 		}
 
-		return process.getCompleteStdout().toString().getFnv32IntFromString();
+		var output = process.getCompleteStdout().toString();
+
+		/// splits by newline
+		var outputSplit = output.split("\n");
+
+		if (filters == null)
+			filters = [];
+
+		var outputSplitFiltered = outputSplit.filter(function(s) {
+			for (filter in filters)
+			{
+				if (filter.match(s))
+					return false;
+			}
+			return true;
+		});
+
+		output = outputSplitFiltered.join("\n");
+		return output.getFnv32IntFromString();
 	}
 }

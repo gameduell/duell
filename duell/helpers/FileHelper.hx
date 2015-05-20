@@ -32,6 +32,10 @@ import sys.FileSystem;
 import haxe.io.Path;
 import sys.io.File;
 
+import duell.helpers.PlatformHelper;
+
+import duell.helpers.CommandHelper;
+
 class FileHelper
 {
 	private static var binaryExtensions = [ "jpg", "jpeg", "png", "exe", "gif", "ini", "zip", "tar", "gz", "fla", "swf" ];
@@ -158,7 +162,7 @@ class FileHelper
 
 	}
 
-	public static function recursiveCopyFiles(source:String, destination:String, onlyIfNewer: Bool = true)
+	public static function recursiveCopyFiles(source:String, destination:String, onlyIfNewer: Bool = true, preserveDate: Bool = true)
 	{
 		PathHelper.mkdir(destination);
 
@@ -188,11 +192,17 @@ class FileHelper
 				{
 					if (!onlyIfNewer || FileHelper.isNewer(itemSource, itemDestination))
 					{
-						File.copy(itemSource, itemDestination);
+						if (PlatformHelper.hostPlatform != Platform.WINDOWS)
+						{
+							CommandHelper.runCommand("", "cp", ["-p", itemSource, itemDestination], {systemCommand: true});
+						}
+						else
+						{
+							CommandHelper.runCommand("", "robocopy", [itemSource, itemDestination], {systemCommand: true});
+						}
 					}
 				}
 			}
 		}
-
 	}
 }
