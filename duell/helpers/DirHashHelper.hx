@@ -32,6 +32,7 @@ import duell.helpers.PlatformHelper;
 import haxe.io.Path;
 
 using duell.helpers.HashHelper;
+using StringTools;
 
 class DirHashHelper
 {
@@ -44,7 +45,7 @@ class DirHashHelper
 		{
 		    var duellLibPath: String = DuellLib.getDuellLib("duell").getPath();
 			// ls binary is bundled for windows
-			process = new DuellProcess(Path.join([duellLibPath, "bin"]), "ls.exe", ["-Rl", path],
+			process = new DuellProcess(Path.join([duellLibPath, "bin"]), "ls.exe", ["-lp", path],
 			{
 				systemCommand : true,
 				block : true,
@@ -68,6 +69,18 @@ class DirHashHelper
 		/// splits by newline
 		var outputSplit = output.split("\n");
 
+		/// remove total line
+		outputSplit.shift();
+
+		/// remove empty newlines
+		outputSplit.filter(function(s) return s != "");
+
+		/// cleanup
+		outputSplit.map(function(s) return s.trim());
+
+		/// remove directories
+		outputSplit.filter(function(s) return s.charAt(s.length - 1) != "/");
+
 		if (filters == null)
 			filters = [];
 
@@ -81,6 +94,7 @@ class DirHashHelper
 		});
 
 		output = outputSplitFiltered.join("\n");
+
 		return output.getFnv32IntFromString();
 	}
 }
