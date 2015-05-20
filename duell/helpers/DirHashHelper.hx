@@ -73,13 +73,13 @@ class DirHashHelper
 		outputSplit.shift();
 
 		/// remove empty newlines
-		outputSplit.filter(function(s) return s != "");
+		outputSplit = outputSplit.filter(function(s) return s != "");
 
 		/// cleanup
-		outputSplit.map(function(s) return s.trim());
+		outputSplit = outputSplit.map(function(s) return s.trim());
 
 		/// remove directories
-		outputSplit.filter(function(s) return s.charAt(s.length - 1) != "/");
+		outputSplit = outputSplit.filter(function(s) return s.charAt(s.length - 1) != "/");
 
 		if (filters == null)
 			filters = [];
