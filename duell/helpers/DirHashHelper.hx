@@ -55,7 +55,7 @@ class DirHashHelper
 		}
 		else
 		{
-			process = new DuellProcess(null, "ls", ["-Rlt", path],
+			process = new DuellProcess(null, "ls", ["-lp", path],
 			{
 				systemCommand : true,
 				block : true,
