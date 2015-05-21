@@ -125,9 +125,11 @@ class CommandHelper
 		{
 			result = runCommand ("", "/usr/bin/open", [url]);
 		}
-		else
+		else if (PlatformHelper.hostPlatform == Platform.LINUX)
 		{
-			result = runCommand ("", "/usr/bin/xdg-open", [url, "&"]);
+			result = runCommand ("", "/usr/bin/xdg-open", [url]);
+		} else {
+			throw "Unknown platform, cannot start browser";
 		}
 		return result;
 	}
