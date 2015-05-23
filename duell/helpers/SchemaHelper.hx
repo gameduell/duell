@@ -29,6 +29,8 @@ package duell.helpers;
 import sys.io.File;
 import sys.FileSystem;
 import haxe.io.Path;
+import duell.helpers.PlatformHelper;
+import duell.helpers.LogHelper;
 
 class SchemaHelper
 {
@@ -48,6 +50,12 @@ class SchemaHelper
 
     public static function validate(pathXml: String): Void
     {
+        if (PlatformHelper.hostPlatform == Platform.WINDOWS)
+        {
+            LogHelper.info("Currently XML Validation is disabled on Windows pending a bug fix.");
+            return;
+        }
+
         var duellPath: String = DuellLibHelper.getPath("duell");
         var toolPath: String = Path.join([duellPath, "bin"]);
         var schemaPath: String = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), SCHEMA_FILE]);
