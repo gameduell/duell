@@ -162,43 +162,52 @@ class FileHelper
 
 	}
 
-	public static function recursiveCopyFiles(source:String, destination:String, onlyIfNewer: Bool = true, preserveDate: Bool = true)
+	public static function recursiveCopyFiles(source:String, destination:String, onlyIfNewer: Bool = true, purgeDestination: Bool = false)
 	{
 		PathHelper.mkdir(destination);
 
-		var files:Array <String> = null;
-
-		try
+		if (PlatformHelper.hostPlatform == Platform.WINDOWS)
 		{
-			files = FileSystem.readDirectory(source);
+			var purgeArg = purgeDestination ? "/MIR": "/E";
+			CommandHelper.runCommand("", "robocopy", ["/DCOPY:DAT", "/COPY:DAT", "/NJH", "/NJS", purgeArg, source, destination], {systemCommand: true, nonErrorExitCodes: [0, 1]});
 		}
-		catch (e:Dynamic)
+		else
 		{
-			throw "Could not find source directory \"" + source + "\"";
-		}
-
-		for (file in files)
-		{
-			if (file != "." && file != "..")
+			if (purgeDestination)
 			{
-				var itemDestination:String = destination + "/" + file;
-				var itemSource:String = source + "/" + file;
+				CommandHelper.runCommand("", "cp", ["-pR", source, destination], {systemCommand: true});
+			}
+			else
+			{
+				/// not using cp because cp removes files
+				var files:Array <String> = null;
 
-				if (FileSystem.isDirectory(itemSource))
+				try
 				{
-					recursiveCopyFiles(itemSource, itemDestination, onlyIfNewer);
+					files = FileSystem.readDirectory(source);
 				}
-				else
+				catch (e:Dynamic)
 				{
-					if (!onlyIfNewer || FileHelper.isNewer(itemSource, itemDestination))
+					throw "Could not find source directory \"" + source + "\"";
+				}
+
+				for (file in files)
+				{
+					if (file != "." && file != "..")
 					{
-						if (PlatformHelper.hostPlatform != Platform.WINDOWS)
+						var itemDestination:String = destination + "/" + file;
+						var itemSource:String = source + "/" + file;
+
+						if (FileSystem.isDirectory(itemSource))
 						{
-							CommandHelper.runCommand("", "cp", ["-p", itemSource, itemDestination], {systemCommand: true});
+							recursiveCopyFiles(itemSource, itemDestination, onlyIfNewer);
 						}
 						else
 						{
-							CommandHelper.runCommand("", "robocopy", [itemSource, itemDestination], {systemCommand: true});
+							if (!onlyIfNewer || FileHelper.isNewer(itemSource, itemDestination))
+							{
+								CommandHelper.runCommand("", "cp", ["-p", itemSource, itemDestination], {systemCommand: true});
+							}
 						}
 					}
 				}

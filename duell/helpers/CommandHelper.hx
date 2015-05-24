@@ -42,7 +42,8 @@ typedef CommandOptions =
 	?logOnlyIfVerbose : Bool, /// defaults to true
 	?systemCommand : Bool, /// defaults to true
 	?exitOnError : Bool, /// defaults to true
-	?errorMessage : String /// defaults to nothing
+	?errorMessage : String, /// defaults to nothing
+	?nonErrorExitCodes : Array<Int> /// defaults to nothing
 }
 
 class CommandHelper
@@ -158,6 +159,7 @@ class CommandHelper
 		var logOnlyIfVerbose = options != null && options.logOnlyIfVerbose != null ? options.logOnlyIfVerbose : true;
 		var exitOnError = options != null && options.exitOnError != null ? options.exitOnError : true;
 		var errorMessage = options != null && options.errorMessage != null ? options.errorMessage : null;
+		var nonErrorExitCodes = options != null && options.nonErrorExitCodes != null ? options.nonErrorExitCodes : [0];
 
 		var message = " - Running command: " + LogHelper.BOLD + commandString + LogHelper.NORMAL + (path != null && path != "" ? " - in path: " + path : "");
 
@@ -202,7 +204,7 @@ class CommandHelper
 			result = Sys.command (command);
 		}
 
-		if (result != 0 && exitOnError)
+		if (nonErrorExitCodes.indexOf(result) == -1 && exitOnError)
 		{
 			var pathString = path != null && path != "" ? " - in path: " + path : "";
 			var additionalMessage = errorMessage != null ? " - Action was: " + errorMessage : "";
@@ -282,7 +284,7 @@ class CommandHelper
         var javaBinaryPath: String = switch (PlatformHelper.hostPlatform)
         {
             case Platform.MAC: Path.join([javaHome, "bin", "java"]);
-            // case Platform.WINDOWS: Path.join([javaHome, "bin", "java.exe"]);
+            case Platform.WINDOWS: Path.join([javaHome, "bin", "java.exe"]);
             case _: "java";
         };
 
