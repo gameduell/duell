@@ -18,16 +18,20 @@ execution by prefixing with "-", e.g. "duell build ios -verbose".
 ----------------------------------------------
 * Initial setup for github
 
-## Getting Started
+Getting Started
 ----------------------------------------------
-
 ### Install Duell
+
 In your command line run
 `$ haxelib install duell`
+
 ### Setup Duell
+
 to setup duell run this
 `$ haxelib run duell self_setup`
+
 ### Testing
+
 `$ mkdir emptyProject`
 
 `$ cd emptyProject`
