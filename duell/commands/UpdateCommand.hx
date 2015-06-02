@@ -26,6 +26,7 @@
 
 package duell.commands;
 
+import duell.helpers.ConnectionHelper;
 import duell.helpers.SchemaHelper;
 import duell.helpers.DuellConfigHelper;
 import duell.helpers.CommandHelper;
@@ -117,7 +118,8 @@ class UpdateCommand implements IGDCommand
 
     	printFinalResult();
 
-        if (duellFileHasDuellNamespace())
+		// schema validation requires internet connection
+        if (duellFileHasDuellNamespace() && ConnectionHelper.isOnline())
         {
             LogHelper.info("\x1b[2m------");
 

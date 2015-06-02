@@ -26,6 +26,7 @@
 
 package duell.commands;
 
+import duell.helpers.ConnectionHelper;
 import duell.helpers.SchemaHelper;
 import duell.helpers.DuellConfigHelper;
 import duell.helpers.CommandHelper;
@@ -111,9 +112,13 @@ class BuildCommand implements IGDCommand
 
 	    	LogHelper.println("");
 
-            validateSchemaIfNamespaceSet();
+			// schema validation requires internet connection
+			if (ConnectionHelper.isOnline())
+			{
+				validateSchemaIfNamespaceSet();
 
-            LogHelper.println("");
+				LogHelper.println("");
+			}
 
 	    	buildNewExecutableWithBuildLibAndDependencies();
     	}
