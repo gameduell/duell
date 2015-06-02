@@ -169,7 +169,7 @@ class FileHelper
 		if (PlatformHelper.hostPlatform == Platform.WINDOWS)
 		{
 			var purgeArg = purgeDestination ? "/MIR": "/E";
-			CommandHelper.runCommand("", "robocopy", ["/DCOPY:DAT", "/COPY:DAT", "/NJH", "/NJS", purgeArg, source, destination], {systemCommand: true, nonErrorExitCodes: [0, 1]});
+			CommandHelper.runCommand("", "robocopy", ["/COPY:DAT", "/NJH", "/NJS", purgeArg, source, destination], {systemCommand: true, nonErrorExitCodes: [0, 1, 3]});
 		}
 		else
 		{
