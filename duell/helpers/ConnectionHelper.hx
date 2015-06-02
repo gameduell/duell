@@ -33,6 +33,8 @@ import haxe.Http;
  */
 class ConnectionHelper
 {
+    private static inline var TIMEOUT: Int = 3;
+
     private static var online: Bool = true;
     private static var initialized: Bool = false;
 
@@ -44,12 +46,13 @@ class ConnectionHelper
             initialized = true;
 
             var h = new Http("http://www.google.com");
+            h.cnxTimeout = TIMEOUT;
             h.onError = function(e)
             {
                 online = false;
 
                 LogHelper.println("");
-                LogHelper.warn("Running duell tool in offline mode");
+                LogHelper.warn("Running duell tool in offline mode, this might cause undesired behaviors!");
                 LogHelper.println("");
             };
             h.request();
