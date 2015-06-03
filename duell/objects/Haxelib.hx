@@ -26,6 +26,7 @@
 
 package duell.objects;
 
+import duell.helpers.ConnectionHelper;
 import duell.helpers.LogHelper;
 import duell.objects.DuellProcess;
 
@@ -188,7 +189,7 @@ class Haxelib
     	{
     		selectVersion();
     	}
-    	else
+    	else if (ConnectionHelper.isOnline())
     	{
 	    	var args = ["install", name];
 	    	if (version != "")

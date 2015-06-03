@@ -74,6 +74,11 @@ class GitHelper
 
     static public function pull(destination : String) : Int
     {
+        if (!ConnectionHelper.isOnline())
+        {
+            return 0;
+        }
+
         var gitProcess = new DuellProcess(
                                         destination,
                                         "git", 
@@ -91,6 +96,11 @@ class GitHelper
 
     static public function updateNeeded(destination : String) : Bool
     {
+        if (!ConnectionHelper.isOnline())
+        {
+            return false;
+        }
+
         var result : String = "";
 
         var gitProcess = new DuellProcess(
@@ -159,6 +169,11 @@ class GitHelper
 
     static public function fetch(destination : String)
     {
+        if (!ConnectionHelper.isOnline())
+        {
+            return;
+        }
+
         new DuellProcess(
                             destination,
                             "git", 
