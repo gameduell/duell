@@ -68,7 +68,7 @@ class DuellLib
 
 	public function isInstalled(): Bool
 	{
-    	return DuellLibHelper.isPathValid(name);
+    	return DuellLibHelper.isInstalled(name);
 	}
 
 	public function isPathValid() : Bool

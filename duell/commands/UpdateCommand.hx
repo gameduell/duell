@@ -26,6 +26,9 @@
 
 package duell.commands;
 
+import duell.helpers.GitHelper;
+import duell.objects.DuellLibReference;
+import duell.helpers.DuellLibListHelper;
 import duell.helpers.ConnectionHelper;
 import duell.helpers.SchemaHelper;
 import duell.helpers.DuellConfigHelper;
@@ -106,6 +109,8 @@ class UpdateCommand implements IGDCommand
     	LogHelper.info("------------\x1b[0m");
     	LogHelper.info("\n");
 
+        synchronizeRemotes();
+
     	determineAndValidateDependenciesAndDefines();
 
     	LogHelper.info("\x1b[2m------");
@@ -154,6 +159,35 @@ class UpdateCommand implements IGDCommand
 		}
 
 	    return "success";
+    }
+
+    private function synchronizeRemotes()
+    {
+        var reflist: Map<String, DuellLibReference> = DuellLibListHelper.getDuellLibReferenceList();
+
+        for (key in reflist.keys())
+        {
+            var libRef: DuellLibReference = reflist.get(key);
+
+            var duellLib: DuellLib = DuellLib.getDuellLib(key);
+
+            if (duellLib.isInstalled() && duellLib.isPathValid())
+            {
+                var remotes: Map<String, String> = GitHelper.listRemotes(duellLib.getPath());
+                var originGitPath: String = remotes.get("origin");
+
+                if (originGitPath == null)
+                {
+                    originGitPath = "";
+                }
+
+                if (originGitPath != libRef.gitPath)
+                {
+                    GitHelper.setRemoteURL(duellLib.getPath(), "origin", libRef.gitPath);
+                    LogHelper.info('Changing remote path for origin from $originGitPath to ' + libRef.gitPath);
+                }
+            }
+        }
     }
 
 	private function determineAndValidateDependenciesAndDefines()

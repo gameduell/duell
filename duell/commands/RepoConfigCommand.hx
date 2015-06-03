@@ -105,7 +105,7 @@ class RepoConfigCommand implements IGDCommand
 
 			duellConfig.writeToConfig();
 
-			LogHelper.info("Removed all entries, but the default url");
+			LogHelper.info("Removed all entries, reset to default url");
 		}
 		else if (Arguments.isSet("-remove"))
 		{
@@ -118,22 +118,15 @@ class RepoConfigCommand implements IGDCommand
 			}
 			else
 			{
-				if (lastArgument != defaultRepoListURL)
-				{
-					if (duellConfig.repoListURLs.remove(lastArgument))
-					{
-						duellConfig.writeToConfig();
-						LogHelper.info("Succefully removed " + lastArgument);
-					}
-					else
-					{
-						LogHelper.info(lastArgument + " was not in the repo list");
-					}
-				}
-				else
-				{
-					LogHelper.info("It is not allowed to remove the default URL");
-				}
+                if (duellConfig.repoListURLs.remove(lastArgument))
+                {
+                    duellConfig.writeToConfig();
+                    LogHelper.info("Succefully removed " + lastArgument);
+                }
+                else
+                {
+                    LogHelper.info(lastArgument + " was not in the repo list");
+                }
 			}
 		}
 		else if (Arguments.isSet("-reverse"))
