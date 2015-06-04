@@ -14,7 +14,7 @@ execution by prefixing with "-", e.g. "duell build ios -verbose".
 
 
 ## Release Log
-0.0.1
+3.2.0
 ----------------------------------------------
 * Initial setup for github
 
