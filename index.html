@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Duell by gameduell</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Duell</h1>
+        <h2>The Duell Tool is a command line tool for setting up, building and running applications on any platform.</h2>
+        <a href="https://github.com/gameduell/duell" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h3>
+<a id="what-is-the-duell-tool" class="anchor" href="#what-is-the-duell-tool" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is the duell tool?</h3>
+
+<p>The Duell Tool is a command line tool for setting up, building and running applications on any platform. It can also be used for other general tasks within app development. It is made in a modular way via plugins, and each plugin is separate from the tool itself. The tool merges the needed plugin on execution.</p>
+
+<p>The execution of the tool is always “duell” followed by a command such as “build” or “setup” and then a plugin name like “ios” or “emptyProject”. For example, “duell build ios” will run the command “build” with the “ios” plugin. You can also pass additional parameters to execution by prefixing with “-“, e.g. “duell build ios -verbose”.</p>
+
+<h3>
+<a id="why-the-duell-tool-and-what-does-it-offer" class="anchor" href="#why-the-duell-tool-and-what-does-it-offer" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why the duell tool and what does it offer?</h3>
+
+<p>We made the tool for a handful of reasons:</p>
+
+<ol>
+<li><p>in haxe when you have local haxlib (Made by game developer) whenever there is a new release or patch developers need to update manually but the tool is doing it automatically, for example : when you run duell update the tool will go through all the libs you specified and check the version and install/update them (both haxe and duell libs) automatically. This way you can switch between projects and setups easily.</p></li>
+<li><p>with duell tools comes duell libraries, our libraries support backends, meaning you have one developer with ios exerience working on the ios side of things and having one as3 developer working on the flash backend in parallel in the same library without breaking each other's code , they just need to agree on an API and write a simple extern to define that.</p></li>
+</ol>
+
+<p>3.With the backends also we'll have game logic written 100% in haxe no #if something #end</p>
+
+<ol>
+<li><p>Creating Native Extension and link it with haxe code is easy to do using the tool</p></li>
+<li><p>Duell Library supports plugin system, for example if you have a library that require assets to be copied or somthing to be added to plist etc... you can write a plugin inside the library that can be executed in the build time to the work, this way you have a library responsible of itself and does not require extra setup from game developer</p></li>
+<li><p>the tool is able to build ndll and merge them in the final build which is missing in the mainstream building tool</p></li>
+<li><p>We need an Enterprise level tool which is modular, clean and easier to maintain</p></li>
+<li><p>Based on the plugin system it is easier to add a new build plugin for another target.</p></li>
+<li><p>the tool also is setting up the environment for you you don't have to install anything manually except for haxe.</p></li>
+<li><p>Duell libraries are very powerful, you can make a library do stuff at build time like packing atlases, copying assets, upload a binary somewhere etc... the library can be responsible of its own setup .</p></li>
+</ol>
+
+<h3>
+<a id="duell-tool-architecture" class="anchor" href="#duell-tool-architecture" aria-hidden="true"><span class="octicon octicon-link"></span></a>Duell tool architecture</h3>
+
+<p><img src="http://www.khaledgarbaya.net/wp-content/uploads/2015/06/Screen-Shot-2015-06-05-at-11.10.05.png" alt="Duell Architecture">
+We have 3 types of plugins that the tool can have:</p>
+
+<ul>
+<li>create plugins for sample projects</li>
+<li>setup plugins for setting up an environment, or anything that is one time thing.</li>
+<li>the build plugins.</li>
+</ul>
+
+<p>The build plugins are of course the most important thing. So let’s talk about those.</p>
+
+<h3>
+<a id="duell-environment" class="anchor" href="#duell-environment" aria-hidden="true"><span class="octicon octicon-link"></span></a>Duell Environment</h3>
+
+<p><img src="http://www.khaledgarbaya.net/wp-content/uploads/2015/06/Screen-Shot-2015-06-05-at-11.29.08-1024x767.png" alt="Duell environment">
+The important part here is the environment. That is what we think is the real value of what we’re sharing. The libraries are examples of how libraries can be implemented in this environment, and to show their independence and modularity.</p>
+
+<p>If you don’t like one of the libraries, you are absolutely free to not use it, but you can reuse the others as they are completely independent.
+For multiple engines, we can very easily cooperate and share modules between them.
+For example, if we make a SDL library, we pretty much replace Input and OpenGL, but we can still use the other libraries.
+We still share the other libraries they don’t depend at all on input or opengl. In the filesystem, if libraries are developed that only depend on the filesystem, they can be shared with both engines.
+An example of this is an atlas generation library, or a webp encoding library.
+This is what we believe can be achieved by doing things in a modular way.</p>
+
+<h3>
+<a id="how-does-it-work-" class="anchor" href="#how-does-it-work-" aria-hidden="true"><span class="octicon octicon-link"></span></a>How does it work ?</h3>
+
+<p><img src="http://www.khaledgarbaya.net/wp-content/uploads/2015/06/Screen-Shot-2015-06-05-at-11.10.27.png" alt="How Does it work">
+Here we have the general flow the happens when you build, and which components actual work on it.
+Starting from below, and considering an example command, like duell build ios, we have the duell tool, our command line applications
+Then the dependencies of the project are parsed, and we update their versions using git. Our versions are git tags, we have a system similar to cocoa pods to the people that have worked with it, where we can specify for example version 1.0.0+ and then any version that comes out above 1.0.0+ is automatically downloaded up to 2.0.0 which is supposed to be a breaking change. This is a rather complex topic so we’ll leave it at that for now.
+Then comes the selection of the plugin, in this case iOS ofc.
+And then we parse the configuration. The configuration looks very much like any build configuration file you are used to, but what is different is the way that is parsed.
+As you can see here, it’s not only the duell tool that parses the configuration. The plugin parses its own specific part, and very importantly, the libraries can also have specific configurations which are parsed there completely independently.
+From this xml configuration, we build a data model that allows us to actually build for the target platform.
+In the building part, the duell tool actually doesn’t do anything anymore, it’s all about the build plugin, and the libraries.</p>
+
+<h3>
+<a id="what-gameduell-open-sourced-" class="anchor" href="#what-gameduell-open-sourced-" aria-hidden="true"><span class="octicon octicon-link"></span></a>What Gameduell open sourced ?</h3>
+
+<p><img src="http://www.khaledgarbaya.net/wp-content/uploads/2015/06/Screen-Shot-2015-06-05-at-11.11.17.png" alt="Open source">
+We at <a href="http://www.gameduell.com/">Gameduell</a> are happy to announce that we open sourced some of our work to the community. Go to <a href="https://github.com/gameduell">https://github.com/gameduell</a>
+you can find all, the tool, the libraries and the plugins.</p>
+
+<h3>
+<a id="install-duell" class="anchor" href="#install-duell" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install Duell</h3>
+
+<p>In your command line run
+<code>$ haxelib install duell</code></p>
+
+<h3>
+<a id="setup-duell" class="anchor" href="#setup-duell" aria-hidden="true"><span class="octicon octicon-link"></span></a>Setup Duell</h3>
+
+<p>to setup duell run this
+<code>$ haxelib run duell self_setup</code></p>
+
+<h3>
+<a id="testing" class="anchor" href="#testing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Testing</h3>
+
+<p><code>$ mkdir emptyProject</code></p>
+
+<p><code>$ cd emptyProject</code></p>
+
+<p><code>$ duell create emptyProject</code></p>
+
+<p><code>$ duell build html5</code></p>
+
+<h3>
+<a id="duell-tool-is-buit-on-top-of-haxe" class="anchor" href="#duell-tool-is-buit-on-top-of-haxe" aria-hidden="true"><span class="octicon octicon-link"></span></a>Duell tool is buit on top of Haxe</h3>
+
+<blockquote>
+<p><a href="Haxe">http://haxe.org/</a> is an open source toolkit based on a modern, high level, strictly typed programming language, a cross-compiler, a complete cross-platform standard library and ways to access each platform’s native capabilities.
+<img src="http://www.khaledgarbaya.net/wp-content/uploads/2015/06/Screen-Shot-2015-06-05-at-11.38.41.png" alt="Haxe "></p>
+</blockquote>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/gameduell/duell/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/gameduell/duell/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/gameduell/duell"></a> is maintained by <a href="https://github.com/gameduell">gameduell</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+            <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-63808629-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
