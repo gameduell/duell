@@ -178,12 +178,13 @@ class SemVer
 		return left;
 	}
 
-    private static inline var START_OFFSET = 1000000000;
+    private static inline var START_OFFSET = 10000000;
     private static inline var OFFSET_REDUCTION = 100;
 	public static function compare(left : SemVer, right : SemVer) : Int
 	{
 	    var accumulator = function(ver : SemVer) : Int
 	    {
+
 	    	var output = 0;
 	    	var offset = START_OFFSET;
 
