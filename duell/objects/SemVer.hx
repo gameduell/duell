@@ -152,7 +152,7 @@ class SemVer
 			if (left.minor < right.minor)
 				return false;
 
-			if (left.patch < right.patch)
+			if (left.minor == right.minor && left.patch < right.patch)
 				return false;
 		}
 		else
@@ -160,7 +160,7 @@ class SemVer
 			if (right.minor < left.minor)
 				return false;
 
-			if (right.patch < left.patch)
+			if (left.minor == right.minor && right.patch < left.patch)
 				return false;
 		}
 
