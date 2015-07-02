@@ -96,7 +96,6 @@ class BuildMain
             if (Arguments.isSet("-testport"))
             {
                 Configuration.getData().TEST_PORT = Arguments.get("-testport");
-                trace('Set testport to no. ' + Configuration.getData().TEST_PORT);
             }
 
             if (Arguments.isSet("-fast"))
