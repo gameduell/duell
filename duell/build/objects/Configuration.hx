@@ -60,7 +60,9 @@ typedef ConfigurationData = {
 	NDLLS : Array<{NAME : String, BIN_PATH : String, BUILD_FILE_PATH : String, REGISTER_STATICS : Bool, DEBUG_SUFFIX : Bool}>,
 
 	/// functions to be used during template processing on the macro parameter
-	TEMPLATE_FUNCTIONS : Dynamic
+	TEMPLATE_FUNCTIONS : Dynamic,
+
+	TEST_PORT: Int
 };
 
 class Configuration
@@ -118,7 +120,9 @@ class Configuration
 						toJSON: function(_, s) return haxe.Json.stringify(s),
 						upper: function (_, s) return s.toUpperCase (),
 						replace: function (_, s, sub, by) return StringTools.replace(s, sub, by)
-					}
+					},
+
+					TEST_PORT: 8181
 		};
 	}
 }

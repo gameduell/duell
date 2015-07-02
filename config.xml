@@ -35,6 +35,12 @@
         </documentation>
     </arg>
 
+    <arg name="-testport" type="int" >
+        <documentation>
+            Define a port number to be used by TestHTTPLogger and Python server (doc to be updated)
+        </documentation>
+    </arg>
+
 	<command name="create" class="CreateCommand" hasPlugin="true">
     	<documentation>
     		Can be used for creating a default project in current folder like: duell create emptyProject.

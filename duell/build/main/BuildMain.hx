@@ -26,6 +26,7 @@
 
 package duell.build.main;
 
+import duell.build.objects.Configuration;
 import duell.helpers.PathHelper;
 import haxe.CallStack;
 
@@ -52,6 +53,7 @@ class BuildMain
     private static inline var SERIALIZED_CACHES_FILENAME = 'serialized_duelllib_caches.cache';
     public static function main()
     {
+        trace('moin main');
         Arguments.validateArguments();
 
         var build: PlatformBuild = null;
@@ -90,6 +92,12 @@ class BuildMain
                     }
 		        }
 	 		}
+
+            if (Arguments.isSet("-testport"))
+            {
+                Configuration.getData().TEST_PORT = Arguments.get("-testport");
+                trace('Set testport to no. ' + Configuration.getData().TEST_PORT);
+            }
 
             if (Arguments.isSet("-fast"))
             {

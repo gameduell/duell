@@ -214,6 +214,7 @@ class Arguments
 
 			if (argSpec == null)
 			{
+				trace('validateArguments');
 				Sys.println('Unknown argument "$argString"');
 				return false;
 			}
@@ -408,6 +409,7 @@ class Arguments
 		if (pluginArgumentSpecs != null && pluginArgumentSpecs.exists(argument))
 			return pluginArgumentSpecs.get(argument).set;
 
+		trace('isSet');
 		throw "Unknown argument " + argument;
 	}
 
@@ -422,6 +424,7 @@ class Arguments
 		if (pluginArgumentSpecs != null && pluginArgumentSpecs.exists(argument))
 			return pluginArgumentSpecs.get(argument).value;
 
+		trace('get');
 		throw "Unknown argument " + argument;
 	}
 
