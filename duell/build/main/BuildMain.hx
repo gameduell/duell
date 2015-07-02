@@ -53,7 +53,6 @@ class BuildMain
     private static inline var SERIALIZED_CACHES_FILENAME = 'serialized_duelllib_caches.cache';
     public static function main()
     {
-        trace('moin main');
         Arguments.validateArguments();
 
         var build: PlatformBuild = null;
