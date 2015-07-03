@@ -31,6 +31,7 @@
             <xs:element name="main" minOccurs="1" maxOccurs="1" type="d:Name"/>
 
             <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="include" type="d:Path"/>
                 <xs:element name="source" type="d:Path"/>
                 <xs:element name="haxelib" type="d:HaxelibVersionName"/>
                 <xs:element name="duelllib" type="d:VersionName"/>
