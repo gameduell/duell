@@ -42,8 +42,6 @@ class TestHelper
 	{
 		var duellLibPath: String = DuellLib.getDuellLib("duell").getPath();
 
-		trace('Port to python process: ' + port);
-
 		var testProcess: DuellProcess = new PythonProcess(
 										Path.join([duellLibPath, "bin"]),
 										["test_result_listener.py", "" + port], 
