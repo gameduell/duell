@@ -26,6 +26,7 @@
 
 package duell.build.main;
 
+import duell.build.objects.Configuration;
 import duell.helpers.PathHelper;
 import haxe.CallStack;
 
@@ -90,6 +91,11 @@ class BuildMain
                     }
 		        }
 	 		}
+
+            if (Arguments.isSet("-testport"))
+            {
+                Configuration.getData().TEST_PORT = Arguments.get("-testport");
+            }
 
             if (Arguments.isSet("-fast"))
             {

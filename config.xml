@@ -35,6 +35,12 @@
         </documentation>
     </arg>
 
+    <arg name="-testport" type="int" >
+        <documentation>
+            Define a port number to be used by unittest.TestHTTPLogger and Python test result listener.
+        </documentation>
+    </arg>
+
 	<command name="create" class="CreateCommand" hasPlugin="true">
     	<documentation>
     		Can be used for creating a default project in current folder like: duell create emptyProject.
