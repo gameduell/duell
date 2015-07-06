@@ -37,7 +37,7 @@
 
     <arg name="-testport" type="int" >
         <documentation>
-            Define a port number to be used by TestHTTPLogger and Python server (doc to be updated)
+            Define a port number to be used by unittest.TestHTTPLogger and Python test result listener.
         </documentation>
     </arg>
 
