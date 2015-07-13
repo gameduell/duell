@@ -30,7 +30,7 @@ class HashHelper
 {
     static public function getFnv32IntFromIntArray(array: Array<Int>): Int
     {
-        var hash:Int = 0;
+        var hash:Int = -2128831035;
 
         for (val in array)
         {
@@ -43,12 +43,35 @@ class HashHelper
 
     static public function getFnv32IntFromString(string: String): Int
     {
-        var hash:Int = 0;
+        var hash:Int = -2128831035;
 
-        for (i in 0...string.length)
+        var fourChars = 0;
+
+        var remainingChars = string.length % 4;
+        var fourLength = Std.int((string.length - remainingChars) / 4);
+
+        var val:Int = 0;
+
+        for (i in 0...fourLength)
         {
             hash *= 16777619;
-            hash ^= string.charCodeAt(i);
+
+            val ^= string.charCodeAt(i * 4);
+            val ^= string.charCodeAt(i * 4 + 1) << 8;
+            val ^= string.charCodeAt(i * 4 + 2) << 8;
+            val ^= string.charCodeAt(i * 4 + 3) << 8;
+
+            hash ^= val;
+        }
+
+        if (remainingChars > 0)
+        {
+            while (remainingChars > 0)
+            {
+                val ^= string.charCodeAt(string.length - remainingChars) << remainingChars * 8;
+                remainingChars--;
+            }
+            hash ^= val;
         }
 
         return hash;
