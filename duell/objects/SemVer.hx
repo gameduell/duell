@@ -30,23 +30,19 @@ import duell.helpers.LogHelper;
 
 using Std;
 
-enum Preview {
-	ALPHA;
-	BETA;
-	RC;	
-}
-
-class SemVer 
+class SemVer
 {
 	public var major (default, null) : Int;
-	public var minor (default, null) : Int;	
+	public var minor (default, null) : Int;
 	public var patch (default, null) : Int;
 	public var plus (default, null) : Bool;
-	public function new(major, minor, patch, plus) 
+	public var rc (default, null) : Bool;
+	public function new(major, minor, patch, rc, plus)
 	{
 		this.major = major;
 		this.minor = minor;
 		this.patch = patch;
+		this.rc = rc;
 		this.plus = plus;
 
 		if (this.major == null)
@@ -70,8 +66,8 @@ class SemVer
 			LogHelper.info("asterisks on versions as been deprecated. Please use 1.0.0+ instead of 1.*.*");
 		}
 	}
-	
-	public function toString():String 
+
+	public function toString():String
 	{
 		var ret = '';
 
@@ -81,6 +77,11 @@ class SemVer
 
 		ret += '.$patch';
 
+		if (rc)
+		{
+			ret += '-rc';
+		}
+
 		if (plus)
 		{
 			ret += '+';
@@ -88,11 +89,11 @@ class SemVer
 
 		return ret;
 	}
-	static var parse = ~/^([0-9|\*]+)\.([0-9|\*]+)\.([0-9|\*]+)(\+)?$/;
-	
+	static var parse = ~/^([0-9|\*]+)\.([0-9|\*]+)\.([0-9|\*]+)(\-rc)?(\+)?$/;
+
 	/// versions that do not respect the regexp will return null
-	/// versions that respect the regexp, but are incosistent, will throw an exception 
-	static public function ofString(s:String):SemVer 
+	/// versions that respect the regexp, but are incosistent, will throw an exception
+	static public function ofString(s:String):SemVer
 	{
 		if (s == null)
 			return null;
@@ -100,10 +101,11 @@ class SemVer
 		var major = null;
 		var minor = null;
 		var patch = null;
+		var rc = false;
 		var plus = false;
 
 		if (parse.match(s.toLowerCase()))
-		{ 
+		{
 			if (parse.matched(1) != "*")
 				major = parse.matched(1).parseInt();
 
@@ -113,7 +115,13 @@ class SemVer
 			if (parse.matched(3) != "*")
 				patch = parse.matched(3).parseInt();
 
-			plus = 	switch parse.matched(4) 
+			rc = switch parse.matched(4)
+							{
+								case v if (v == null): false;
+								case v: true;
+							}
+
+			plus = 	switch parse.matched(5)
 							{
 								case v if (v == null): false;
 								case v: true;
@@ -129,10 +137,11 @@ class SemVer
 			major,
 			minor,
 			patch,
+			rc,
 			plus
 		);
 	}
- 
+
 	public static function areCompatible(left : SemVer, right : SemVer) : Bool
 	{
 		/// this is always false, even if both are "plus"

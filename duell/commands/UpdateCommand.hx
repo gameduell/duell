@@ -261,7 +261,7 @@ class UpdateCommand implements IGDCommand
 
 						foundSomethingNotParsed = true;
 
-						var resolvedVersion = duellLibVersion.gitVers.solveVersion(duellLibVersion.versionRequested);
+						var resolvedVersion = duellLibVersion.gitVers.solveVersion(duellLibVersion.versionRequested, Arguments.isSet("-rc"), Arguments.get("-overridebranch"));
 
 						if (duellLibVersion.gitVers.needsToChangeVersion(resolvedVersion))
 						{
@@ -280,7 +280,7 @@ class UpdateCommand implements IGDCommand
 
 						duellLibVersion.versionState = VersionState.ParsedVersionUnchanged;
 
-						var resolvedVersion = duellLibVersion.gitVers.solveVersion(duellLibVersion.versionRequested);
+						var resolvedVersion = duellLibVersion.gitVers.solveVersion(duellLibVersion.versionRequested, Arguments.isSet("-rc"), Arguments.get("-overridebranch"));
 
 						if (duellLibVersion.gitVers.needsToChangeVersion(resolvedVersion))
 						{
@@ -313,7 +313,7 @@ class UpdateCommand implements IGDCommand
 		{
 			LogHelper.info("\n");
 			LogHelper.info("checking version of " + LogHelper.BOLD + pluginVersion.lib.name + LogHelper.NORMAL);
-			var resolvedVersion = pluginVersion.gitVers.solveVersion(pluginVersion.lib.version);
+			var resolvedVersion = pluginVersion.gitVers.solveVersion(pluginVersion.lib.version, Arguments.isSet("-rc"), Arguments.get("-overridebranch"));
 
 			if (pluginVersion.gitVers.needsToChangeVersion(resolvedVersion))
 			{
@@ -334,7 +334,7 @@ class UpdateCommand implements IGDCommand
 
 		LogHelper.info("\n");
 		LogHelper.info("checking version of " + LogHelper.BOLD + "duell tool" + LogHelper.NORMAL);
-		var resolvedVersion = duellToolGitVers.solveVersion(duellToolRequestedVersion);
+		var resolvedVersion = duellToolGitVers.solveVersion(duellToolRequestedVersion, Arguments.isSet("-rc"), Arguments.get("-overridebranch"));
 
 		if (duellToolGitVers.needsToChangeVersion(resolvedVersion))
 		{
