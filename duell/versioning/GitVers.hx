@@ -79,7 +79,7 @@ class GitVers
 	/// override version is for basically checking first that version, and then everything else
 	/// its useful for when you want to get all branches of a given name in multiple repos, for developing
 	/// a feature that is done across multiple libraries
-	public function resolveVersionConflict(requestedVersions: Array<String>, overrideVersion: String = null): String
+	public function resolveVersionConflict(requestedVersions: Array<String>, rc: Bool = false, overrideVersion: String = null): String
 	{
         /// check override
         if (overrideVersion != null)
@@ -130,7 +130,7 @@ class GitVers
         	}
         }
 
-        /// get the most specific version, 
+        /// get the most specific version,
         requestedSemanticVersions.sort(SemVer.compare);
 
         var bestVersion = requestedSemanticVersions[0];
@@ -143,8 +143,14 @@ class GitVers
         return bestVersion.toString();
 	}
 
-	public function solveVersion(version:String): String
+	public function solveVersion(version:String, rc: Bool = false, overrideVersion: String = null): String
 	{
+		if (overrideVersion != null)
+		{
+			if (branchList.indexOf(overrideVersion) != -1)
+				return overrideVersion;
+		}
+
     	if (branchList.indexOf(version) != -1)
     	{
     		return version;
@@ -159,7 +165,14 @@ class GitVers
 
         /// check existing versions
         var existingSemanticVersions = determineExistingSemanticVersions();
-        
+
+		/// filter rc version if the version requested is not rc and rc is not requested.
+		/// this means that if rc is requested but the version requested is rc, it won't filter
+		if (!semVer.rc && !rc)
+		{
+			existingSemanticVersions = existingSemanticVersions.filter(function (s) return !s.rc);
+		}
+
         existingSemanticVersions.sort(SemVer.compare);
 
         var usedVersion = null;
@@ -174,7 +187,7 @@ class GitVers
 
         if (usedVersion == null)
         {
-        	throw 'could not find any version that is compatible with ${semVer.toString()} in existing versions: ' + 
+        	throw 'could not find any version that is compatible with ${semVer.toString()} in existing versions: ' +
         		   existingSemanticVersions.map(function(s) return s.toString());
         }
         return usedVersion.toString();

@@ -75,7 +75,12 @@
         <args>
             <arg name="-overridebranch" type="string">
                 <documentation>
-                    This argument is used in the versioning. Check https://confluence.gameduell.de/display/SGF/Duell+Tool+versioning
+                    This argument is used in the versioning. If a repo contains a branch with the specified name, then that branch will be used regardless. This feature is useful if you are developing a feature accross multiple libraries, and want to provide an easy to change to that feature development.
+                </documentation>
+            </arg>
+            <arg name="-rc" type="void">
+                <documentation>
+                    This argument is used in the versioning. If you specify this argument, then tags that include the RC tag, such as 2.0.0-rc, will be considered.
                 </documentation>
             </arg>
         </args>
