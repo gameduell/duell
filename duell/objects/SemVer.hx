@@ -213,6 +213,15 @@ class SemVer
     	var leftAccum = accumulator(left);
    		var rightAccum = accumulator(right);
 
+		/// if two versions are the same and one is rc and the other one isn't
+		if (leftAccum == rightAccum && left.rc != right.rc)
+		{
+			if (left.rc)
+				leftAccum -= 1;
+			else
+				rightAccum -= 1;
+		}
+
     	return rightAccum - leftAccum;
 	}
 }
