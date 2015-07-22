@@ -151,7 +151,7 @@
     			</documentation>
     		</arg>
 
-    		<arg name="-publish" type="string" >
+    		<arg name="-publish" type="void" >
     			<documentation>
     				Works differently in each platform, but basically each platform plugin should output a releasable package. E.g. ios should sign the .app and compile in release without debugging information.
     			</documentation>

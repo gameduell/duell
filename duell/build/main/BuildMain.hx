@@ -97,6 +97,11 @@ class BuildMain
                 Configuration.getData().TEST_PORT = Arguments.get("-testport");
             }
 
+            if (Arguments.isSet("-publish"))
+            {
+                Configuration.addParsingDefine("publish");
+            }
+
             if (Arguments.isSet("-fast"))
             {
                 deserializeCaches();
