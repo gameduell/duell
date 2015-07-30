@@ -130,6 +130,13 @@ class GitVers
         	}
         }
 
+        var rcVersions = requestedSemanticVersions.filter(function(s:SemVer) return s.rc);
+
+        if (rcVersions.length > 0)
+        {
+            requestedSemanticVersions = rcVersions;
+        }
+
         /// get the most specific version,
         requestedSemanticVersions.sort(SemVer.compare);
 
