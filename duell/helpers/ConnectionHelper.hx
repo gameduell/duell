@@ -26,7 +26,21 @@
 
 package duell.helpers;
 
+import python.KwArgs;
+
 import haxe.Http;
+
+typedef URLOpenArgs =
+{
+    ?timeout: Int
+}
+
+@:pythonImport("urllib", "request")
+extern class Request
+{
+    public static function urlopen(url: String, ?kwArgs: KwArgs<URLOpenArgs>): Void;
+}
+
 
 /**
     @author jxav
@@ -45,17 +59,14 @@ class ConnectionHelper
         {
             initialized = true;
 
-            var h = new Http("http://www.google.com");
-            h.cnxTimeout = TIMEOUT;
-            h.onError = function(e)
-            {
-                online = false;
-
+            try {
+                Request.urlopen("http://www.google.com", {timeout: 1});
+            }
+            catch (error: Dynamic) {
                 LogHelper.println("");
                 LogHelper.warn("Running duell tool in offline mode, this might cause undesired behaviors!");
                 LogHelper.println("");
-            };
-            h.request();
+            }
         }
 
         return online;
