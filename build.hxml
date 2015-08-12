@@ -1,3 +1,3 @@
 -main duell.Duell
--neko run.n
+-python duell.py
 -resource config.xml@generalArguments

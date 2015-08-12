@@ -595,7 +595,7 @@ class UpdateCommand implements IGDCommand
 							}
 							catch (e: String)
 							{
-								neko.Lib.rethrow('Duell tool version conflict: ' + e);
+								throw('Duell tool version conflict: ' + e);
 							}
 						}
 					}
@@ -731,7 +731,7 @@ class UpdateCommand implements IGDCommand
 				}
 				catch (e: String)
 				{
-					neko.Lib.rethrow('Plugin ${buildLib.name} version conflict: ' + e);
+					throw 'Plugin ${buildLib.name} version conflict: ' + e;
 				}
 			}
 		}
