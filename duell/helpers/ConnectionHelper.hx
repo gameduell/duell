@@ -30,17 +30,7 @@ import python.KwArgs;
 
 import haxe.Http;
 
-typedef URLOpenArgs =
-{
-    ?timeout: Int
-}
-
-@:pythonImport("urllib", "request")
-extern class Request
-{
-    public static function urlopen(url: String, ?kwArgs: KwArgs<URLOpenArgs>): Void;
-}
-
+import python.urllib.Request;
 
 /**
     @author jxav
@@ -60,7 +50,7 @@ class ConnectionHelper
             initialized = true;
 
             try {
-                Request.urlopen("http://www.google.com", {timeout: 1});
+                Request.urlopen("http://www.google.com", {timeout: 5});
             }
             catch (error: Dynamic) {
                 LogHelper.println("");

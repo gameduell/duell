@@ -113,7 +113,7 @@ class Duell
         catch (error: Dynamic)
         {
             LogHelper.info(haxe.CallStack.exceptionStack().join("\n"));
-            LogHelper.exitWithFormattedError(error);
+    		LogHelper.exitWithFormattedError(Std.string(error));
         }
         return;
     }

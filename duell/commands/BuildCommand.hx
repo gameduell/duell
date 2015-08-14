@@ -31,6 +31,7 @@ import duell.helpers.SchemaHelper;
 import duell.helpers.DuellConfigHelper;
 import duell.helpers.CommandHelper;
 import haxe.CallStack;
+import duell.helpers.PythonImportHelper;
 import Sys;
 
 import duell.defines.DuellDefines;
@@ -269,14 +270,14 @@ class BuildCommand implements IGDCommand
     {
         var outputFolder = haxe.io.Path.join([duell.helpers.DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"]);
         var outputRunArguments = haxe.io.Path.join(['$outputFolder', 'run_' + platformName + '.args']);
-        var outputRun = haxe.io.Path.join(['$outputFolder', 'run_' + platformName + '.n']);
+        var outputRun = haxe.io.Path.join(['$outputFolder', 'run_' + platformName + '.py']);
 
         var buildArguments = new Array<String>();
 
         buildArguments.push("-main");
         buildArguments.push("duell.build.main.BuildMain");
 
-        buildArguments.push("-neko");
+        buildArguments.push("-python");
         buildArguments.push(outputRun);
 
         buildArguments.push("-cp");
@@ -329,9 +330,7 @@ class BuildCommand implements IGDCommand
         LogHelper.info("--------------------\x1b[0m");
         LogHelper.info("\n");
 
-        var result = CommandHelper.runNeko("", runArguments, {errorMessage: "running the plugin", exitOnError: false});
-        if (result != 0)
-            Sys.exit(result);
+        PythonImportHelper.runPythonFile(outputRun);
     }
 
     private function runFast(): Void

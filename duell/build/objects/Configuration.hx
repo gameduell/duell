@@ -111,7 +111,7 @@ class Configuration
 					SOURCES : [],
 					MAIN : "Main",
 					PLATFORM : PlatformConfiguration.getData(),
-					LIBRARY : [],
+					LIBRARY : {},
 
 					NDLLS : [],
 

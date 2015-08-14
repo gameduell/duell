@@ -30,13 +30,12 @@ import haxe.io.BytesOutput;
 import haxe.io.Output;
 import haxe.io.Eof;
 import haxe.io.Bytes;
-import python.KwArgs;
-import sys.io.Process;
 import sys.FileSystem;
 
 import duell.helpers.LogHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.PlatformHelper;
+import duell.helpers.ThreadHelper;
 
 typedef ProcessOptions =
 {
@@ -50,26 +49,6 @@ typedef ProcessOptions =
 	?errorMessage : String /// message printing when something goes wrong
 }
 
-@:pythonImport("threading", "Thread")
-extern class Thread
-{
-	public function new(group: Null<Int> = null, target: Void->Void): Void;
-	public function start(): Void;
-}
-
-@:pythonImport("threading", "Lock")
-extern class Lock
-{
-	public function acquire(blocking: Bool = true): Void;
-	public function release(): Void;
-}
-
-@:pythonImport("threading")
-extern class Threading
-{
-	public static function Lock(): Lock;
-}
-
 class DuellProcess
 {
 	/// STDIN TO POST STUFF
@@ -79,12 +58,12 @@ class DuellProcess
 	private var stdoutLineBuffer : BytesOutput;
 	private var stdout : BytesOutput;
 	private var totalStdout : BytesOutput;
-	private var stdoutMutex : Lock;
+	private var stdoutMutex : Mutex;
 
 	/// STDERR LISTENING
 	private var stderr : BytesOutput;
 	private var totalStderr : BytesOutput;
-	private var stderrMutex : Lock;
+	private var stderrMutex : Mutex;
 	private var stderrLineBuffer : BytesOutput;
 	private var waitingOnStderrMutex : Lock;
 	private var waitingOnStdoutMutex : Lock;
@@ -93,7 +72,7 @@ class DuellProcess
 	private var timeoutTicker : Bool;
 
 	/// EXIT VARS
-	private var exitCodeMutex : Lock;
+	private var exitCodeMutex : Mutex;
 	private var exitCodeCache : Null<Int> = null;
 	private var finished : Bool = false;
 	private var killed : Bool = false;
@@ -126,9 +105,9 @@ class DuellProcess
 		this.args = args;
 		this.path = path == null ? "" : path;
 
-		exitCodeMutex = Threading.Lock();
-		waitingOnStderrMutex = Threading.Lock();
-		waitingOnStdoutMutex = Threading.Lock();
+		exitCodeMutex = ThreadHelper.getMutex();
+		waitingOnStderrMutex = ThreadHelper.getMutex();
+		waitingOnStdoutMutex = ThreadHelper.getMutex();
 
 		systemCommand = options != null && options.systemCommand != null ? options.systemCommand : false;
 		loggingPrefix = options != null && options.loggingPrefix != null ? options.loggingPrefix : "";
@@ -224,7 +203,7 @@ class DuellProcess
 		totalStdout = new BytesOutput();
 		stdoutMutex = Threading.Lock();
 		stdoutLineBuffer = new BytesOutput();
-		var thread = new Thread(
+		ThreadHelper.runInAThread(
 						function ()
 						{
 							waitingOnStdoutMutex.acquire();
@@ -268,7 +247,6 @@ class DuellProcess
 							exitCodeBlocking();
 						}
 		);
-		thread.start();
 	}
 
 	private function startStdErrListener()
@@ -277,7 +255,7 @@ class DuellProcess
 		totalStderr = new BytesOutput();
 		stderrMutex = Threading.Lock();
 		stderrLineBuffer = new BytesOutput();
-		var thread = new Thread(
+		ThreadHelper.runInAThread(
 						function ()
 						{
 							waitingOnStderrMutex.acquire();
@@ -321,14 +299,13 @@ class DuellProcess
 							exitCodeBlocking();
 						}
 		);
-		thread.start();
 	}
 
 	private function startTimeoutListener()
 	{
 		if (timeout != 0)
 		{
-			var thread = new Thread(
+			ThreadHelper.runInAThread(
 							function ()
 							{
 								while(!finished) /// something else can finish
