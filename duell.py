@@ -1405,6 +1405,7 @@ class duell_commands_BuildCommand:
 		outputRunArguments = haxe_io_Path.join([("" + ("null" if outputFolder is None else outputFolder)), (("run_" + HxOverrides.stringOrNull(self.platformName)) + ".args")])
 		outputRun = haxe_io_Path.join([("" + ("null" if outputFolder is None else outputFolder)), (("run_" + HxOverrides.stringOrNull(self.platformName)) + ".py")])
 		buildArguments = list()
+		pythonLibPathsToBootstrap = list()
 		buildArguments.append("-main")
 		buildArguments.append("duell.build.main.BuildMain")
 		buildArguments.append("-python")
@@ -1415,6 +1416,9 @@ class duell_commands_BuildCommand:
 		buildArguments.append("-cp")
 		x1 = duell_helpers_DuellLibHelper.getPath(self.buildLib.name)
 		buildArguments.append(x1)
+		pyLibPath = haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath(self.buildLib.name), "pylib"])
+		if sys_FileSystem.exists(pyLibPath):
+			pythonLibPathsToBootstrap.append(pyLibPath)
 		_g = 0
 		_g1 = self.libList
 		while (_g < len(_g1)):
@@ -1427,8 +1431,9 @@ class duell_commands_BuildCommand:
 				buildArguments.append((("duell.build.plugin.library." + HxOverrides.stringOrNull(l.lib.name)) + ".LibraryXMLParser"))
 			if sys_FileSystem.exists(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath(l.lib.name), "duell", "build", "plugin", "library", l.lib.name, "LibraryBuild.hx"])):
 				buildArguments.append((("duell.build.plugin.library." + HxOverrides.stringOrNull(l.lib.name)) + ".LibraryBuild"))
-			if sys_FileSystem.exists(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath(l.lib.name), "bootstrap.py"])):
-				buildArguments.append((("duell.build.plugin.library." + HxOverrides.stringOrNull(l.lib.name)) + ".LibraryXMLParser"))
+			pyLibPath1 = haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath(l.lib.name), "pylib"])
+			if sys_FileSystem.exists(pyLibPath1):
+				pythonLibPathsToBootstrap.append(pyLibPath1)
 		buildArguments.append("-D")
 		buildArguments.append(("platform_" + HxOverrides.stringOrNull(self.platformName)))
 		buildArguments.append("-resource")
@@ -1444,6 +1449,18 @@ class duell_commands_BuildCommand:
 		fileOutput = sys_io_File.write(outputRunArguments,True)
 		fileOutput.writeString(serializer.toString())
 		fileOutput.close()
+		if (len(pythonLibPathsToBootstrap) > 0):
+			file = sys_io_File.getBytes(outputRun)
+			fileOutput1 = sys_io_File.write(outputRun,True)
+			fileOutput1.writeString("import os\n")
+			fileOutput1.writeString("import sys\n")
+			_g2 = 0
+			while (_g2 < len(pythonLibPathsToBootstrap)):
+				path = (pythonLibPathsToBootstrap[_g2] if _g2 >= 0 and _g2 < len(pythonLibPathsToBootstrap) else None)
+				_g2 = (_g2 + 1)
+				fileOutput1.writeString((("sys.path.insert(0, \"" + ("null" if path is None else path)) + "\")\n"))
+			fileOutput1.writeBytes(file,0,file.length)
+			fileOutput1.close()
 		duell_helpers_LogHelper.info("\n")
 		duell_helpers_LogHelper.info("\x1B[2m--------------------")
 		duell_helpers_LogHelper.info(("Building " + HxOverrides.stringOrNull(self.platformName)))
@@ -1458,12 +1475,12 @@ class duell_commands_BuildCommand:
 		outputRunArguments = haxe_io_Path.join([("" + ("null" if outputFolder is None else outputFolder)), (("run_" + HxOverrides.stringOrNull(self.platformName)) + ".args")])
 		if sys_FileSystem.exists(outputRun):
 			raise _HxException("Could not find a previous execution for this platform in order to run it fast.")
-		s = sys_io_File.read(outputRunArguments,True).readAll().toString()
+		s = sys_io_File.getContent(outputRunArguments)
 		runArguments = haxe_Unserializer(s).unserialize()
 		duell_helpers_LogHelper.info("Running fast with arguments:")
 		duell_helpers_LogHelper.info(" ".join([python_Boot.toString1(x1,'') for x1 in runArguments]))
 		runArguments.append("-fast")
-		result = duell_helpers_CommandHelper.runNeko("",runArguments,_hx_AnonObject({'errorMessage': "running the plugin", 'exitOnError': False}))
+		result = duell_helpers_CommandHelper.runCommand("",Reflect.field(python_lib_Sys,"executable"),runArguments,_hx_AnonObject({'errorMessage': "running the plugin", 'exitOnError': False}))
 		if (result != 0):
 			Sys.exit(result)
 
@@ -1601,11 +1618,11 @@ class duell_commands_CreateCommand:
 
 	def runPluginLib(self):
 		outputFolder = haxe_io_Path.join([duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"])
-		outputRun = haxe_io_Path.join([("" + ("null" if outputFolder is None else outputFolder)), "run.n"])
+		outputRun = haxe_io_Path.join([("" + ("null" if outputFolder is None else outputFolder)), "run.py"])
 		buildArguments = list()
 		buildArguments.append("-main")
 		buildArguments.append("duell.create.CreateMain")
-		buildArguments.append("-neko")
+		buildArguments.append("-python")
 		buildArguments.append(outputRun)
 		buildArguments.append("-cp")
 		x = duell_helpers_DuellLibHelper.getPath("duell")
@@ -1613,19 +1630,21 @@ class duell_commands_CreateCommand:
 		buildArguments.append("-cp")
 		x1 = duell_helpers_DuellLibHelper.getPath(self.setupLib.name)
 		buildArguments.append(x1)
-		buildArguments.append("-D")
-		buildArguments.append("plugin")
 		buildArguments.append("-resource")
 		x2 = (HxOverrides.stringOrNull(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath("duell"), "config.xml"])) + "@generalArguments")
 		buildArguments.append(x2)
 		duell_helpers_PathHelper.mkdir(outputFolder)
 		duell_helpers_CommandHelper.runHaxe("",buildArguments,_hx_AnonObject({'errorMessage': "building the plugin"}))
-		runArguments = [outputRun]
-		a = duell_objects_Arguments.getRawArguments()
-		runArguments = (runArguments + a)
-		result = duell_helpers_CommandHelper.runNeko("",runArguments,_hx_AnonObject({'errorMessage': "running the plugin", 'exitOnError': False}))
-		if (result != 0):
-			Sys.exit(result)
+		pyLibPath = haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath(self.setupLib.name), "pylib"])
+		if sys_FileSystem.exists(pyLibPath):
+			file = sys_io_File.getBytes(outputRun)
+			fileOutput = sys_io_File.write(outputRun,True)
+			fileOutput.writeString("import os\n")
+			fileOutput.writeString("import sys\n")
+			fileOutput.writeString((("sys.path.insert(0, \"" + ("null" if pyLibPath is None else pyLibPath)) + "\")\n"))
+			fileOutput.writeBytes(file,0,file.length)
+			fileOutput.close()
+		duell_helpers_PythonImportHelper.runPythonFile(outputRun)
 
 	@staticmethod
 	def _hx_empty_init(_hx_o):
@@ -1688,11 +1707,11 @@ class duell_commands_EnvironmentSetupCommand:
 	def buildNewEnvironmentWithSetupLib(self):
 		_g = self
 		outputFolder = haxe_io_Path.join([duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"])
-		outputRun = haxe_io_Path.join([("" + ("null" if outputFolder is None else outputFolder)), "run.n"])
+		outputRun = haxe_io_Path.join([("" + ("null" if outputFolder is None else outputFolder)), "run.py"])
 		buildArguments = list()
 		buildArguments.append("-main")
 		buildArguments.append("duell.setup.main.SetupMain")
-		buildArguments.append("-neko")
+		buildArguments.append("-python")
 		buildArguments.append(outputRun)
 		buildArguments.append("-cp")
 		x = duell_helpers_DuellLibHelper.getPath("duell")
@@ -1707,12 +1726,19 @@ class duell_commands_EnvironmentSetupCommand:
 		buildArguments.append(x2)
 		duell_helpers_PathHelper.mkdir(outputFolder)
 		duell_helpers_CommandHelper.runHaxe("",buildArguments,_hx_AnonObject({'errorMessage': "building the plugin"}))
+		pyLibPath = haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath(self.setupLib.name), "pylib"])
+		if sys_FileSystem.exists(pyLibPath):
+			file = sys_io_File.getBytes(outputRun)
+			fileOutput = sys_io_File.write(outputRun,True)
+			fileOutput.writeString("import os\n")
+			fileOutput.writeString("import sys\n")
+			fileOutput.writeString((("sys.path.insert(0, \"" + ("null" if pyLibPath is None else pyLibPath)) + "\")\n"))
+			fileOutput.writeBytes(file,0,file.length)
+			fileOutput.close()
 		runArguments = [outputRun]
 		a = duell_objects_Arguments.getRawArguments()
 		runArguments = (runArguments + a)
-		result = duell_helpers_CommandHelper.runNeko("",runArguments,_hx_AnonObject({'errorMessage': "running the plugin", 'exitOnError': False}))
-		if (result != 0):
-			Sys.exit(result)
+		duell_helpers_PythonImportHelper.runPythonFile(outputRun)
 		duell_helpers_LogHelper.println("Saving Setup Done Marker... ")
 		duellConfig = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
 		def _hx_local_0(s):
@@ -4363,8 +4389,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -9852,7 +9878,7 @@ _hx_classes["sys.FileSystem"] = sys_FileSystem
 
 class sys_io_File:
 	_hx_class_name = "sys.io.File"
-	_hx_statics = ["getContent", "read", "write", "copy"]
+	_hx_statics = ["getContent", "getBytes", "read", "write", "copy"]
 
 	@staticmethod
 	def getContent(path):
@@ -9860,6 +9886,14 @@ class sys_io_File:
 		content = f.read(-1)
 		f.close()
 		return content
+
+	@staticmethod
+	def getBytes(path):
+		f = python_lib_Builtins.open(path,"rb",-1)
+		size = f.read(-1)
+		b = haxe_io_Bytes.ofData(size)
+		f.close()
+		return b
 
 	@staticmethod
 	def read(path,binary = True):

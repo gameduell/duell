@@ -274,6 +274,8 @@ class BuildCommand implements IGDCommand
 
         var buildArguments = new Array<String>();
 
+        var pythonLibPathsToBootstrap = new Array<String>();
+
         buildArguments.push("-main");
         buildArguments.push("duell.build.main.BuildMain");
 
@@ -285,6 +287,12 @@ class BuildCommand implements IGDCommand
 
         buildArguments.push("-cp");
         buildArguments.push(DuellLibHelper.getPath(buildLib.name));
+
+        var pyLibPath = haxe.io.Path.join([DuellLibHelper.getPath(buildLib.name), "pylib"]);
+        if (FileSystem.exists(pyLibPath))
+        {
+            pythonLibPathsToBootstrap.push(pyLibPath);
+        }
 
         for (l in libList)
         {
@@ -299,6 +307,12 @@ class BuildCommand implements IGDCommand
             if (FileSystem.exists(haxe.io.Path.join([DuellLibHelper.getPath(l.lib.name), "duell", "build", "plugin", "library", l.lib.name, "LibraryBuild.hx"])))
             {
                 buildArguments.push('duell.build.plugin.library.${l.lib.name}.LibraryBuild');
+            }
+
+            var pyLibPath = haxe.io.Path.join([DuellLibHelper.getPath(l.lib.name), "pylib"]);
+            if (FileSystem.exists(pyLibPath))
+            {
+                pythonLibPathsToBootstrap.push(pyLibPath);
             }
         }
 
@@ -321,6 +335,24 @@ class BuildCommand implements IGDCommand
         fileOutput.writeString(serializer.toString());
         fileOutput.close();
 
+        /// bootstrap python libs
+        if (pythonLibPathsToBootstrap.length > 0)
+        {
+            var file = File.getBytes(outputRun);
+
+            var fileOutput = File.write(outputRun, true);
+            fileOutput.writeString("import os\n");
+            fileOutput.writeString("import sys\n");
+
+            for (path in pythonLibPathsToBootstrap)
+            {
+                fileOutput.writeString('sys.path.insert(0, "$path")\n');
+            }
+
+            fileOutput.writeBytes(file, 0, file.length);
+            fileOutput.close();
+        }
+
         LogHelper.info("\n");
         LogHelper.info("\x1b[2m--------------------");
         LogHelper.info("Building " + platformName);
@@ -342,7 +374,7 @@ class BuildCommand implements IGDCommand
             throw "Could not find a previous execution for this platform in order to run it fast.";
         }
 
-        var s = File.read(outputRunArguments, true).readAll().toString();
+        var s = File.getContent(outputRunArguments);
 
         var runArguments: Array<String> = new Unserializer(s).unserialize();
         LogHelper.info("Running fast with arguments:");
@@ -350,7 +382,7 @@ class BuildCommand implements IGDCommand
 
         runArguments.push("-fast");
 
-        var result = CommandHelper.runNeko("", runArguments, {errorMessage: "running the plugin", exitOnError: false});
+        var result = CommandHelper.runCommand("", untyped python.lib.Sys.executable, runArguments, {errorMessage: "running the plugin", exitOnError: false});
         if (result != 0)
             Sys.exit(result);
     }
