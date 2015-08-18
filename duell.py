@@ -1,14 +1,11 @@
-import bootstraplib
 from datetime import datetime as python_lib_datetime_Datetime
 import math as python_lib_Math
 import math as Math
 import os as python_lib_Os
-from urllib import request as duell_helpers_UrlLibRequest
 import re as python_lib_Re
-import importlib as duell_helpers_ImportLib
-from sys import path as duell_helpers_SysPath
 from threading import Thread as duell_helpers_Thread
 import threading as duell_helpers_Threading
+import importlib as python_ImportLib
 import builtins as python_lib_Builtins
 import functools as python_lib_Functools
 import inspect as python_lib_Inspect
@@ -27,6 +24,8 @@ from socket import socket as python_lib_net_Socket
 from os import path as python_lib_os_Path
 from subprocess import Popen as python_lib_subprocess_Popen
 import urllib.parse as python_lib_urllib_Parse
+from sys import path as python_sys_Path
+from urllib import request as python_urllib_Request
 
 
 def _hx_resources__():
@@ -1428,10 +1427,10 @@ class duell_commands_BuildCommand:
 				buildArguments.append((("duell.build.plugin.library." + HxOverrides.stringOrNull(l.lib.name)) + ".LibraryXMLParser"))
 			if sys_FileSystem.exists(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath(l.lib.name), "duell", "build", "plugin", "library", l.lib.name, "LibraryBuild.hx"])):
 				buildArguments.append((("duell.build.plugin.library." + HxOverrides.stringOrNull(l.lib.name)) + ".LibraryBuild"))
+			if sys_FileSystem.exists(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath(l.lib.name), "bootstrap.py"])):
+				buildArguments.append((("duell.build.plugin.library." + HxOverrides.stringOrNull(l.lib.name)) + ".LibraryXMLParser"))
 		buildArguments.append("-D")
 		buildArguments.append(("platform_" + HxOverrides.stringOrNull(self.platformName)))
-		buildArguments.append("-D")
-		buildArguments.append("plugin")
 		buildArguments.append("-resource")
 		x3 = (HxOverrides.stringOrNull(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath("duell"), "config.xml"])) + "@generalArguments")
 		buildArguments.append(x3)
@@ -1455,7 +1454,7 @@ class duell_commands_BuildCommand:
 	def runFast(self):
 		self.platformName = duell_objects_Arguments.getSelectedPlugin()
 		outputFolder = haxe_io_Path.join([duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"])
-		outputRun = haxe_io_Path.join([("" + ("null" if outputFolder is None else outputFolder)), (("run" + HxOverrides.stringOrNull(self.platformName)) + ".n")])
+		outputRun = haxe_io_Path.join([("" + ("null" if outputFolder is None else outputFolder)), (("run" + HxOverrides.stringOrNull(self.platformName)) + ".py")])
 		outputRunArguments = haxe_io_Path.join([("" + ("null" if outputFolder is None else outputFolder)), (("run_" + HxOverrides.stringOrNull(self.platformName)) + ".args")])
 		if sys_FileSystem.exists(outputRun):
 			raise _HxException("Could not find a previous execution for this platform in order to run it fast.")
@@ -2755,7 +2754,7 @@ class duell_helpers_ConnectionHelper:
 		if (not duell_helpers_ConnectionHelper.initialized):
 			duell_helpers_ConnectionHelper.initialized = True
 			try:
-				duell_helpers_UrlLibRequest.urlopen("http://www.google.com",**python__KwArgs_KwArgs_Impl_.fromT(_hx_AnonObject({'timeout': 1})))
+				python_urllib_Request.urlopen("http://www.google.com",**python__KwArgs_KwArgs_Impl_.fromT(_hx_AnonObject({'timeout': 5})))
 			except Exception as _hx_e:
 				_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
 				error = _hx_e1
@@ -3636,8 +3635,8 @@ class duell_helpers_PythonImportHelper:
 
 	@staticmethod
 	def runPythonFile(path):
-		duell_helpers_SysPath.append(haxe_io_Path.directory(path))
-		duell_helpers_ImportLib.import_module(haxe_io_Path.withoutExtension(haxe_io_Path.withoutDirectory(path)))
+		python_sys_Path.append(haxe_io_Path.directory(path))
+		python_ImportLib.import_module(haxe_io_Path.withoutExtension(haxe_io_Path.withoutDirectory(path)))
 duell_helpers_PythonImportHelper._hx_class = duell_helpers_PythonImportHelper
 _hx_classes["duell.helpers.PythonImportHelper"] = duell_helpers_PythonImportHelper
 
@@ -4364,8 +4363,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -4465,8 +4464,17 @@ class duell_helpers_ThreadHelper:
 
 	@staticmethod
 	def runInAThread(func):
-		thread = duell_helpers_Thread(None, func)
+		def _hx_local_0():
+			try:
+				func()
+			except Exception as _hx_e:
+				_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
+				e = _hx_e1
+				duell_helpers_LogHelper.exitWithFormattedError(("Error in thread:" + Std.string(e)))
+		thread = duell_helpers_Thread(None, _hx_local_0)
+		thread.daemon = True
 		thread.start()
+		return thread
 
 	@staticmethod
 	def getMutex():

@@ -305,9 +305,6 @@ class BuildCommand implements IGDCommand
         buildArguments.push("-D");
         buildArguments.push("platform_" + platformName);
 
-        buildArguments.push("-D");
-        buildArguments.push("plugin");
-
         buildArguments.push("-resource");
         buildArguments.push(Path.join([DuellLibHelper.getPath("duell"), Arguments.CONFIG_XML_FILE]) + "@generalArguments");
 
@@ -337,7 +334,7 @@ class BuildCommand implements IGDCommand
     {
         platformName = Arguments.getSelectedPlugin();
         var outputFolder = haxe.io.Path.join([duell.helpers.DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"]);
-        var outputRun = haxe.io.Path.join(['$outputFolder', 'run' + platformName + '.n']);
+        var outputRun = haxe.io.Path.join(['$outputFolder', 'run' + platformName + '.py']);
         var outputRunArguments = haxe.io.Path.join(['$outputFolder', 'run_' + platformName + '.args']);
 
         if (FileSystem.exists(outputRun))

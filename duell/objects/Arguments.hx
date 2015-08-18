@@ -123,12 +123,10 @@ class Arguments
 		/// parse arguments
         var args = Sys.args();
 
-        #if (!plugin)
         if(Sys.getEnv("HAXELIB_RUN") == "1")
         {
             Sys.setCwd(args.pop());
         }
-        #end
 
         rawArgs = args.copy();
 

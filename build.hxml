@@ -1,3 +1,8 @@
 -main duell.Duell
 -python duell.py
 -resource config.xml@generalArguments
+
+--next
+
+-main duell.Bootstrap
+-neko run.n
