@@ -41,6 +41,12 @@
         </documentation>
     </arg>
 
+    <command name="run" class="RunCommand" hasPlugin="true">
+        <documentation>
+            Compiles and runs an executable in any duelllib which implemented the run plugin step. Can be used to include, configure and run arbitrary external tools into the duell ecosystem: duell run myScript. myScript need to be a library which is accessible from a repo_list and has the duell.run.main.RunMain.hx file.
+        </documentation>
+    </command>
+
 	<command name="create" class="CreateCommand" hasPlugin="true">
     	<documentation>
     		Can be used for creating a default project in current folder like: duell create emptyProject.

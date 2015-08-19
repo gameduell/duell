@@ -214,7 +214,10 @@ class Arguments
 
 			if (argSpec == null)
 			{
-				Sys.println('Unknown argument "$argString"');
+                if (selectedCommand.name != "run")
+                {
+                    Sys.println('Unknown argument "$argString"');
+                }
 				return false;
 			}
 			else
