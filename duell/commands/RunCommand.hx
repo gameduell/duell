@@ -83,7 +83,7 @@ class RunCommand implements IGDCommand
     {
         if (!FileSystem.exists(DuellDefines.PROJECT_CONFIG_FILENAME) && !FileSystem.exists(DuellDefines.LIB_CONFIG_FILENAME))
         {
-            throw 'Running from a folder which not a project or a library';
+            throw 'Running from a folder which is not a project or a library';
         }
     }
 
@@ -94,7 +94,7 @@ class RunCommand implements IGDCommand
         var pluginNameCorrectnessCheck = ~/^[A-Za-z0-9]+$/;
 
         if (!pluginNameCorrectnessCheck.match(pluginName))
-            throw 'Unknown plugin $pluginName, should be composed of only letters or numbers, no spaces of other characters. Example: \"duell run myLib\" or \"duell run coverage\"';
+            throw 'Unknown plugin $pluginName, should be composed of only letters or numbers, no spaces of other characters. Example: \"duell run myLib\" or \"duell run coverageCheck\"';
 
         runLib = DuellLib.getDuellLib(pluginName);
 
@@ -134,7 +134,6 @@ class RunCommand implements IGDCommand
     private function buildNewRunExecutableWithRunLib()
     {
         var outputFolder = haxe.io.Path.join([duell.helpers.DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"]);
-        //var outputRunArguments = haxe.io.Path.join(['$outputFolder', 'run_' + pluginName + '.args']);
         var outputRun = haxe.io.Path.join(['$outputFolder', 'run_' + pluginName + '.n']);
 
         var buildArguments = new Array<String>();
@@ -160,15 +159,16 @@ class RunCommand implements IGDCommand
         buildArguments.push("-resource");
         buildArguments.push(Path.join([DuellLibHelper.getPath("duell"), Arguments.CONFIG_XML_FILE]) + "@generalArguments");
 
-        PathHelper.mkdir(outputFolder);
-
         CommandHelper.runHaxe("", buildArguments, {errorMessage: "building the plugin"});
 
         var runArguments = [outputRun];
         runArguments = runArguments.concat(Arguments.getRawArguments());
 
         var result = CommandHelper.runNeko("", runArguments, {errorMessage: "running the plugin", exitOnError: false});
+
         if (result != 0)
+        {
             Sys.exit(result);
+        }
     }
 }
