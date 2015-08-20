@@ -172,7 +172,17 @@ class Arguments
 			index = 2;
 
 			/// check if plugin is installed and parse its arguments
-			var duellLibName = "duell" + selectedCommand.name + plugin;
+            var duellLibName = "";
+
+            if (selectedCommand.name == "run")
+            {
+                duellLibName = plugin;
+            }
+            else
+            {
+                duellLibName =  "duell" + selectedCommand.name + plugin;
+            }
+
 			if (DuellLibHelper.isInstalled(duellLibName))
 			{
 				var path = DuellLibHelper.getPath(duellLibName);
