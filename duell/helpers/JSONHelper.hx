@@ -26,61 +26,14 @@
 
 package duell.helpers;
 
-class HashHelper
+class JSONHelper
 {
-    static public function getFnv32IntFromIntArray(array: Array<Int>): Int
+    static public function stringify(obj: Dynamic): String
     {
-        var hash:Int = -2128831035;
-
-        for (val in array)
-        {
-            hash *= 16777619;
-            #if python
-            hash %= 1073741824;
-            #end
-            hash ^= val;
-        }
-
-        return hash;
-    }
-
-    static public function getFnv32IntFromString(string: String): Int
-    {
-        var hash:Int = -2128831035;
-
-        var fourChars = 0;
-
-        var remainingChars = string.length % 4;
-        var fourLength = Std.int((string.length - remainingChars) / 4);
-
-        var val:Int = 0;
-
-        for (i in 0...fourLength)
-        {
-            hash *= 16777619;
-
-            #if python
-            hash %= 1073741824;
-            #end
-
-            val ^= string.charCodeAt(i * 4);
-            val ^= string.charCodeAt(i * 4 + 1) << 8;
-            val ^= string.charCodeAt(i * 4 + 2) << 8;
-            val ^= string.charCodeAt(i * 4 + 3) << 8;
-
-            hash ^= val;
-        }
-
-        if (remainingChars > 0)
-        {
-            while (remainingChars > 0)
-            {
-                val ^= string.charCodeAt(string.length - remainingChars) << remainingChars * 8;
-                remainingChars--;
-            }
-            hash ^= val;
-        }
-
-        return hash;
+		#if python
+		return python.lib.Json.dumps(obj, {sort_keys:true, def: function (o) return untyped o.__dict__});
+		#else
+		return haxe.Json.stringify(obj);
+		#end
     }
 }
