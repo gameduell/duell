@@ -83,4 +83,19 @@ class HashHelper
 
         return hash;
     }
+
+    static public function getMD5OfFile(path: String): String
+    {
+        python.Syntax.importModule("hashlib");
+        python.Syntax.pythonCode("
+		with open(path, 'rb') as fh:
+			m = hashlib.md5()
+			while True:
+				data = fh.read(8192)
+				if not data:
+					break
+				m.update(data)
+				return m.hexdigest()");
+        return null;
+    }
 }
