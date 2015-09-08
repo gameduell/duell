@@ -2,3 +2,5 @@ test
 *.pyc
 .idea/
 *.iml
+duell.py
+duell.py.generalArguments

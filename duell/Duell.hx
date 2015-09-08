@@ -38,6 +38,7 @@ import duell.helpers.AskHelper;
 import duell.helpers.DuellLibHelper;
 import duell.objects.DuellLib;
 
+import duell.commands.RunCommand;
 import duell.commands.BuildCommand;
 import duell.commands.UpdateCommand;
 import duell.commands.CreateCommand;
@@ -67,7 +68,9 @@ class Duell
         try {
 
             if (!Arguments.validateArguments())
+            {
                 return;
+            }
 
             /// check for missing initial setup
             var isMissingSelfSetup = false;
@@ -96,7 +99,10 @@ class Duell
                 setLocalJavaDistributionHome();
             }
 
-            printBanner();
+            if (Arguments.getSelectedCommand().name != "run")
+            {
+                printBanner();
+            }
 
             if (isMissingSelfSetup)
             {
@@ -106,9 +112,12 @@ class Duell
             {
                 var currentTime = Date.now().getTime();
                 Arguments.getSelectedCommand().commandHandler.execute();
-                LogHelper.println(' Time passed '+((Date.now().getTime()-currentTime)/1000)+' sec for command "${Arguments.getSelectedCommand().name}"');
-            }
 
+                if (Arguments.getSelectedCommand().name != "run")
+                {
+                    LogHelper.println(' Time passed '+((Date.now().getTime()-currentTime)/1000)+' sec for command "${Arguments.getSelectedCommand().name}"');
+                }
+            }
         }
         catch (error: Dynamic)
         {

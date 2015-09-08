@@ -28,49 +28,141 @@ package duell.objects;
 
 import duell.helpers.ThreadHelper;
 
-import python.http.server.SimpleHTTPRequestHandler;
-import python.socketserver.TCPServer;
+import haxe.io.Path;
 
 import python.Tuple;
+import python.Dict;
+import python.KwArgs;
+import python.flask.Flask;
+import python.flask.FlaskLib;
+import python.flask.Response;
+import python.flask.Request;
+import python.flask.ext.CORS;
+import python.flask.logging.Logger;
+import python.flask.Logging;
 
-import haxe.io.Path;
+import duell.objects.TimeoutChecker;
+import haxe.Constraints.Function;
+
 
 class Server
 {
-	private var path: String;
-	private var server: TCPServer;
-	private var thread: Thread;
-	public function new(path: String): Void
+	private var app: Flask;
+    private var timeoutChecker: TimeoutChecker;
+    private var path: String;
+
+	private var timeout: Int;
+	private var port: Int;
+	private var block: Bool;
+	private var thread: Dynamic;
+
+	public function new(path: String, timeout: Int = 60, port: Int = 3000, block: Bool = false): Void
 	{
 		this.path = path;
+		this.timeout = timeout;
+		this.port = port;
+		this.block = block;
 	}
 
 	public function shutdown(): Void
 	{
-		server.shutdown();
+		if (app != null)
+		{
+			python.urllib.Request.urlopen("http://localhost:" + port + "/killserver");
+		}
 	}
+
+    public function GET()
+    {
+        if (timeoutChecker != null) timeoutChecker.tick();
+        return '<?xml version="1.0"?>
+    	<!DOCTYPE cross-domain-policy SYSTEM "http://www.adobe.com/xml/dtds/cross-domain-policy.dtd">
+    	<cross-domain-policy>
+    	    <site-control permitted-cross-domain-policies="all"/>
+    	    <allow-access-from domain="*" secure="false"/>
+    	    <allow-http-request-headers-from domain="*" headers="*" secure="false"/>
+    	</cross-domain-policy>
+    	';
+	}
+
+    public function POST()
+    {
+        if (timeoutChecker != null) timeoutChecker.tick();
+        return "OK";
+    }
+    public function OPTIONS()
+    {
+        if (timeoutChecker != null) timeoutChecker.tick();
+        return "OK";
+    }
+
+    public function KILLSERVER()
+    {
+        if (timeoutChecker != null) timeoutChecker.tick();
+        var func: Void->Void = Request.environ.get('werkzeug.server.shutdown');
+        func();
+        return "OK";
+    }
+
+    public function GETFILE(filename: String)
+    {
+        if (timeoutChecker != null) timeoutChecker.tick();
+        return FlaskLib.send_from_directory(path, filename);
+    }
+
+    public function INDEXHTML()
+    {
+        if (timeoutChecker != null) timeoutChecker.tick();
+        return FlaskLib.send_from_directory(path, "index.html");
+    }
+
 
 	public function start(): Void
 	{
-		thread = ThreadHelper.runInAThread(function(){
-			var workingDir = Sys.getCwd();
+		thread = ThreadHelper.runInAThread(function()
+		{
+	        app = new Flask(untyped __name__);
+	        new CORS(app);
+	        app.route("/", {methods: ["GET"]})(INDEXHTML);
+	        app.route("/crossdomain.xml", {methods: ["GET"]})(GET);
+	        app.route("/<path:filename>", {methods: ["GET"]})(GETFILE);
+	        app.route("/", {methods: ["POST"]})(POST);
+	        app.route("/", {methods: ["OPTIONS"]})(OPTIONS);
+	        app.route("/killserver")(KILLSERVER);
 
-			Sys.setCwd(path);
-			var handler = SimpleHTTPRequestHandler;
-			for (key in handler.extensions_map.keys())
+	        var timedout = false;
+			var timeoutChecker = null;
+			if (timeout > 0)
 			{
-				handler.extensions_map.set(key, handler.extensions_map.get(key) + ';charset=UTF-8');
+		        timeoutChecker = new TimeoutChecker(timeout, function() {
+		            try {
+						if (app != null)
+						{
+		                	python.urllib.Request.urlopen("http://localhost:" + port + "/killserver");
+						}
+		            }
+		            catch (error: Dynamic) {
+		                trace(error);
+		            }
+		            timedout = true;
+		        });
 			}
 
-			server = new TCPServer(new Tuple<Dynamic>(["", 3000]), handler);
-		    server.serve_forever();
-
-			Sys.setCwd(workingDir);
+			if (timeoutChecker != null) timeoutChecker.start();
+	        app.run(port);
+			app = null;
+	        if (timeoutChecker != null) timeoutChecker.finish();
 		});
+
+		if (block)
+		{
+			thread.join();
+		}
 	}
 
-	public function waitUntilFinished(): Void
+	public function waitUntilFinished()
 	{
-		thread.join();
+		if (thread != null)
+			thread.join();
 	}
 }
