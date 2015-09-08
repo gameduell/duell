@@ -27,6 +27,7 @@
 package duell.objects;
 
 import duell.helpers.ThreadHelper;
+import duell.helpers.PathHelper;
 
 import haxe.io.Path;
 
@@ -58,7 +59,20 @@ class Server
 
 	public function new(path: String, timeout: Int = 60, port: Int = 3000, block: Bool = false): Void
 	{
-		this.path = path;
+		if (PathHelper.isPathRooted(path))
+		{
+			this.path = path;
+		}
+		else
+		{
+			this.path = PathHelper.expand(path);
+
+			if (!PathHelper.isPathRooted(this.path))
+			{
+				this.path = Path.join([Sys.getCwd(), this.path]);
+			}
+		}
+
 		this.timeout = timeout;
 		this.port = port;
 		this.block = block;
