@@ -95,7 +95,7 @@ class HashHelper
 				if not data:
 					break
 				m.update(data)
-				return m.hexdigest()");
+			return m.hexdigest()");
         return null;
     }
 }
