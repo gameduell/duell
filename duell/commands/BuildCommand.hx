@@ -276,6 +276,8 @@ class BuildCommand implements IGDCommand
 
         var pythonLibPathsToBootstrap = new Array<String>();
 
+        pythonLibPathsToBootstrap.push(haxe.io.Path.join([DuellLibHelper.getPath("duell"), "pylib"]));
+
         buildArguments.push("-main");
         buildArguments.push("duell.build.main.BuildMain");
 
@@ -381,6 +383,9 @@ class BuildCommand implements IGDCommand
         LogHelper.info(runArguments.join(" "));
 
         runArguments.push("-fast");
+
+        /// won't be anymore with fast.
+        Sys.putEnv("HAXELIB_RUN", "0");
 
         var result = CommandHelper.runCommand("", untyped python.lib.Sys.executable, runArguments, {errorMessage: "running the plugin", exitOnError: false});
         if (result != 0)

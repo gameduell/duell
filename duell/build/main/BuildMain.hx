@@ -105,7 +105,6 @@ class BuildMain
             if (Arguments.isSet("-fast"))
             {
                 deserializeCaches();
-
                 build.parse();
                 pluginHelper.resolveLibraryPlugins();
                 pluginHelper.fast();
@@ -185,7 +184,7 @@ class BuildMain
         var tmpFolder = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"]);
         var serializedCachesFile = Path.join([tmpFolder, SERIALIZED_CACHES_FILENAME]);
 
-        var s = File.read(serializedCachesFile, true).readAll().toString();
+        var s = File.getBytes(serializedCachesFile).toString();
 
         DuellLibHelper.deserializeCaches(s);
     }
