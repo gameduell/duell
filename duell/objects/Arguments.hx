@@ -105,6 +105,8 @@ class Arguments
 	private static var pluginConfigurationDocumentation: Map<String, String> = null;
 	private static var generalDocumentation: String = null;
 
+	private static var pluginAcceptsAnyArgument: Bool = false;
+
 	public static var defines(default, null): Map<String, String> = new Map<String, String>();
 
 	private static var rawArgs: Array<String>;
@@ -123,12 +125,10 @@ class Arguments
 		/// parse arguments
         var args = Sys.args();
 
-        #if (!plugin)
         if(Sys.getEnv("HAXELIB_RUN") == "1")
         {
             Sys.setCwd(args.pop());
         }
-        #end
 
         rawArgs = args.copy();
 
@@ -172,7 +172,17 @@ class Arguments
 			index = 2;
 
 			/// check if plugin is installed and parse its arguments
-			var duellLibName = "duell" + selectedCommand.name + plugin;
+            var duellLibName = "";
+
+            if (selectedCommand.name == "run")
+            {
+                duellLibName = plugin;
+            }
+            else
+            {
+                duellLibName =  "duell" + selectedCommand.name + plugin;
+            }
+
 			if (DuellLibHelper.isInstalled(duellLibName))
 			{
 				var path = DuellLibHelper.getPath(duellLibName);
@@ -186,6 +196,11 @@ class Arguments
 		{
 			printPluginHelp();
 			return false;
+		}
+
+		if (pluginAcceptsAnyArgument)
+		{
+			return true;
 		}
 
 		while (index < args.length)
@@ -214,7 +229,7 @@ class Arguments
 
 			if (argSpec == null)
 			{
-				Sys.println('Unknown argument "$argString"');
+                Sys.println('Unknown argument "$argString"');
 				return false;
 			}
 			else
@@ -222,6 +237,7 @@ class Arguments
 				argSpec.set = true;
 				if (Type.getClass(argSpec) == Type.getClass(argSpecNoArgumentValue))
 				{
+
 				}
 				else if (Type.getClass(argSpec) == Type.getClass(argSpecInt))
 				{
@@ -386,6 +402,9 @@ class Arguments
 
 		switch (type)
 		{
+			case 'any':
+				pluginAcceptsAnyArgument = true;
+				return new ArgumentSpec<NoArgumentValue>(name, documentation);
 			case 'void':
 				return new ArgumentSpec<NoArgumentValue>(name, documentation);
 			case 'int':

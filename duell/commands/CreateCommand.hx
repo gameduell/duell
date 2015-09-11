@@ -30,11 +30,14 @@ import duell.helpers.CommandHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.AskHelper;
 import duell.helpers.DuellLibHelper;
+import duell.helpers.PythonImportHelper;
 import duell.objects.DuellLib;
 import haxe.CallStack;
 import duell.helpers.LogHelper;
 import duell.commands.IGDCommand;
 import haxe.io.Path;
+import sys.io.File;
+import sys.FileSystem;
 
 import duell.objects.Arguments;
 class CreateCommand implements IGDCommand
@@ -113,14 +116,14 @@ class CreateCommand implements IGDCommand
     private function runPluginLib()
     {
         var outputFolder = haxe.io.Path.join([duell.helpers.DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"]);
-        var outputRun = haxe.io.Path.join(['$outputFolder', 'run.n']);
+        var outputRun = haxe.io.Path.join(['$outputFolder', 'run.py']);
 
         var buildArguments = new Array<String>();
 
         buildArguments.push("-main");
         buildArguments.push("duell.create.CreateMain");
 
-        buildArguments.push("-neko");
+        buildArguments.push("-python");
         buildArguments.push(outputRun);
 
         buildArguments.push("-cp");
@@ -129,9 +132,6 @@ class CreateCommand implements IGDCommand
         buildArguments.push("-cp");
         buildArguments.push(DuellLibHelper.getPath(setupLib.name));
 
-        buildArguments.push("-D");
-        buildArguments.push("plugin");
-
         buildArguments.push("-resource");
         buildArguments.push(Path.join([DuellLibHelper.getPath("duell"), Arguments.CONFIG_XML_FILE]) + "@generalArguments");
 
@@ -139,12 +139,22 @@ class CreateCommand implements IGDCommand
 
         CommandHelper.runHaxe("", buildArguments, {errorMessage: "building the plugin"});
 
-        var runArguments = [outputRun];
-        runArguments = runArguments.concat(Arguments.getRawArguments());
+        /// bootstrap python libs
+        var pyLibPath = haxe.io.Path.join([DuellLibHelper.getPath(setupLib.name), "pylib"]);
+        if (FileSystem.exists(pyLibPath))
+        {
+            var file = File.getBytes(outputRun);
 
-        var result = CommandHelper.runNeko("", runArguments, {errorMessage: "running the plugin", exitOnError: false});
-        if (result != 0)
-            Sys.exit(result);
+            var fileOutput = File.write(outputRun, true);
+            fileOutput.writeString("import os\n");
+            fileOutput.writeString("import sys\n");
+            fileOutput.writeString('sys.path.insert(0, "$pyLibPath")\n');
+
+            fileOutput.writeBytes(file, 0, file.length);
+            fileOutput.close();
+        }
+
+        PythonImportHelper.runPythonFile(outputRun);
     }
 
 }

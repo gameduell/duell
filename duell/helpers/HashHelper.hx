@@ -35,6 +35,9 @@ class HashHelper
         for (val in array)
         {
             hash *= 16777619;
+            #if python
+            hash %= 1073741824;
+            #end
             hash ^= val;
         }
 
@@ -56,6 +59,10 @@ class HashHelper
         {
             hash *= 16777619;
 
+            #if python
+            hash %= 1073741824;
+            #end
+
             val ^= string.charCodeAt(i * 4);
             val ^= string.charCodeAt(i * 4 + 1) << 8;
             val ^= string.charCodeAt(i * 4 + 2) << 8;
@@ -75,5 +82,20 @@ class HashHelper
         }
 
         return hash;
+    }
+
+    static public function getMD5OfFile(path: String): String
+    {
+        python.Syntax.importModule("hashlib");
+        python.Syntax.pythonCode("
+		with open(path, 'rb') as fh:
+			m = hashlib.md5()
+			while True:
+				data = fh.read(8192)
+				if not data:
+					break
+				m.update(data)
+			return m.hexdigest()");
+        return null;
     }
 }

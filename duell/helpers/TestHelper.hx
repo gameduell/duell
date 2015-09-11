@@ -29,6 +29,7 @@ package duell.helpers;
 import duell.objects.DuellLib;
 import duell.objects.DuellProcess;
 import duell.objects.PythonProcess;
+import duell.objects.TimeoutChecker;
 
 import haxe.io.Path;
 import haxe.io.Bytes;
@@ -36,47 +37,110 @@ import haxe.io.Bytes;
 import sys.io.File;
 import sys.io.FileOutput;
 
+import python.Tuple;
+import python.Dict;
+import python.KwArgs;
+import python.flask.Flask;
+import python.flask.Response;
+import python.flask.Request;
+import python.flask.ext.CORS;
+import python.flask.logging.Logger;
+import python.flask.Logging;
+
+import haxe.Constraints.Function;
+
+
 class TestHelper
 {
+    static var testResult: StringBuf;
+    static var app: Flask;
+    static var timeoutChecker: TimeoutChecker;
+
+	public static function KILLSERVER()
+	{
+        var func: Void->Void = Request.environ.get('werkzeug.server.shutdown');
+        func();
+        return "OK";
+    }
+
+	public static function POST()
+	{
+        timeoutChecker.tick();
+        var jsonDict: Dict<String, String> = Request.json;
+        var dataStr: String = jsonDict.get("data");
+
+        if (dataStr == "===END===")
+        {
+            var func: Void->Void = Request.environ.get('werkzeug.server.shutdown');
+            func();
+        }
+        else
+        {
+            testResult.add(dataStr);
+        }
+        return "OK";
+    }
+
+	public static function OPTIONS()
+	{
+        timeoutChecker.tick();
+        return "OK";
+    }
+
+	public static function GET()
+    {
+        timeoutChecker.tick();
+        return '<?xml version="1.0"?>
+    	<!DOCTYPE cross-domain-policy SYSTEM "http://www.adobe.com/xml/dtds/cross-domain-policy.dtd">
+    	<cross-domain-policy>
+    	    <site-control permitted-cross-domain-policies="all"/>
+    	    <allow-access-from domain="*" secure="false"/>
+    	    <allow-http-request-headers-from domain="*" headers="*" secure="false"/>
+    	</cross-domain-policy>
+    	';
+	}
+
 	public static function runListenerServer(timeout : Float, port : Int, resultOutputPath : String)
 	{
-		var duellLibPath: String = DuellLib.getDuellLib("duell").getPath();
+        app = new Flask(untyped __name__);
+        new CORS(app);
+        app.route("/crossdomain.xml", {methods: ["GET"]})(GET);
+        app.route("/", {methods: ["POST"]})(POST);
+        app.route("/", {methods: ["OPTIONS"]})(OPTIONS);
+        app.route("/killserver")(KILLSERVER);
 
-		var testProcess: DuellProcess = new PythonProcess(
-										Path.join([duellLibPath, "bin"]),
-										["test_result_listener.py", "" + port], 
-										{
-											systemCommand : true, 
-											timeout : timeout, 
-											loggingPrefix : "[TestListener]",
-											block : true,
-                                            errorMessage: "running test listener server"
-										});
+        var log = Logging.getLogger('werkzeug');
+        log.setLevel(Logging.ERROR);
 
-		if (testProcess.exitCode() != 0)
-		{
-			if (testProcess.isTimedout())
-			{
-				throw "Test listener timedout, output:\n" + testProcess.getCompleteStdout() + "\nstderr:\n" + testProcess.getCompleteStderr();
+        testResult = new StringBuf();
 
-			}
-			else
-			{
-				throw "Test listener failed with error code:" + testProcess.exitCode() + ", output:\n" + testProcess.readCurrentStdout() + "\nstderr:\n" + testProcess.getCompleteStderr();
-			}
-		}
-		else
-		{
-			var bytes = testProcess.getCompleteStdout();
+        var timedout = false;
+        timeoutChecker = new TimeoutChecker(timeout, function() {
+            try {
+                python.urllib.Request.urlopen("http://localhost:" + port + "/killserver");
+            }
+            catch (error: Dynamic) {
+                trace(error);
+            }
+            timedout = true;
+        });
 
-			var testResults = "test results:\n" + bytes.toString();
-			LogHelper.info(testResults, "");
-			
-		    var fout = File.write(resultOutputPath, false);
+        timeoutChecker.start();
+        app.run(port);
+        timeoutChecker.finish();
 
-		    fout.write(bytes);
+        if (timedout)
+        {
+			throw "Test listener timedout";
+        }
 
-		    fout.close();
-		}
+	    var fout = File.write(resultOutputPath, false);
+        var resultString = testResult.toString();
+	    fout.writeString(resultString);
+
+	    fout.close();
+
+        var testResults = "test results:\n" + resultString;
+        LogHelper.info(testResults, "");
 	}
 }

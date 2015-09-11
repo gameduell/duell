@@ -26,7 +26,11 @@
 
 package duell.helpers;
 
+import python.KwArgs;
+
 import haxe.Http;
+
+import python.urllib.Request;
 
 /**
     @author jxav
@@ -45,17 +49,14 @@ class ConnectionHelper
         {
             initialized = true;
 
-            var h = new Http("http://www.google.com");
-            h.cnxTimeout = TIMEOUT;
-            h.onError = function(e)
-            {
-                online = false;
-
+            try {
+                Request.urlopen("http://www.google.com", {timeout: 5});
+            }
+            catch (error: Dynamic) {
                 LogHelper.println("");
                 LogHelper.warn("Running duell tool in offline mode, this might cause undesired behaviors!");
                 LogHelper.println("");
-            };
-            h.request();
+            }
         }
 
         return online;

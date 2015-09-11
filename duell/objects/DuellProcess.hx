@@ -26,19 +26,16 @@
 
 package duell.objects;
 
-import neko.vm.Mutex;
-
 import haxe.io.BytesOutput;
 import haxe.io.Output;
 import haxe.io.Eof;
 import haxe.io.Bytes;
-import sys.io.Process;
 import sys.FileSystem;
-import neko.vm.Thread;
 
 import duell.helpers.LogHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.PlatformHelper;
+import duell.helpers.ThreadHelper;
 
 typedef ProcessOptions =
 {
@@ -68,8 +65,8 @@ class DuellProcess
 	private var totalStderr : BytesOutput;
 	private var stderrMutex : Mutex;
 	private var stderrLineBuffer : BytesOutput;
-	private var waitingOnStderrMutex : Mutex;
-	private var waitingOnStdoutMutex : Mutex;
+	private var waitingOnStderrMutex : Lock;
+	private var waitingOnStdoutMutex : Lock;
 
 	/// TIMEOUT
 	private var timeoutTicker : Bool;
@@ -108,9 +105,9 @@ class DuellProcess
 		this.args = args;
 		this.path = path == null ? "" : path;
 
-		exitCodeMutex = new Mutex();
-		waitingOnStderrMutex = new Mutex();
-		waitingOnStdoutMutex = new Mutex();
+		exitCodeMutex = ThreadHelper.getMutex();
+		waitingOnStderrMutex = ThreadHelper.getMutex();
+		waitingOnStdoutMutex = ThreadHelper.getMutex();
 
 		systemCommand = options != null && options.systemCommand != null ? options.systemCommand : false;
 		loggingPrefix = options != null && options.loggingPrefix != null ? options.loggingPrefix : "";
@@ -198,55 +195,57 @@ class DuellProcess
 		}
 	}
 
+
+
 	private function startStdOutListener()
 	{
 		stdout = new BytesOutput();
 		totalStdout = new BytesOutput();
-		stdoutMutex = new Mutex();
+		stdoutMutex = Threading.Lock();
 		stdoutLineBuffer = new BytesOutput();
-		neko.vm.Thread.create(
-			function ()
-			{
-		waitingOnStdoutMutex.acquire();
-				try
-				{
-					while(true)
-					{
-						var str = process.stdout.readString(1);
-
-						stdoutMutex.acquire();
-						stdout.writeString(str);
-						totalStdout.writeString(str);
-						stdoutMutex.release();
-
-						if(str == "\n")
+		ThreadHelper.runInAThread(
+						function ()
 						{
+							waitingOnStdoutMutex.acquire();
+							try
+							{
+								while(true)
+								{
+									var str = process.stdout.readString(1);
+
+									stdoutMutex.acquire();
+									stdout.writeString(str);
+									totalStdout.writeString(str);
+									stdoutMutex.release();
+
+									if(str == "\n")
+									{
+										log(stdoutLineBuffer.getBytes().toString());
+										stdoutLineBuffer = new BytesOutput();
+									}
+									else
+									{
+										stdoutLineBuffer.writeString(str);
+									}
+									timeoutTicker = true;
+								}
+							}
+							catch (e:Eof) {}
+							catch (e:Dynamic)
+							{
+								LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));
+							}
+
+
 							log(stdoutLineBuffer.getBytes().toString());
-							stdoutLineBuffer = new BytesOutput();
+							finished = true;
+							stdoutFinished = true;
+
+							waitingOnStdoutMutex.release();
+
+							/// checks for failure
+							exitCodeBlocking();
 						}
-						else
-						{
-							stdoutLineBuffer.writeString(str);
-						}
-						timeoutTicker = true;
-					}
-				}
-				catch (e:Eof) {}
-				catch (e:Dynamic)
-				{
-					LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));
-				}
-
-
-				log(stdoutLineBuffer.getBytes().toString());
-				finished = true;
-				stdoutFinished = true;
-
-				waitingOnStdoutMutex.release();
-
-				/// checks for failure
-				exitCodeBlocking();
-			}
 		);
 	}
 
@@ -254,51 +253,51 @@ class DuellProcess
 	{
 		stderr = new BytesOutput();
 		totalStderr = new BytesOutput();
-		stderrMutex = new Mutex();
+		stderrMutex = Threading.Lock();
 		stderrLineBuffer = new BytesOutput();
-		neko.vm.Thread.create(
-			function ()
-			{
-		waitingOnStderrMutex.acquire();
-				try
-				{
-
-					while(true)
-					{
-						var str = process.stderr.readString(1);
-
-						stderrMutex.acquire();
-						stderr.writeString(str);
-						totalStderr.writeString(str);
-						stderrMutex.release();
-
-						if(str == "\n")
+		ThreadHelper.runInAThread(
+						function ()
 						{
+							waitingOnStderrMutex.acquire();
+							try
+							{
+
+								while(true)
+								{
+									var str = process.stderr.readString(1);
+
+									stderrMutex.acquire();
+									stderr.writeString(str);
+									totalStderr.writeString(str);
+									stderrMutex.release();
+
+									if(str == "\n")
+									{
+										log(stderrLineBuffer.getBytes().toString());
+										stderrLineBuffer = new BytesOutput();
+									}
+									else
+									{
+										stderrLineBuffer.writeString(str);
+									}
+									timeoutTicker = true;
+								}
+							}
+							catch (e:Eof) {}
+							catch (e:Dynamic)
+							{
+								LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));
+							}
+
 							log(stderrLineBuffer.getBytes().toString());
-							stderrLineBuffer = new BytesOutput();
+							finished = true;
+							stderrFinished = true;
+
+							waitingOnStderrMutex.release();
+
+							/// checks for failure
+							exitCodeBlocking();
 						}
-						else
-						{
-							stderrLineBuffer.writeString(str);
-						}
-						timeoutTicker = true;
-					}
-				}
-				catch (e:Eof) {}
-				catch (e:Dynamic)
-				{
-					LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));
-				}
-
-				log(stderrLineBuffer.getBytes().toString());
-				finished = true;
-				stderrFinished = true;
-
-				waitingOnStderrMutex.release();
-
-				/// checks for failure
-				exitCodeBlocking();
-			}
 		);
 	}
 
@@ -306,28 +305,28 @@ class DuellProcess
 	{
 		if (timeout != 0)
 		{
-			neko.vm.Thread.create(
-				function ()
-				{
-					while(!finished) /// something else can finish
-					{
-						if (!timeoutTicker)
-						{
-							finished = true;
-							timedout = true;
+			ThreadHelper.runInAThread(
+							function ()
+							{
+								while(!finished) /// something else can finish
+								{
+									if (!timeoutTicker)
+									{
+										finished = true;
+										timedout = true;
 
-							LogHelper.println('Process "$command ${args.join(" ")}" timed out.');
-							process.kill();
-							process.close();
-							break;
-						}
-						timeoutTicker = false;
-						Sys.sleep(timeout);
-					}
+										LogHelper.println('Process "$command ${args.join(" ")}" timed out.');
+										process.kill();
+										process.close();
+										break;
+									}
+									timeoutTicker = false;
+									Sys.sleep(timeout);
+								}
 
-					/// checks for failure
-					exitCodeBlocking();
-				}
+								/// checks for failure
+								exitCodeBlocking();
+							}
 			);
 		}
 	}

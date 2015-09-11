@@ -42,6 +42,11 @@ import duell.versioning.GitVers;
 import duell.objects.Arguments;
 import haxe.io.Path;
 
+import sys.io.File;
+import sys.FileSystem;
+
+import duell.helpers.PythonImportHelper;
+
 using StringTools;
 
 class EnvironmentSetupCommand implements IGDCommand
@@ -120,14 +125,14 @@ class EnvironmentSetupCommand implements IGDCommand
     private function buildNewEnvironmentWithSetupLib()
     {
         var outputFolder = haxe.io.Path.join([duell.helpers.DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"]);
-        var outputRun = haxe.io.Path.join(['$outputFolder', 'run.n']);
+        var outputRun = haxe.io.Path.join(['$outputFolder', 'run.py']);
 
         var buildArguments = new Array<String>();
 
         buildArguments.push("-main");
         buildArguments.push("duell.setup.main.SetupMain");
 
-        buildArguments.push("-neko");
+        buildArguments.push("-python");
         buildArguments.push(outputRun);
 
         buildArguments.push("-cp");
@@ -146,12 +151,25 @@ class EnvironmentSetupCommand implements IGDCommand
 
         CommandHelper.runHaxe("", buildArguments, {errorMessage: "building the plugin"});
 
+        /// bootstrap python libs
+        var pyLibPath = haxe.io.Path.join([DuellLibHelper.getPath(setupLib.name), "pylib"]);
+        if (FileSystem.exists(pyLibPath))
+        {
+            var file = File.getBytes(outputRun);
+
+            var fileOutput = File.write(outputRun, true);
+            fileOutput.writeString("import os\n");
+            fileOutput.writeString("import sys\n");
+            fileOutput.writeString('sys.path.insert(0, "$pyLibPath")\n');
+
+            fileOutput.writeBytes(file, 0, file.length);
+            fileOutput.close();
+        }
+
         var runArguments = [outputRun];
         runArguments = runArguments.concat(Arguments.getRawArguments());
 
-        var result = CommandHelper.runNeko("", runArguments, {errorMessage: "running the plugin", exitOnError: false});
-        if (result != 0)
-            Sys.exit(result);
+        PythonImportHelper.runPythonFile(outputRun);
 
         LogHelper.println("Saving Setup Done Marker... ");
         var duellConfig = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
