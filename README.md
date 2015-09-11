@@ -14,6 +14,10 @@ execution by prefixing with "-", e.g. "duell build ios -verbose".
 
 
 ## Release Log
+4.0.0
+----------------------------------------------
+* Now running on Python 3 instead of neko
+----------------------------------------------
 3.2.0
 ----------------------------------------------
 * Initial setup for github
@@ -24,6 +28,10 @@ Getting Started
 
 In your command line run
 `$ haxelib install duell`
+
+### Python 3
+
+From version 4 the duell tool requires Python 3 to be installed. If the tool can't find it, make sure you have defined DUELL_PYTHON to a python 3 executable.
 
 ### Setup Duell
 
