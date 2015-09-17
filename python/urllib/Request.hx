@@ -37,4 +37,5 @@ typedef URLOpenArgs =
 extern class Request
 {
     public static function urlopen(url: String, ?kwArgs: KwArgs<URLOpenArgs>): Void;
+    public static function urlretrieve(url: String, ?filename: String, ?progress: Dynamic) : Void;
 }
