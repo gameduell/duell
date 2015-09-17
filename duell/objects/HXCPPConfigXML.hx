@@ -39,7 +39,7 @@ class HXCPPConfigXML
 	private var configPath : String;
 	private function new(configPath : String) : Void
 	{
-		this.configPath = configPath; 
+		this.configPath = configPath;
 		xml = new Fast(Xml.parse(File.getContent(configPath)).firstElement());
 	}
 
@@ -83,53 +83,51 @@ class HXCPPConfigXML
 	}
 
 	public function writeDefines(defines : Map<String, String>)
-	{		
+	{
 		var newContent = "";
 		var definesText = "";
 		var env = Sys.environment();
-		
-		for(key in defines.keys()) 
+
+		for(key in defines.keys())
 		{
-			if(!env.exists(key) || env.get(key) != defines.get(key)) 
+			if(!env.exists(key) || env.get(key) != defines.get(key))
 			{
 				definesText += "		<set name=\"" + key + "\" value=\"" + PathHelper.stripQuotes(defines.get(key)) + "\" />\n";
 			}
 		}
-		
-		if(FileSystem.exists(configPath)) 
+
+		if(FileSystem.exists(configPath))
 		{
-			var input = File.read(configPath, false);
-			var bytes = input.readAll();
-			input.close ();
-					
+			var bytes = File.getBytes(configPath);
+
 			var backup = File.write(configPath + ".bak." + haxe.Timer.stamp(), false);
 			backup.writeBytes(bytes, 0, bytes.length);
 			backup.close();
-					
+
 			var content = bytes.getString(0, bytes.length);
-			
+
 			var startIndex = content.indexOf("<section id=\"vars\">");
 			var endIndex = content.indexOf("</section>", startIndex);
-			
+
 			newContent += content.substr(0, startIndex) + "<section id=\"vars\">\n		\n";
 			newContent += definesText;
 			newContent += "		\n	" + content.substr(endIndex);
-			
-		} 
-		else 
+
+		}
+		else
 		{
 			newContent += "<xml>\n\n";
 			newContent += "	<section id=\"vars\">\n\n";
 			newContent += definesText;
 			newContent += "	</section>\n\n</xml>";
 		}
-		
+
 		var output = File.write(configPath, false);
 		output.writeString(newContent);
 		output.close();
 	}
 
-	private function getDefinesFromSectionVars(sectionElement : Fast) 
+	private function getDefinesFromSectionVars(sectionElement : Fast)
 	{
 		var defines = new Map<String, String>();
 		for(element in sectionElement.elements)
@@ -151,5 +149,5 @@ class HXCPPConfigXML
 		}
 		return defines;
 	}
-	
+
 }
