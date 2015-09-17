@@ -26,12 +26,11 @@
 
 package duell.helpers;
 
-import neko.Lib;
 import sys.FileSystem;
 import sys.io.File;
 import haxe.io.Path;
 import haxe.zip.Entry;
-
+import haxe.zip.InflateImpl;
 
 /// instead of haxe.zip.reader because of Unsupported flags error.
 class Reader {
@@ -306,11 +305,11 @@ class ExtractionHelper
 						if(file == "")
 						{
 							if(path != "" )
-								Lib.println("  Created " + path);
+								Sys.println("  Created " + path);
 							continue; // was just a directory
 						}
 						path += file;
-						Lib.println("  Install " + path);
+						Sys.println("  Install " + path);
 
 						var data = Reader.unzip(entry);
 						var f = File.write(targetPath + "/" + path, true);
@@ -321,6 +320,6 @@ class ExtractionHelper
 			}
 		}
 
-		Lib.println("Done");
+		Sys.println("Done");
 	}
 }
