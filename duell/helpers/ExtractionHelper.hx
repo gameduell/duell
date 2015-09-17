@@ -81,7 +81,23 @@ class ExtractionHelper
 		else
 		{
 			var zipFile = new ZipFile(sourceZIP);
-			zipFile.extractall(targetPath);
+			var extractionPath = targetPath;
+			if(ignoreRootFolder != "")
+			{
+				if (ignoreRootFolder == "*")
+				{
+					for(file in FileSystem.readDirectory(targetPath))
+					{
+						if(FileSystem.isDirectory(targetPath + "/" + file))
+						{
+							ignoreRootFolder = file;
+						}
+					}
+				}
+				extractionPath = ignoreRootFolder;
+			}
+
+			zipFile.extractall(extractionPath);
 		}
 
 		Sys.println("Done");
