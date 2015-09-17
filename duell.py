@@ -4482,8 +4482,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -5702,9 +5702,7 @@ class duell_objects_HXCPPConfigXML:
 			if ((not key in env.h) or ((env.h.get(key,None) != defines.h.get(key,None)))):
 				definesText = (("null" if definesText is None else definesText) + HxOverrides.stringOrNull(((((("\t\t<set name=\"" + ("null" if key is None else key)) + "\" value=\"") + HxOverrides.stringOrNull(duell_helpers_PathHelper.stripQuotes(defines.h.get(key,None)))) + "\" />\n"))))
 		if sys_FileSystem.exists(self.configPath):
-			input = sys_io_File.read(self.configPath,False)
-			_hx_bytes = input.readAll()
-			input.close()
+			_hx_bytes = sys_io_File.getBytes(self.configPath)
 			backup = sys_io_File.write(((HxOverrides.stringOrNull(self.configPath) + ".bak.") + Std.string(haxe_Timer.stamp())),False)
 			backup.writeBytes(_hx_bytes,0,_hx_bytes.length)
 			backup.close()
