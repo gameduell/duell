@@ -81,23 +81,26 @@ class ExtractionHelper
 		else
 		{
 			var zipFile = new ZipFile(sourceZIP);
-			var extractionPath = targetPath;
-			if(ignoreRootFolder != "")
+			zipFile.extractall(targetPath);
+			if (ignoreRootFolder != "")
 			{
 				if (ignoreRootFolder == "*")
 				{
 					for(file in FileSystem.readDirectory(targetPath))
 					{
-						if(FileSystem.isDirectory(targetPath + "/" + file))
+						if(FileSystem.isDirectory(Path.join([targetPath,file])))
 						{
 							ignoreRootFolder = file;
 						}
 					}
 				}
-				extractionPath = ignoreRootFolder;
+
+				FileHelper.recursiveCopyFiles(Path.join([targetPath,ignoreRootFolder]), targetPath);
+
+				CommandHelper.runCommand("", "rm", [ "-rf", Path.join([targetPath,ignoreRootFolder])], {errorMessage: "deleting extracted folder"});
 			}
 
-			zipFile.extractall(extractionPath);
+
 		}
 
 		Sys.println("Done");

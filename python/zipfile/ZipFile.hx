@@ -28,5 +28,5 @@ package python.zipfile;
 extern class ZipFile
 {
     public function new(fileName: String);
-    public function extractall(destinationPath: String): Void;
+    public function extractall(?destinationPath: String): Void;
 }
