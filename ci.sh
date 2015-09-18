@@ -15,8 +15,6 @@ haxelib run duell_duell update -verbose -yestoall
 
 haxelib run duell_duell build html5 -test -verbose -D jenkins -yestoall
 
-haxelib run duell_duell build flash -test -verbose -D jenkins -yestoall
-
 haxelib run duell_duell build ios -simulator -test -verbose -D jenkins -yestoall
 
 haxelib run duell_duell build android -emulator -x86 -test -verbose -D jenkins -yestoall
