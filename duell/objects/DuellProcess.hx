@@ -211,16 +211,21 @@ class DuellProcess
 							{
 								while(true)
 								{
-									var str = process.stdout.readString(1);
+									var str = untyped process.p.stdout.readline().decode("utf-8");
+									if (str == null || str == "")
+											break;
 
 									stdoutMutex.acquire();
 									stdout.writeString(str);
 									totalStdout.writeString(str);
 									stdoutMutex.release();
 
-									if(str == "\n")
+									if(str.charAt(str.length - 1) == "\n")
 									{
-										log(stdoutLineBuffer.getBytes().toString());
+										str = str.substring(0, str.length - 1);
+										stdoutLineBuffer.writeString(str);
+										var line = stdoutLineBuffer.getBytes().toString();
+										log(line);
 										stdoutLineBuffer = new BytesOutput();
 									}
 									else
@@ -233,7 +238,7 @@ class DuellProcess
 							catch (e:Eof) {}
 							catch (e:Dynamic)
 							{
-								LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));
+								LogHelper.info("Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));
 							}
 
 
@@ -264,15 +269,19 @@ class DuellProcess
 
 								while(true)
 								{
-									var str = process.stderr.readString(1);
+									var str = untyped process.p.stderr.readline().decode("utf-8");
+
+									if (str == null || str == "")
+											break;
 
 									stderrMutex.acquire();
 									stderr.writeString(str);
 									totalStderr.writeString(str);
 									stderrMutex.release();
 
-									if(str == "\n")
+									if(str.charAt(str.length - 1) == "\n")
 									{
+										str = str.substring(0, str.length - 1);
 										log(stderrLineBuffer.getBytes().toString());
 										stderrLineBuffer = new BytesOutput();
 									}
@@ -286,7 +295,7 @@ class DuellProcess
 							catch (e:Eof) {}
 							catch (e:Dynamic)
 							{
-								LogHelper.info("", "Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));
+								LogHelper.info("Exception with stackTrace:\n" + haxe.CallStack.exceptionStack().join("\n"));
 							}
 
 							log(stderrLineBuffer.getBytes().toString());

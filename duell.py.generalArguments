@@ -1,237 +1,237 @@
-<?xml version="1.0" encoding="utf-8"?>
-<args>
-    <documentation>
-  The Duell Tool is a command line tool for setting up, building and running applications on any platform.
-  It can also be used for other general tasks within app development. It is made in a modular way via plugins, and each plugin is a separate from the tool itself. The tool merges the needed plugin on execution.
-  The execution of the tool is always "duell" followed by a command such as "build" or "setup" and then a plugin name like "ios" or "emptyProject". For example, "duell build ios" will run the command "build" with the "ios" plugin. For a listing of the possible commands, look below. You can also pass additional parameters to execution by prefixing with "-", e.g. "duell build ios -verbose". Look below for a list of arguments that are general to any command or plugin.
-    </documentation>
-	<arg name="-nocolor" type="void">
-		<documentation>
-			Color markup will be stripped out of the output. Use this if your terminal does not support colors.
-		</documentation>
-	</arg>
-
-	<arg name="-mute" type="void">
-		<documentation>
-			No output will be printed at all.
-		</documentation>
-	</arg>
-
-	<arg name="-verbose" type="void">
-		<documentation>
-			Every possible logging information will be shown...
-		</documentation>
-	</arg>
-
-    <arg name="-fast" type="void" >
-        <documentation>
-            This is used in the build command. Use this command if you are just iterating haxe code, and want to quickly build and run the app. In order to be able to use it, just build and run once normally on any platform, and then run with "-fast" afterwards.
-        </documentation>
-    </arg>
-
-    <arg name="-yestoall" type="void" >
-        <documentation>
-            Answers "y" to all questions and default to all questions.
-        </documentation>
-    </arg>
-
-    <arg name="-testport" type="int" >
-        <documentation>
-            Define a port number to be used by unittest.TestHTTPLogger and Python test result listener.
-        </documentation>
-    </arg>
-
-    <command name="run" class="RunCommand" hasPlugin="true">
-        <documentation>
-            Compiles and runs an executable in any duelllib which implemented the run plugin step. Can be used to include, configure and run arbitrary external tools into the duell ecosystem: duell run myScript. myScript need to be a library which is accessible from a repo_list and has the duell.run.main.RunMain.hx file.
-        </documentation>
-    </command>
-
-	<command name="create" class="CreateCommand" hasPlugin="true">
-    	<documentation>
-    		Can be used for creating a default project in current folder like: duell create emptyProject.
-    	</documentation>
-	</command>
-
-	<command name="setup" class="EnvironmentSetupCommand" hasPlugin="true" >
-    	<documentation>
-    		Runs a specified setup. This is usually and environment setup that needs to be run once for a specified platform. Such as, setup android to be able to build for android.
-    	</documentation>
-        <args>
-            <arg name="-v" type="string" >
-                <documentation>
-                    Specify that you want to run a specific setup version.
-                </documentation>
-            </arg>
-        </args>
-
-	</command>
-
-	<command name="self_setup" class="ToolSetupCommand" hasPlugin="false" >
-    	<documentation>
-            Basic setup for the duell tool. It checks/creates a folder .duell in your home folder. Inside that folder a config file is created and the tool itself is downloaded, installed into haxelib and 'duell' command installed into the command line environment.
-    	</documentation>
-	</command>
-
-    <command name="update" class="UpdateCommand" hasPlugin="false" >
-        <documentation>
-            This command will check all the dependencies of the current project in the current directory and update accordingly. This command will run automatically on the build command every time you change project and every 4 hours.
-        </documentation>
-
-        <args>
-            <arg name="-overridebranch" type="string">
-                <documentation>
-                    This argument is used in the versioning. If a repo contains a branch with the specified name, then that branch will be used regardless. This feature is useful if you are developing a feature accross multiple libraries, and want to provide an easy to change to that feature development.
-                </documentation>
-            </arg>
-            <arg name="-rc" type="void">
-                <documentation>
-                    This argument is used in the versioning. If you specify this argument, then tags that include the RC tag, such as 2.0.0-rc, will be considered.
-                </documentation>
-            </arg>
-        </args>
-
-    </command>
-
-    <command name="repo_list" class="RepoConfigCommand" hasPlugin="false" >
-        <documentation>
-            Shows the repository list. You can add and remove urls from it with the arguments you find in repo_list -help.
-        </documentation>
-
-        <args>
-
-            <arg name="-add" type="string">
-                <documentation>
-                    Adds a new url to the end of the repository list
-                </documentation>
-            </arg>
-
-            <arg name="-addFront" type="string">
-                <documentation>
-                    Adds a new url to front of the repository list
-                </documentation>
-            </arg>
-
-            <arg name="-remove" type="string">
-                <documentation>
-                    Removes a url from the repository list
-                </documentation>
-            </arg>
-
-            <arg name="-removeAll" type="void">
-                <documentation>
-                    Removes all urls from the repository list. Resets to the default url.
-                </documentation>
-            </arg>
-
-            <arg name="-reverse" type="void">
-                <documentation>
-                    Reverses the order of all urls in the repository list.
-                </documentation>
-            </arg>
-        </args>
-
-    </command>
-
-    <command name="build" class="BuildCommand" hasPlugin="true">
-    	<documentation>
-    		To be run inside a project that has a duell_project.xml. Will build the specified platform.
-    	</documentation>
-
-    	<args>
-    		<arg name="-noprebuild" type="void" >
-    			<documentation>
-    				Does not parse the configuration, meaning the changes to the .xml files are not processed. Also, does not process the template, meaning that files to do not get recopied, e.g. asset files. Requires that  a command for this platform with prebuild enabled was previously successful.
-    			</documentation>
-    		</arg>
-
-    		<arg name="-nobuild" type="void" >
-    			<documentation>
-    				Does not build. Haxe code does not get recompiled, and target platform app packages are not remade.Good for checking the prebuild step, or if you just want to run again without qbuilding.
-    			</documentation>
-    		</arg>
-
-    		<arg name="-norun" type="void" >
-    			<documentation>
-    				The application won't run. Use this if you just want to check the prebuild or build steps.
-    			</documentation>
-    		</arg>
-
-    		<arg name="-publish" type="void" >
-    			<documentation>
-    				Works differently in each platform, but basically each platform plugin should output a releasable package. E.g. ios should sign the .app and compile in release without debugging information.
-    			</documentation>
-    		</arg>
-
-            <arg name="-clean" type="void" >
-                <documentation>
-                    Clean up the Export folder and the native extensions. When this argument is specified, nothing else is done except cleaning up. This shouldn't be needed to do, unless you update something like hxcpp or the haxe version. If something is going wrong, you didn't do anything special and this fixed it, that issue should be reported.
-                </documentation>
-            </arg>
-
-    		<arg name="-test" type="void" >
-    			<documentation>
-    				Launches a server listening to a configured port and then runs the application. It expects that a result of the app is posted to the port, e.g. Unitest results. After the results come in, the application ends. To create a unittest project use "duell create unitTestProject".
-    			</documentation>
-    		</arg>
-
-
-
-    	</args>
-
-        <configuration>
-            <elem name="app">
-                Use this to configure the title, package, company and filename (usually title without spaces) of your project. E.g.: &lt;app title="Super Game" file="SuperGame" package="com.game.super" version="1.2.3" buildNumber="123" company="MegaGamesCompany" /&gt;
-            </elem>
-
-            <elem name="main">
-                Use this to set the class name of the Main Class in your application. E.g.: &lt;main name="super.game.Main" /&gt;.
-            </elem>
-
-            <elem name="output">
-                Use this to set where the output of your build will go to. By default this is "Export". E.g.: &lt;output path="Some/Folder" /&gt;.
-            </elem>
-
-            <elem name="supported-build-plugin">
-                Use this to specify that your project or library requires/supports a version of a build plugin. E.g.: &lt;supported-build-plugin name="ios" version="1.5.0+" /&gt;.
-            </elem>
-
-            <elem name="supported-duell-tool">
-                Use this to specify that your project or library requires/supports a version of a duell tool. E.g.: &lt;supported-duell-tool version="1.5.0+" /&gt;.
-            </elem>
-
-            <elem name="source">
-                Use this to set additional folders as Source folders for your build. By default the path where the configuration file is automatically set as a class path, so you probably only need to use this when you have a unstandard setup. E.g.: &lt;source path="Some/Folder" /&gt;.
-            </elem>
-
-            <elem name="haxe-compile-arg">
-                Use this tag to add additional arguments to the haxe compilation. E.g.: &lt;haxe-compile-arg value="--no-opt" /&gt;.
-            </elem>
-
-            <elem name="platform-config">
-                Inside this tag there will be configurations specific to each platform. To learn about them use "duell build 'platform' -help" for a complete list. Under this tag there will be one node for each platform and then under that node will be the configurations specific to the platform. E.g.: &lt;platform-config&gt; &lt;ios&gt; &lt;icon path="Iconys/ios" /&gt; &lt;/ios&gt; &lt;/platform-config&gt;.
-            </elem>
-
-            <elem name="library-config">
-                Inside this tag there will be configurations specific to a library. To learn about them consult the library documentation which is not currently integrated in the tool. Under this tag there will be one node for each library and then under that node will be the configurations specific to the library. E.g.: &lt;library-config&gt; &lt;opengl&gt; &lt;depthbuffer value="true" /&gt; &lt;/opengl&gt; &lt;/library-config&gt;.
-            </elem>
-
-            <elem name="haxelib">
-                Use this to use a haxelib. If its not installed, you will be prompted if you want to. You can also optionally request a specific version. E.g.: &lt;haxelib name="format" version="1.0.0" /&gt;.
-            </elem>
-
-            <elem name="duelllib">
-                Use this to use a duelllib. If its not installed, you will be prompted if you want to. You can also optionally request a specific version. For an explanation of the versioning system check https://confluence.gameduell.de/display/SGF/Duell+Tool+versioning . E.g.: &lt;duelllib name="opengl" version="1.*.*" /&gt;.
-            </elem>
-
-            <elem name="ndll">
-                Use this flag to link against a native library. This is usually used inside libraries. E.g.: &lt;ndll name=&quot;openglcontextandroid&quot; build-file-path=&quot;project/Build.xml&quot; bin-path=&quot;ndll&quot; /&gt; .
-            </elem>
-
-            <elem name="include">
-                Use this to include another configuration file. This is specially used in backends of libraries to have specific configurations for a platform.  E.g.: &lt;include path=&quot;backends/openglcontext_android/duell_library.xml&quot;  /&gt;.
-            </elem>
-
-        </configuration>
-    </command>
-</args>
+<?xml version="1.0" encoding="utf-8"?>
+<args>
+    <documentation>
+  The Duell Tool is a command line tool for setting up, building and running applications on any platform.
+  It can also be used for other general tasks within app development. It is made in a modular way via plugins, and each plugin is a separate from the tool itself. The tool merges the needed plugin on execution.
+  The execution of the tool is always "duell" followed by a command such as "build" or "setup" and then a plugin name like "ios" or "emptyProject". For example, "duell build ios" will run the command "build" with the "ios" plugin. For a listing of the possible commands, look below. You can also pass additional parameters to execution by prefixing with "-", e.g. "duell build ios -verbose". Look below for a list of arguments that are general to any command or plugin.
+    </documentation>
+	<arg name="-nocolor" type="void">
+		<documentation>
+			Color markup will be stripped out of the output. Use this if your terminal does not support colors.
+		</documentation>
+	</arg>
+
+	<arg name="-mute" type="void">
+		<documentation>
+			No output will be printed at all.
+		</documentation>
+	</arg>
+
+	<arg name="-verbose" type="void">
+		<documentation>
+			Every possible logging information will be shown...
+		</documentation>
+	</arg>
+
+    <arg name="-fast" type="void" >
+        <documentation>
+            This is used in the build command. Use this command if you are just iterating haxe code, and want to quickly build and run the app. In order to be able to use it, just build and run once normally on any platform, and then run with "-fast" afterwards.
+        </documentation>
+    </arg>
+
+    <arg name="-yestoall" type="void" >
+        <documentation>
+            Answers "y" to all questions and default to all questions.
+        </documentation>
+    </arg>
+
+    <arg name="-testport" type="int" >
+        <documentation>
+            Define a port number to be used by unittest.TestHTTPLogger and Python test result listener.
+        </documentation>
+    </arg>
+
+    <command name="run" class="RunCommand" hasPlugin="true">
+        <documentation>
+            Compiles and runs an executable in any duelllib which implemented the run plugin step. Can be used to include, configure and run arbitrary external tools into the duell ecosystem: duell run myScript. myScript need to be a library which is accessible from a repo_list and has the duell.run.main.RunMain.hx file.
+        </documentation>
+    </command>
+
+	<command name="create" class="CreateCommand" hasPlugin="true">
+    	<documentation>
+    		Can be used for creating a default project in current folder like: duell create emptyProject.
+    	</documentation>
+	</command>
+
+	<command name="setup" class="EnvironmentSetupCommand" hasPlugin="true" >
+    	<documentation>
+    		Runs a specified setup. This is usually and environment setup that needs to be run once for a specified platform. Such as, setup android to be able to build for android.
+    	</documentation>
+        <args>
+            <arg name="-v" type="string" >
+                <documentation>
+                    Specify that you want to run a specific setup version.
+                </documentation>
+            </arg>
+        </args>
+
+	</command>
+
+	<command name="self_setup" class="ToolSetupCommand" hasPlugin="false" >
+    	<documentation>
+            Basic setup for the duell tool. It checks/creates a folder .duell in your home folder. Inside that folder a config file is created and the tool itself is downloaded, installed into haxelib and 'duell' command installed into the command line environment.
+    	</documentation>
+	</command>
+
+    <command name="update" class="UpdateCommand" hasPlugin="false" >
+        <documentation>
+            This command will check all the dependencies of the current project in the current directory and update accordingly. This command will run automatically on the build command every time you change project and every 4 hours.
+        </documentation>
+
+        <args>
+            <arg name="-overridebranch" type="string">
+                <documentation>
+                    This argument is used in the versioning. If a repo contains a branch with the specified name, then that branch will be used regardless. This feature is useful if you are developing a feature accross multiple libraries, and want to provide an easy to change to that feature development.
+                </documentation>
+            </arg>
+            <arg name="-rc" type="void">
+                <documentation>
+                    This argument is used in the versioning. If you specify this argument, then tags that include the RC tag, such as 2.0.0-rc, will be considered.
+                </documentation>
+            </arg>
+        </args>
+
+    </command>
+
+    <command name="repo_list" class="RepoConfigCommand" hasPlugin="false" >
+        <documentation>
+            Shows the repository list. You can add and remove urls from it with the arguments you find in repo_list -help.
+        </documentation>
+
+        <args>
+
+            <arg name="-add" type="string">
+                <documentation>
+                    Adds a new url to the end of the repository list
+                </documentation>
+            </arg>
+
+            <arg name="-addFront" type="string">
+                <documentation>
+                    Adds a new url to front of the repository list
+                </documentation>
+            </arg>
+
+            <arg name="-remove" type="string">
+                <documentation>
+                    Removes a url from the repository list
+                </documentation>
+            </arg>
+
+            <arg name="-removeAll" type="void">
+                <documentation>
+                    Removes all urls from the repository list. Resets to the default url.
+                </documentation>
+            </arg>
+
+            <arg name="-reverse" type="void">
+                <documentation>
+                    Reverses the order of all urls in the repository list.
+                </documentation>
+            </arg>
+        </args>
+
+    </command>
+
+    <command name="build" class="BuildCommand" hasPlugin="true">
+    	<documentation>
+    		To be run inside a project that has a duell_project.xml. Will build the specified platform.
+    	</documentation>
+
+    	<args>
+    		<arg name="-noprebuild" type="void" >
+    			<documentation>
+    				Does not parse the configuration, meaning the changes to the .xml files are not processed. Also, does not process the template, meaning that files to do not get recopied, e.g. asset files. Requires that  a command for this platform with prebuild enabled was previously successful.
+    			</documentation>
+    		</arg>
+
+    		<arg name="-nobuild" type="void" >
+    			<documentation>
+    				Does not build. Haxe code does not get recompiled, and target platform app packages are not remade.Good for checking the prebuild step, or if you just want to run again without qbuilding.
+    			</documentation>
+    		</arg>
+
+    		<arg name="-norun" type="void" >
+    			<documentation>
+    				The application won't run. Use this if you just want to check the prebuild or build steps.
+    			</documentation>
+    		</arg>
+
+    		<arg name="-publish" type="void" >
+    			<documentation>
+    				Works differently in each platform, but basically each platform plugin should output a releasable package. E.g. ios should sign the .app and compile in release without debugging information.
+    			</documentation>
+    		</arg>
+
+            <arg name="-clean" type="void" >
+                <documentation>
+                    Clean up the Export folder and the native extensions. When this argument is specified, nothing else is done except cleaning up. This shouldn't be needed to do, unless you update something like hxcpp or the haxe version. If something is going wrong, you didn't do anything special and this fixed it, that issue should be reported.
+                </documentation>
+            </arg>
+
+    		<arg name="-test" type="void" >
+    			<documentation>
+    				Launches a server listening to a configured port and then runs the application. It expects that a result of the app is posted to the port, e.g. Unitest results. After the results come in, the application ends. To create a unittest project use "duell create unitTestProject".
+    			</documentation>
+    		</arg>
+
+
+
+    	</args>
+
+        <configuration>
+            <elem name="app">
+                Use this to configure the title, package, company and filename (usually title without spaces) of your project. E.g.: &lt;app title="Super Game" file="SuperGame" package="com.game.super" version="1.2.3" buildNumber="123" company="MegaGamesCompany" /&gt;
+            </elem>
+
+            <elem name="main">
+                Use this to set the class name of the Main Class in your application. E.g.: &lt;main name="super.game.Main" /&gt;.
+            </elem>
+
+            <elem name="output">
+                Use this to set where the output of your build will go to. By default this is "Export". E.g.: &lt;output path="Some/Folder" /&gt;.
+            </elem>
+
+            <elem name="supported-build-plugin">
+                Use this to specify that your project or library requires/supports a version of a build plugin. E.g.: &lt;supported-build-plugin name="ios" version="1.5.0+" /&gt;.
+            </elem>
+
+            <elem name="supported-duell-tool">
+                Use this to specify that your project or library requires/supports a version of a duell tool. E.g.: &lt;supported-duell-tool version="1.5.0+" /&gt;.
+            </elem>
+
+            <elem name="source">
+                Use this to set additional folders as Source folders for your build. By default the path where the configuration file is automatically set as a class path, so you probably only need to use this when you have a unstandard setup. E.g.: &lt;source path="Some/Folder" /&gt;.
+            </elem>
+
+            <elem name="haxe-compile-arg">
+                Use this tag to add additional arguments to the haxe compilation. E.g.: &lt;haxe-compile-arg value="--no-opt" /&gt;.
+            </elem>
+
+            <elem name="platform-config">
+                Inside this tag there will be configurations specific to each platform. To learn about them use "duell build 'platform' -help" for a complete list. Under this tag there will be one node for each platform and then under that node will be the configurations specific to the platform. E.g.: &lt;platform-config&gt; &lt;ios&gt; &lt;icon path="Iconys/ios" /&gt; &lt;/ios&gt; &lt;/platform-config&gt;.
+            </elem>
+
+            <elem name="library-config">
+                Inside this tag there will be configurations specific to a library. To learn about them consult the library documentation which is not currently integrated in the tool. Under this tag there will be one node for each library and then under that node will be the configurations specific to the library. E.g.: &lt;library-config&gt; &lt;opengl&gt; &lt;depthbuffer value="true" /&gt; &lt;/opengl&gt; &lt;/library-config&gt;.
+            </elem>
+
+            <elem name="haxelib">
+                Use this to use a haxelib. If its not installed, you will be prompted if you want to. You can also optionally request a specific version. E.g.: &lt;haxelib name="format" version="1.0.0" /&gt;.
+            </elem>
+
+            <elem name="duelllib">
+                Use this to use a duelllib. If its not installed, you will be prompted if you want to. You can also optionally request a specific version. For an explanation of the versioning system check https://confluence.gameduell.de/display/SGF/Duell+Tool+versioning . E.g.: &lt;duelllib name="opengl" version="1.*.*" /&gt;.
+            </elem>
+
+            <elem name="ndll">
+                Use this flag to link against a native library. This is usually used inside libraries. E.g.: &lt;ndll name=&quot;openglcontextandroid&quot; build-file-path=&quot;project/Build.xml&quot; bin-path=&quot;ndll&quot; /&gt; .
+            </elem>
+
+            <elem name="include">
+                Use this to include another configuration file. This is specially used in backends of libraries to have specific configurations for a platform.  E.g.: &lt;include path=&quot;backends/openglcontext_android/duell_library.xml&quot;  /&gt;.
+            </elem>
+
+        </configuration>
+    </command>
+</args>

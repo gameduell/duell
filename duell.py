@@ -3544,46 +3544,23 @@ class duell_helpers_PathHelper:
 	@staticmethod
 	def removeDirectory(directory):
 		if sys_FileSystem.exists(directory):
-			files = None
-			try:
-				files = sys_FileSystem.readDirectory(directory)
-			except Exception as _hx_e:
-				_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
-				e = _hx_e1
-				raise _HxException(("An error occurred while deleting the directory " + ("null" if directory is None else directory)))
-			_g = 0
-			_g1 = sys_FileSystem.readDirectory(directory)
-			while (_g < len(_g1)):
-				file = (_g1[_g] if _g >= 0 and _g < len(_g1) else None)
-				_g = (_g + 1)
-				path = haxe_io_Path.join([directory, file])
-				try:
-					if sys_FileSystem.isDirectory(path):
-						if duell_helpers_PathHelper.isLink(path):
-							sys_FileSystem.deleteFile(path)
-						else:
-							duell_helpers_PathHelper.removeDirectory(path)
-					else:
-						try:
-							sys_FileSystem.deleteFile(path)
-						except Exception as _hx_e:
-							_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
-							e1 = _hx_e1
-							if (duell_helpers_PlatformHelper.get_hostPlatform() == duell_helpers_Platform.WINDOWS):
-								duell_helpers_CommandHelper.runCommand("","del",[StringTools.replace(path,"/","\\"), "/f", "/q"])
-							else:
-								duell_helpers_CommandHelper.runCommand("","rm",["-f", path])
-				except Exception as _hx_e:
-					_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
-					e2 = _hx_e1
-					raise _HxException(("An error occurred while deleting the directory " + ("null" if directory is None else directory)))
-			duell_helpers_LogHelper.info("",(" - \x1B[1mRemoving directory:\x1B[0m " + ("null" if directory is None else directory)))
-			try:
-				sys_FileSystem.deleteDirectory(directory)
-			except Exception as _hx_e:
-				_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
-				e3 = _hx_e1
-				raise _HxException(("An error occurred while deleting the directory " + ("null" if directory is None else directory)))
+			if (duell_helpers_PlatformHelper.get_hostPlatform() == duell_helpers_Platform.WINDOWS):
+				
+				import os
+				import stat
+
+				for root, dirs, files in os.walk(directory, topdown=False):
+					for name in files:
+						filename = os.path.join(root, name)
+						os.chmod(filename, stat.S_IWUSR)
+						os.remove(filename)
+					for name in dirs:
+						os.rmdir(os.path.join(root, name))
+				os.rmdir(directory)
+			else:
+				
+				import shutil
+				shutil.rmtree(directory)
 
 	@staticmethod
 	def getRecursiveFileListUnderFolder(folder,gatheredFileList = None,prefix = ""):
@@ -5444,20 +5421,28 @@ class duell_objects_DuellProcess:
 		self.totalStdout = haxe_io_BytesOutput()
 		self.stdoutMutex = duell_helpers_Threading.Lock()
 		self.stdoutLineBuffer = haxe_io_BytesOutput()
-		def _hx_local_1():
+		def _hx_local_2():
 			_g.waitingOnStdoutMutex.acquire()
-			def _hx_local_0():
+			def _hx_local_1():
 				_this = haxe_CallStack.exceptionStack()
 				return "\n".join([python_Boot.toString1(x1,'') for x1 in _this])
 			try:
 				while True:
-					_hx_str = _g.process.stdout.readString(1)
+					_hx_str = Reflect.field(_g.process.p.stdout.readline(),"decode")("utf-8")
+					if ((_hx_str is None) or ((_hx_str == ""))):
+						break
 					_g.stdoutMutex.acquire()
 					_g.stdout.writeString(_hx_str)
 					_g.totalStdout.writeString(_hx_str)
 					_g.stdoutMutex.release()
-					if (_hx_str == "\n"):
-						_g.log(_g.stdoutLineBuffer.getBytes().toString())
+					def _hx_local_0():
+						index = (len(_hx_str) - 1)
+						return ("" if (((index < 0) or ((index >= len(_hx_str))))) else _hx_str[index])
+					if (_hx_local_0() == "\n"):
+						_hx_str = HxString.substring(_hx_str,0,(len(_hx_str) - 1))
+						_g.stdoutLineBuffer.writeString(_hx_str)
+						line = _g.stdoutLineBuffer.getBytes().toString()
+						_g.log(line)
 						_g.stdoutLineBuffer = haxe_io_BytesOutput()
 					else:
 						_g.stdoutLineBuffer.writeString(_hx_str)
@@ -5468,13 +5453,13 @@ class duell_objects_DuellProcess:
 						pass
 				else:
 					e1 = _hx_e1
-					duell_helpers_LogHelper.info("",("Exception with stackTrace:\n" + HxOverrides.stringOrNull(_hx_local_0())))
+					duell_helpers_LogHelper.info(("Exception with stackTrace:\n" + HxOverrides.stringOrNull(_hx_local_1())))
 			_g.log(_g.stdoutLineBuffer.getBytes().toString())
 			_g.finished = True
 			_g.stdoutFinished = True
 			_g.waitingOnStdoutMutex.release()
 			_g.exitCodeBlocking()
-		duell_helpers_ThreadHelper.runInAThread(_hx_local_1)
+		duell_helpers_ThreadHelper.runInAThread(_hx_local_2)
 
 	def startStdErrListener(self):
 		_g = self
@@ -5482,19 +5467,25 @@ class duell_objects_DuellProcess:
 		self.totalStderr = haxe_io_BytesOutput()
 		self.stderrMutex = duell_helpers_Threading.Lock()
 		self.stderrLineBuffer = haxe_io_BytesOutput()
-		def _hx_local_1():
+		def _hx_local_2():
 			_g.waitingOnStderrMutex.acquire()
-			def _hx_local_0():
+			def _hx_local_1():
 				_this = haxe_CallStack.exceptionStack()
 				return "\n".join([python_Boot.toString1(x1,'') for x1 in _this])
 			try:
 				while True:
-					_hx_str = _g.process.stderr.readString(1)
+					_hx_str = Reflect.field(_g.process.p.stderr.readline(),"decode")("utf-8")
+					if ((_hx_str is None) or ((_hx_str == ""))):
+						break
 					_g.stderrMutex.acquire()
 					_g.stderr.writeString(_hx_str)
 					_g.totalStderr.writeString(_hx_str)
 					_g.stderrMutex.release()
-					if (_hx_str == "\n"):
+					def _hx_local_0():
+						index = (len(_hx_str) - 1)
+						return ("" if (((index < 0) or ((index >= len(_hx_str))))) else _hx_str[index])
+					if (_hx_local_0() == "\n"):
+						_hx_str = HxString.substring(_hx_str,0,(len(_hx_str) - 1))
 						_g.log(_g.stderrLineBuffer.getBytes().toString())
 						_g.stderrLineBuffer = haxe_io_BytesOutput()
 					else:
@@ -5506,13 +5497,13 @@ class duell_objects_DuellProcess:
 						pass
 				else:
 					e1 = _hx_e1
-					duell_helpers_LogHelper.info("",("Exception with stackTrace:\n" + HxOverrides.stringOrNull(_hx_local_0())))
+					duell_helpers_LogHelper.info(("Exception with stackTrace:\n" + HxOverrides.stringOrNull(_hx_local_1())))
 			_g.log(_g.stderrLineBuffer.getBytes().toString())
 			_g.finished = True
 			_g.stderrFinished = True
 			_g.waitingOnStderrMutex.release()
 			_g.exitCodeBlocking()
-		duell_helpers_ThreadHelper.runInAThread(_hx_local_1)
+		duell_helpers_ThreadHelper.runInAThread(_hx_local_2)
 
 	def startTimeoutListener(self):
 		_g = self
@@ -7803,7 +7794,7 @@ _hx_classes["haxe.io.BytesBuffer"] = haxe_io_BytesBuffer
 
 class haxe_io_Input:
 	_hx_class_name = "haxe.io.Input"
-	_hx_methods = ["readByte", "readBytes", "readAll", "readFullBytes", "readLine", "readString"]
+	_hx_methods = ["readByte", "readBytes", "readAll", "readLine"]
 
 	def readByte(self):
 		raise _HxException("Not implemented")
@@ -7848,12 +7839,6 @@ class haxe_io_Input:
 				raise _hx_e
 		return total.getBytes()
 
-	def readFullBytes(self,s,pos,_hx_len):
-		while (_hx_len > 0):
-			k = self.readBytes(s,pos,_hx_len)
-			pos = (pos + k)
-			_hx_len = (_hx_len - k)
-
 	def readLine(self):
 		buf_b = python_lib_io_StringIO()
 		last = None
@@ -7879,11 +7864,6 @@ class haxe_io_Input:
 			else:
 				raise _hx_e
 		return s
-
-	def readString(self,_hx_len):
-		b = haxe_io_Bytes.alloc(_hx_len)
-		self.readFullBytes(b,0,_hx_len)
-		return b.toString()
 
 	@staticmethod
 	def _hx_empty_init(_hx_o):		pass
@@ -9666,7 +9646,7 @@ _hx_classes["python.io.NativeInput"] = python_io_NativeInput
 
 class python_io_IInput:
 	_hx_class_name = "python.io.IInput"
-	_hx_methods = ["readByte", "readBytes", "close", "readAll", "readFullBytes", "readLine", "readString"]
+	_hx_methods = ["readByte", "readBytes", "close", "readAll", "readLine"]
 python_io_IInput._hx_class = python_io_IInput
 _hx_classes["python.io.IInput"] = python_io_IInput
 
@@ -9938,7 +9918,7 @@ _hx_classes["python.io.IoTools"] = python_io_IoTools
 
 class sys_FileSystem:
 	_hx_class_name = "sys.FileSystem"
-	_hx_statics = ["exists", "stat", "fullPath", "isDirectory", "createDirectory", "deleteFile", "deleteDirectory", "readDirectory"]
+	_hx_statics = ["exists", "stat", "fullPath", "isDirectory", "createDirectory", "deleteFile", "readDirectory"]
 
 	@staticmethod
 	def exists(path):
@@ -9964,10 +9944,6 @@ class sys_FileSystem:
 	@staticmethod
 	def deleteFile(path):
 		python_lib_Os.remove(path)
-
-	@staticmethod
-	def deleteDirectory(path):
-		python_lib_Os.rmdir(path)
 
 	@staticmethod
 	def readDirectory(path):
@@ -10036,7 +10012,7 @@ _hx_classes["sys.io.File"] = sys_io_File
 class sys_io_FileInput(haxe_io_Input):
 	_hx_class_name = "sys.io.FileInput"
 	_hx_fields = ["impl"]
-	_hx_methods = ["readByte", "readBytes", "close", "readAll", "readFullBytes", "readLine", "readString"]
+	_hx_methods = ["readByte", "readBytes", "close", "readAll", "readLine"]
 	_hx_statics = []
 	_hx_interfaces = []
 	_hx_super = haxe_io_Input
@@ -10058,14 +10034,8 @@ class sys_io_FileInput(haxe_io_Input):
 	def readAll(self,bufsize = None):
 		return self.impl.readAll(bufsize)
 
-	def readFullBytes(self,s,pos,_hx_len):
-		self.impl.readFullBytes(s,pos,_hx_len)
-
 	def readLine(self):
 		return self.impl.readLine()
-
-	def readString(self,_hx_len):
-		return self.impl.readString(_hx_len)
 
 	@staticmethod
 	def _hx_empty_init(_hx_o):

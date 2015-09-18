@@ -164,72 +164,28 @@ class PathHelper
 	{
 		if (FileSystem.exists(directory))
 		{
-			var files;
-			try
+			if (PlatformHelper.hostPlatform == Platform.WINDOWS)
 			{
-				files = FileSystem.readDirectory(directory);
+				python.Syntax.pythonCode("
+				import os
+				import stat
+
+				for root, dirs, files in os.walk(directory, topdown=False):
+					for name in files:
+						filename = os.path.join(root, name)
+						os.chmod(filename, stat.S_IWUSR)
+						os.remove(filename)
+					for name in dirs:
+						os.rmdir(os.path.join(root, name))
+				os.rmdir(directory)");
 			}
-			catch(e : Dynamic)
+			else
 			{
-				throw "An error occurred while deleting the directory " + directory;
+				python.Syntax.pythonCode("
+				import shutil
+				shutil.rmtree(directory)");
 			}
-
-			for (file in FileSystem.readDirectory(directory))
-			{
-				var path = Path.join([directory, file]);
-
-				try {
-
-
-					if (FileSystem.isDirectory(path))
-					{
-						if (isLink(path))
-						{
-							FileSystem.deleteFile(path);
-						}
-						else
-						{
-							removeDirectory(path);
-						}
-					}
-					else
-					{
-						try
-						{
-							FileSystem.deleteFile(path);
-						}
-						catch (e:Dynamic)
-						{
-							if (PlatformHelper.hostPlatform == Platform.WINDOWS)
-							{
-								CommandHelper.runCommand("", "del", [path.replace("/", "\\"), "/f", "/q"]);
-							}
-							else
-							{
-								CommandHelper.runCommand("", "rm", ["-f", path]);
-							}
-						}
-					}
-				}
-				catch (e:Dynamic)
-				{
-					throw "An error occurred while deleting the directory " + directory;
-				}
-			}
-
-			LogHelper.info("", " - \x1b[1mRemoving directory:\x1b[0m " + directory);
-
-			try
-			{
-				FileSystem.deleteDirectory (directory);
-			}
-			catch (e:Dynamic)
-			{
-				throw "An error occurred while deleting the directory " + directory;
-			}
-
 		}
-
 	}
 
 	/// gathered file list, and prefix are is used in the recursion.

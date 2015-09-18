@@ -74,8 +74,17 @@ class Bootstrap
 
 	private static function isPythonExecValid(pythonExec: String): Bool
 	{
-		var p = new Process(pythonExec, ["-V"]);
-		var exitCode = p.exitCode();
+		var exitCode: Int;
+		var p: Process;
+		try
+		{
+			p = new Process(pythonExec, ["-V"]);
+			exitCode = p.exitCode();
+		}
+		catch (e: Dynamic)
+		{
+			return false;
+		}
 
 		if (exitCode == 0)
 		{
