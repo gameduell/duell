@@ -52,7 +52,7 @@ class Bootstrap
 
 	private static function findPython(): String
 	{
-		var execs = ["python3.4", "python3.3", "python3.2", "python"];
+		var execs = ["python3.5", "python3.4", "python3.3", "python3.2", "python"];
 
 		for (exec in execs)
 		{
