@@ -2730,7 +2730,7 @@ class duell_helpers_CommandHelper:
 	def openURL(url):
 		result = 0
 		if (duell_helpers_PlatformHelper.get_hostPlatform() == duell_helpers_Platform.WINDOWS):
-			result = duell_helpers_CommandHelper.runCommand("","start",[url])
+			result = duell_helpers_CommandHelper.runCommand("","cmd",["/C", "start", url])
 		elif (duell_helpers_PlatformHelper.get_hostPlatform() == duell_helpers_Platform.MAC):
 			result = duell_helpers_CommandHelper.runCommand("","/usr/bin/open",[url])
 		elif (duell_helpers_PlatformHelper.get_hostPlatform() == duell_helpers_Platform.LINUX):
@@ -3080,13 +3080,7 @@ class duell_helpers_FileHelper:
 		if ((source is None) or (not sys_FileSystem.exists(source))):
 			raise _HxException((("Source path \"" + ("null" if source is None else source)) + "\" does not exist"))
 		if sys_FileSystem.exists(destination):
-			def _hx_local_0():
-				_this = sys_FileSystem.stat(source).mtime
-				return Date.datetimeTimestamp(_this.date,Date.EPOCH_LOCAL)
-			def _hx_local_1():
-				_this1 = sys_FileSystem.stat(destination).mtime
-				return Date.datetimeTimestamp(_this1.date,Date.EPOCH_LOCAL)
-			if (_hx_local_0() < _hx_local_1()):
+			if (python_lib_Os.stat(source).st_ctime < python_lib_Os.stat(destination).st_ctime):
 				return False
 		return True
 
@@ -9919,16 +9913,11 @@ _hx_classes["python.io.IoTools"] = python_io_IoTools
 
 class sys_FileSystem:
 	_hx_class_name = "sys.FileSystem"
-	_hx_statics = ["exists", "stat", "fullPath", "isDirectory", "createDirectory", "deleteFile", "readDirectory"]
+	_hx_statics = ["exists", "fullPath", "isDirectory", "createDirectory", "deleteFile", "readDirectory"]
 
 	@staticmethod
 	def exists(path):
 		return python_lib_os_Path.exists(path)
-
-	@staticmethod
-	def stat(path):
-		s = python_lib_Os.stat(path)
-		return _hx_AnonObject({'gid': s.st_gid, 'uid': s.st_uid, 'atime': Date.fromTime(s.st_atime), 'mtime': Date.fromTime(s.st_mtime), 'ctime': Date.fromTime(s.st_ctime), 'size': s.st_size, 'dev': s.st_dev, 'ino': s.st_ino, 'nlink': s.st_nlink, 'rdev': s.st_rdev, 'mode': s.st_mode})
 
 	@staticmethod
 	def fullPath(relPath):

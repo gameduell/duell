@@ -50,7 +50,7 @@ class FileHelper
 
 		if (FileSystem.exists(destination))
 		{
-			if (FileSystem.stat(source).mtime.getTime () < FileSystem.stat(destination).mtime.getTime ())
+			if (python.lib.Os.stat(source).st_ctime < python.lib.Os.stat(destination).st_ctime)
 			{
 				return false;
 			}

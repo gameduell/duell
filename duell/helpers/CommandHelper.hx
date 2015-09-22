@@ -120,7 +120,7 @@ class CommandHelper
 		var result : Int = 0;
 		if(PlatformHelper.hostPlatform == Platform.WINDOWS)
 		{
-			result = runCommand ("", "start", [url]);
+			result = runCommand ("", "cmd", ["/C", "start", url]);
 		}
 		else if (PlatformHelper.hostPlatform == Platform.MAC)
 		{
