@@ -55,6 +55,7 @@ class GitVers
 		GitHelper.fetch(dir);
         branchList = GitHelper.listBranches(dir);
         tagList = GitHelper.listTags(dir);
+		tagList.reverse(); ///newest first
 
         currentVersion = getCurrentVersionOfDirectory();
 	}

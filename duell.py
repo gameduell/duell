@@ -829,6 +829,7 @@ class Sys:
 			args1 = [cmd]
 		else:
 			args1 = ([cmd] + args)
+		print(str(args1))
 		return python_lib_Subprocess.call(args1)
 
 	@staticmethod
@@ -4408,8 +4409,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_val
 					nonlocal _g_head
+					nonlocal _g_val
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -4459,8 +4460,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -6096,6 +6097,7 @@ class duell_versioning_GitVers:
 		duell_helpers_GitHelper.fetch(dir)
 		self.branchList = duell_helpers_GitHelper.listBranches(dir)
 		self.tagList = duell_helpers_GitHelper.listTags(dir)
+		self.tagList.reverse()
 		self.currentVersion = self.getCurrentVersionOfDirectory()
 
 	def getCurrentVersionOfDirectory(self):
