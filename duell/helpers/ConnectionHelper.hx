@@ -56,6 +56,8 @@ class ConnectionHelper
                 LogHelper.println("");
                 LogHelper.warn("Running duell tool in offline mode, this might cause undesired behaviors!");
                 LogHelper.println("");
+
+                online = false;
             }
         }
 

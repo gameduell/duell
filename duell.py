@@ -2880,6 +2880,7 @@ class duell_helpers_ConnectionHelper:
 				duell_helpers_LogHelper.println("")
 				duell_helpers_LogHelper.warn("Running duell tool in offline mode, this might cause undesired behaviors!")
 				duell_helpers_LogHelper.println("")
+				duell_helpers_ConnectionHelper.online = False
 		return duell_helpers_ConnectionHelper.online
 duell_helpers_ConnectionHelper._hx_class = duell_helpers_ConnectionHelper
 _hx_classes["duell.helpers.ConnectionHelper"] = duell_helpers_ConnectionHelper
