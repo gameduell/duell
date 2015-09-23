@@ -118,16 +118,26 @@ class Server
         return "OK";
     }
 
+	private function noCache(response: Dynamic): Dynamic
+	{
+		untyped response.headers['Last-Modified'] = python.lib.datetime.Datetime.now();
+        untyped response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0';
+        untyped response.headers['Pragma'] = 'no-cache';
+        untyped response.headers['Expires'] = '-1';
+
+		return response;
+	}
+
     public function GETFILE(filename: String)
     {
         if (timeoutChecker != null) timeoutChecker.tick();
-        return FlaskLib.send_from_directory(path, filename);
+        return noCache(FlaskLib.send_from_directory(path, filename));
     }
 
     public function INDEXHTML()
     {
         if (timeoutChecker != null) timeoutChecker.tick();
-        return FlaskLib.send_from_directory(path, "index.html");
+        return noCache(FlaskLib.send_from_directory(path, "index.html"));
     }
 
 
