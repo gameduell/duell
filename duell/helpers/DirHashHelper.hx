@@ -30,6 +30,8 @@ import duell.objects.DuellProcess;
 import duell.objects.DuellLib;
 import duell.helpers.PlatformHelper;
 import haxe.io.Path;
+import sys.FileSystem;
+import sys.io.File;
 
 using duell.helpers.HashHelper;
 using StringTools;
@@ -97,4 +99,49 @@ class DirHashHelper
 
 		return output.getFnv32IntFromString();
 	}
+
+
+
+	public static function getHashOfDirectoryRecursively(path: String): Int
+	{
+		var currentArrayOfHashes: Array<Int> = [];
+
+		var hash: Int = getHashOfDirectory(path);
+
+		currentArrayOfHashes.push(hash);
+
+		var folderList = PathHelper.getRecursiveFolderListUnderFolder(path);
+		for (innerFolder in folderList)
+		{
+			var hash: Int = getHashOfDirectory(Path.join([path, innerFolder]));
+			currentArrayOfHashes.push(hash);
+		}
+
+		return currentArrayOfHashes.getFnv32IntFromIntArray();
+	}
+
+
+	public static function getCachedHash(hashPath:String): Int
+	{
+		if (FileSystem.exists(hashPath))
+		{
+			var hash: String = File.getContent(hashPath);
+
+			return Std.parseInt(hash);
+		}
+		return 0;
+	}
+
+	public static function saveHash(hash: Int, hashPath:String): Void
+	{
+		if (FileSystem.exists(hashPath))
+		{
+			FileSystem.deleteFile(hashPath);
+		}
+
+		File.saveContent(hashPath, Std.string(hash));
+	}
+
+
+
 }
