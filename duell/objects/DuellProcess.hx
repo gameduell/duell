@@ -214,7 +214,6 @@ class DuellProcess
 									var str = untyped process.p.stdout.readline().decode("utf-8");
 									if (str == null || str == "")
 											break;
-
 									stdoutMutex.acquire();
 									stdout.writeString(str);
 									totalStdout.writeString(str);
@@ -278,11 +277,12 @@ class DuellProcess
 									stderr.writeString(str);
 									totalStderr.writeString(str);
 									stderrMutex.release();
-
 									if(str.charAt(str.length - 1) == "\n")
 									{
 										str = str.substring(0, str.length - 1);
-										log(stderrLineBuffer.getBytes().toString());
+										stderrLineBuffer.writeString(str);
+										var line = stderrLineBuffer.getBytes().toString();
+										log(line);
 										stderrLineBuffer = new BytesOutput();
 									}
 									else
