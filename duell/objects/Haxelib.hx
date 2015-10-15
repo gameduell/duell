@@ -169,9 +169,10 @@ class Haxelib
 	   		arguments.push(name);
 	    	arguments.push(version);
 
-			install(); /// BUG FIX, to ensure the version is there, because exists is not working for versions
+            uninstall(); /// BUG FIX, to ensure the version is there, because exists is not working for versions
+			install();   /// BUG FIX the BUG FIX because it will hang when trying to install a haxelib version which was already there.
+                         /// Therefore we simply remove the haxelib before.
     	}
-
 
 	    var haxePath = Sys.getEnv("HAXEPATH");
 	    var systemCommand = haxePath != null && haxePath != "" ? false : true;
@@ -179,6 +180,17 @@ class Haxelib
         var process = new DuellProcess(haxePath, "haxelib", arguments, {systemCommand: systemCommand, errorMessage: "set haxelib version"});
 
 		process.stdin.writeString("y\n");
+
+        process.blockUntilFinished();
+    }
+
+    public function uninstall()
+    {
+        var args = ["remove", name];
+
+        var haxePath = Sys.getEnv("HAXEPATH");
+        var systemCommand = haxePath != null && haxePath != "" ? false : true;
+        var process = new DuellProcess(haxePath, "haxelib", args, {systemCommand: systemCommand, errorMessage: 'uninstalling the library "$name"', mute: true});
 
         process.blockUntilFinished();
     }

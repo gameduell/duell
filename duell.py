@@ -4403,8 +4403,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_val
 					nonlocal _g_head
+					nonlocal _g_val
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -4454,8 +4454,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -5481,7 +5481,9 @@ class duell_objects_DuellProcess:
 						return ("" if (((index < 0) or ((index >= len(_hx_str))))) else _hx_str[index])
 					if (_hx_local_0() == "\n"):
 						_hx_str = HxString.substring(_hx_str,0,(len(_hx_str) - 1))
-						_g.log(_g.stderrLineBuffer.getBytes().toString())
+						_g.stderrLineBuffer.writeString(_hx_str)
+						line = _g.stderrLineBuffer.getBytes().toString()
+						_g.log(line)
 						_g.stderrLineBuffer = haxe_io_BytesOutput()
 					else:
 						_g.stderrLineBuffer.writeString(_hx_str)
@@ -5748,7 +5750,7 @@ _hx_classes["duell.objects.HXCPPConfigXML"] = duell_objects_HXCPPConfigXML
 class duell_objects_Haxelib:
 	_hx_class_name = "duell.objects.Haxelib"
 	_hx_fields = ["name", "version", "path"]
-	_hx_methods = ["setPath", "exists", "getPath", "getHaxelibPathOutput", "selectVersion", "install", "isGitVersion", "toString"]
+	_hx_methods = ["setPath", "exists", "getPath", "getHaxelibPathOutput", "selectVersion", "uninstall", "install", "isGitVersion", "toString"]
 	_hx_statics = ["haxelibCache", "getHaxelib", "solveConflict"]
 
 	def __init__(self,name,version = ""):
@@ -5832,6 +5834,7 @@ class duell_objects_Haxelib:
 			arguments.append("set")
 			arguments.append(self.name)
 			arguments.append(self.version)
+			self.uninstall()
 			self.install()
 		haxePath = Sys.getEnv("HAXEPATH")
 		systemCommand = None
@@ -5841,6 +5844,17 @@ class duell_objects_Haxelib:
 			systemCommand = True
 		process = duell_objects_DuellProcess(haxePath, "haxelib", arguments, _hx_AnonObject({'systemCommand': systemCommand, 'errorMessage': "set haxelib version"}))
 		process.stdin.writeString("y\n")
+		process.blockUntilFinished()
+
+	def uninstall(self):
+		args = ["remove", self.name]
+		haxePath = Sys.getEnv("HAXEPATH")
+		systemCommand = None
+		if ((haxePath is not None) and ((haxePath != ""))):
+			systemCommand = False
+		else:
+			systemCommand = True
+		process = duell_objects_DuellProcess(haxePath, "haxelib", args, _hx_AnonObject({'systemCommand': systemCommand, 'errorMessage': (("uninstalling the library \"" + HxOverrides.stringOrNull(self.name)) + "\""), 'mute': True}))
 		process.blockUntilFinished()
 
 	def install(self):
