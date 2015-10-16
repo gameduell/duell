@@ -3459,7 +3459,7 @@ _hx_classes["duell.helpers.LogHelper"] = duell_helpers_LogHelper
 
 class duell_helpers_PathHelper:
 	_hx_class_name = "duell.helpers.PathHelper"
-	_hx_statics = ["mkdir", "unescape", "escape", "expand", "stripQuotes", "isLink", "removeDirectory", "getRecursiveFileListUnderFolder", "getRecursiveFolderListUnderFolder", "getHomeFolder", "isPathRooted"]
+	_hx_statics = ["mkdir", "unescape", "escape", "expand", "stripQuotes", "isLink", "removeDirectory", "getRecursiveFileListUnderFolder", "getRecursiveFolderListUnderFolder", "getFolderListUnderFolder", "getHomeFolder", "isPathRooted"]
 
 	@staticmethod
 	def mkdir(directory):
@@ -3606,6 +3606,28 @@ class duell_helpers_PathHelper:
 					x = haxe_io_Path.join([prefix, file])
 					gatheredFolderList.append(x)
 					duell_helpers_PathHelper.getRecursiveFolderListUnderFolder(fullPath,gatheredFolderList,haxe_io_Path.join([prefix, file]))
+		return gatheredFolderList
+
+	@staticmethod
+	def getFolderListUnderFolder(folder,gatheredFolderList = None):
+		if (gatheredFolderList is None):
+			gatheredFolderList = []
+		files = []
+		try:
+			files = sys_FileSystem.readDirectory(folder)
+		except Exception as _hx_e:
+			_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
+			e = _hx_e1
+			raise _HxException((("Could not find folder directory \"" + ("null" if folder is None else folder)) + "\""))
+		_g = 0
+		while (_g < len(files)):
+			file = (files[_g] if _g >= 0 and _g < len(files) else None)
+			_g = (_g + 1)
+			if (HxString.substr(file,0,1) != "."):
+				fullPath = haxe_io_Path.join([folder, file])
+				if sys_FileSystem.isDirectory(fullPath):
+					x = haxe_io_Path.join(["", file])
+					gatheredFolderList.append(x)
 		return gatheredFolderList
 
 	@staticmethod
@@ -4454,8 +4476,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -5750,7 +5772,7 @@ _hx_classes["duell.objects.HXCPPConfigXML"] = duell_objects_HXCPPConfigXML
 class duell_objects_Haxelib:
 	_hx_class_name = "duell.objects.Haxelib"
 	_hx_fields = ["name", "version", "path"]
-	_hx_methods = ["setPath", "exists", "getPath", "getHaxelibPathOutput", "selectVersion", "uninstall", "install", "isGitVersion", "toString"]
+	_hx_methods = ["setPath", "exists", "isHaxelibInstalled", "getPath", "getHaxelibPathOutput", "selectVersion", "uninstall", "install", "isGitVersion", "toString"]
 	_hx_statics = ["haxelibCache", "getHaxelib", "solveConflict"]
 
 	def __init__(self,name,version = ""):
@@ -5769,6 +5791,24 @@ class duell_objects_Haxelib:
 		self.path = path
 
 	def exists(self):
+		if self.isHaxelibInstalled():
+			if (self.version == ""):
+				return True
+			compareVersion = StringTools.replace(self.version,".",",")
+			def _hx_local_0():
+				_this = self.getPath()
+				delimiter = self.name
+				return (list(_this) if ((delimiter == "")) else _this.split(delimiter))
+			versionPath = (HxOverrides.stringOrNull(python_internal_ArrayImpl._get((_hx_local_0()), 0)) + HxOverrides.stringOrNull(self.name))
+			versionArray = duell_helpers_PathHelper.getFolderListUnderFolder(versionPath)
+			if (python_internal_ArrayImpl.indexOf(versionArray,compareVersion,None) != -1):
+				return True
+			else:
+				return False
+		else:
+			return False
+
+	def isHaxelibInstalled(self):
 		output = self.getHaxelibPathOutput()
 		if (output.find("is not installed") != -1):
 			return False
@@ -5778,7 +5818,7 @@ class duell_objects_Haxelib:
 	def getPath(self):
 		if (self.path is not None):
 			return self.path
-		if (not self.exists()):
+		if (not self.isHaxelibInstalled()):
 			if (self.version != ""):
 				raise _HxException((((("Could not find haxelib \"" + HxOverrides.stringOrNull(self.name)) + "\" version \"") + HxOverrides.stringOrNull(self.version)) + "\", does it need to be installed?"))
 			else:
@@ -5834,8 +5874,6 @@ class duell_objects_Haxelib:
 			arguments.append("set")
 			arguments.append(self.name)
 			arguments.append(self.version)
-			self.uninstall()
-			self.install()
 		haxePath = Sys.getEnv("HAXEPATH")
 		systemCommand = None
 		if ((haxePath is not None) and ((haxePath != ""))):

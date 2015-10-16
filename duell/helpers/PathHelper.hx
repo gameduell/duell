@@ -257,6 +257,39 @@ class PathHelper
         return gatheredFolderList;
     }
 
+    public static function getFolderListUnderFolder(folder : String, gatheredFolderList : Array<String> = null) : Array<String>
+    {
+        if (gatheredFolderList == null)
+        {
+            gatheredFolderList = [];
+        }
+
+        var files = [];
+        try
+        {
+            files = FileSystem.readDirectory(folder);
+        }
+        catch (e:Dynamic)
+        {
+            throw "Could not find folder directory \"" + folder + "\"";
+        }
+
+        for (file in files)
+        {
+            if (file.substr(0, 1) != ".") /// hidden file
+            {
+                var fullPath = Path.join([folder, file]);
+
+                if (FileSystem.isDirectory(fullPath))
+                {
+                    gatheredFolderList.push(haxe.io.Path.join(["", file]));
+                }
+            }
+        }
+
+        return gatheredFolderList;
+    }
+
 	public static function getHomeFolder() : String
 	{
 		var env = Sys.environment();

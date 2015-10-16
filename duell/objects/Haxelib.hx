@@ -26,6 +26,10 @@
 
 package duell.objects;
 
+import Array;
+import haxe.io.Path;
+import duell.helpers.PathHelper;
+import duell.helpers.FileHelper;
 import duell.helpers.ConnectionHelper;
 import duell.helpers.LogHelper;
 import duell.objects.DuellProcess;
@@ -77,22 +81,50 @@ class Haxelib
 		this.path = path;
 	}
 
+    // Checks the existence of the wanted version
 	public function exists()
 	{
-		var output = getHaxelibPathOutput();
+        if (isHaxelibInstalled())
+        {
+            if (version == "") return true;
 
-		if(output.indexOf("is not installed") != -1)
-			return false;
-		else
-			return true;
+            var compareVersion = version.replace(".", ",");
+            var versionPath = getPath().split(name)[0] + name;
+            var versionArray: Array<String> = PathHelper.getFolderListUnderFolder(versionPath);
+
+            if (versionArray.indexOf(compareVersion) != -1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
 	}
+
+    private function isHaxelibInstalled()
+    {
+        var output = getHaxelibPathOutput();
+
+        if(output.indexOf("is not installed") != -1)
+            return false;
+        else
+        {
+            return true;
+        }
+    }
 
 	public function getPath() : String
 	{
 		if(path != null)
 			return path;
 
-		if(!exists())
+		if(!isHaxelibInstalled())
 		{
 			if (version != "")
 			{
@@ -168,10 +200,6 @@ class Haxelib
 	    	arguments.push("set");
 	   		arguments.push(name);
 	    	arguments.push(version);
-
-            uninstall(); /// BUG FIX, to ensure the version is there, because exists is not working for versions
-			install();   /// BUG FIX the BUG FIX because it will hang when trying to install a haxelib version which was already there.
-                         /// Therefore we simply remove the haxelib before.
     	}
 
 	    var haxePath = Sys.getEnv("HAXEPATH");
