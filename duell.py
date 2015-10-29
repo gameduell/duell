@@ -2338,10 +2338,21 @@ class duell_commands_UpdateCommand:
 		duellProcess = duell_objects_DuellProcess(Sys.getCwd(), haxe_io_Path.join([haxePath, "haxe"]), ["-version"], options)
 		versionString = StringTools.trim(duellProcess.getCompleteStderr().toString())
 		haxeVersion = duell_objects_SemVer.ofString(versionString)
-		if (not duell_objects_SemVer.areCompatible(haxeVersion,duell_objects_SemVer.ofString(duell_defines_DuellDefines.HAXE_VERSION))):
-			raise _HxException((((("DuellTool Haxe Version " + HxOverrides.stringOrNull(duell_defines_DuellDefines.HAXE_VERSION)) + " and current version ") + HxOverrides.stringOrNull(haxeVersion.toString())) + " are not compatible. Please install a haxe version that is compatible."))
-		_this = self.finalToolList
-		_this.append(_hx_AnonObject({'name': "haxe", 'version': versionString}))
+		allowedHaxeVersions = None
+		_this = duell_defines_DuellDefines.ALLOWED_HAXE_VERSIONS
+		allowedHaxeVersions = _this.split(",")
+		foundSupportedHaxeVersion = False
+		_g = 0
+		while (_g < len(allowedHaxeVersions)):
+			element = (allowedHaxeVersions[_g] if _g >= 0 and _g < len(allowedHaxeVersions) else None)
+			_g = (_g + 1)
+			if duell_objects_SemVer.areCompatible(haxeVersion,duell_objects_SemVer.ofString(element)):
+				foundSupportedHaxeVersion = True
+				break
+		if (not foundSupportedHaxeVersion):
+			raise _HxException((((("DuellTool allowed Haxe versions " + HxOverrides.stringOrNull(duell_defines_DuellDefines.ALLOWED_HAXE_VERSIONS)) + " and current version ") + HxOverrides.stringOrNull(haxeVersion.toString())) + " are not compatible. Please install a haxe version that is compatible."))
+		_this1 = self.finalToolList
+		_this1.append(_hx_AnonObject({'name': "haxe", 'version': versionString}))
 
 	def printFinalResult(self):
 		duell_helpers_LogHelper.info((("\x1B[1m" + "DuellLibs:") + "\x1B[0m"))
@@ -2651,7 +2662,7 @@ _hx_classes["duell.commands.UpdateCommand"] = duell_commands_UpdateCommand
 
 class duell_defines_DuellDefines:
 	_hx_class_name = "duell.defines.DuellDefines"
-	_hx_statics = ["USER_CONFIG_FILENAME", "PROJECT_CONFIG_FILENAME", "LIB_CONFIG_FILENAME", "PLATFORM_CONFIG_FILENAME", "DEFAULT_HXCPP_VERSION", "HAXE_VERSION"]
+	_hx_statics = ["USER_CONFIG_FILENAME", "PROJECT_CONFIG_FILENAME", "LIB_CONFIG_FILENAME", "PLATFORM_CONFIG_FILENAME", "DEFAULT_HXCPP_VERSION", "HAXE_VERSION", "ALLOWED_HAXE_VERSIONS"]
 duell_defines_DuellDefines._hx_class = duell_defines_DuellDefines
 _hx_classes["duell.defines.DuellDefines"] = duell_defines_DuellDefines
 
@@ -4425,8 +4436,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_head
 					nonlocal _g_val
+					nonlocal _g_head
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -4476,8 +4487,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -10427,6 +10438,7 @@ duell_defines_DuellDefines.LIB_CONFIG_FILENAME = "duell_library.xml"
 duell_defines_DuellDefines.PLATFORM_CONFIG_FILENAME = "duell_platform.xml"
 duell_defines_DuellDefines.DEFAULT_HXCPP_VERSION = "3.2.94"
 duell_defines_DuellDefines.HAXE_VERSION = "3.2.0"
+duell_defines_DuellDefines.ALLOWED_HAXE_VERSIONS = "3.2.0,3.2.1"
 duell_helpers_ConnectionHelper.TIMEOUT = 3
 duell_helpers_ConnectionHelper.online = True
 duell_helpers_ConnectionHelper.initialized = False

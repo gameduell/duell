@@ -374,10 +374,23 @@ class UpdateCommand implements IGDCommand
 
 		var haxeVersion = SemVer.ofString(versionString);
 
-		if (!SemVer.areCompatible(haxeVersion, SemVer.ofString(DuellDefines.HAXE_VERSION)))
-		{
-			throw "DuellTool Haxe Version " + DuellDefines.HAXE_VERSION + " and current version " + haxeVersion.toString() + " are not compatible. Please install a haxe version that is compatible.";
-		}
+        var allowedHaxeVersions: Array<String> = DuellDefines.ALLOWED_HAXE_VERSIONS.split(",");
+
+        var foundSupportedHaxeVersion: Bool = false;
+
+        for (element in allowedHaxeVersions)
+        {
+            if (SemVer.areCompatible(haxeVersion, SemVer.ofString(element)))
+            {
+                foundSupportedHaxeVersion = true;
+                break;
+            }
+        }
+
+        if (!foundSupportedHaxeVersion)
+        {
+            throw "DuellTool allowed Haxe versions " + DuellDefines.ALLOWED_HAXE_VERSIONS + " and current version " + haxeVersion.toString() + " are not compatible. Please install a haxe version that is compatible.";
+        }
 
         finalToolList.push({name: "haxe", version: versionString});
 	}
