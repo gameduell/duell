@@ -1440,6 +1440,8 @@ class duell_commands_BuildCommand:
 				pythonLibPathsToBootstrap.append(pyLibPath1)
 		buildArguments.append("-D")
 		buildArguments.append(("platform_" + HxOverrides.stringOrNull(self.platformName)))
+		buildArguments.append("-D")
+		buildArguments.append(("duell_api_level=" + Std.string(duell_defines_DuellDefines.DUELL_API_LEVEL)))
 		buildArguments.append("-resource")
 		x4 = (HxOverrides.stringOrNull(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath("duell"), "config.xml"])) + "@generalArguments")
 		buildArguments.append(x4)
@@ -2662,7 +2664,7 @@ _hx_classes["duell.commands.UpdateCommand"] = duell_commands_UpdateCommand
 
 class duell_defines_DuellDefines:
 	_hx_class_name = "duell.defines.DuellDefines"
-	_hx_statics = ["USER_CONFIG_FILENAME", "PROJECT_CONFIG_FILENAME", "LIB_CONFIG_FILENAME", "PLATFORM_CONFIG_FILENAME", "DEFAULT_HXCPP_VERSION", "HAXE_VERSION", "ALLOWED_HAXE_VERSIONS"]
+	_hx_statics = ["USER_CONFIG_FILENAME", "PROJECT_CONFIG_FILENAME", "LIB_CONFIG_FILENAME", "PLATFORM_CONFIG_FILENAME", "DEFAULT_HXCPP_VERSION", "HAXE_VERSION", "ALLOWED_HAXE_VERSIONS", "DUELL_API_LEVEL"]
 duell_defines_DuellDefines._hx_class = duell_defines_DuellDefines
 _hx_classes["duell.defines.DuellDefines"] = duell_defines_DuellDefines
 
@@ -4487,8 +4489,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -10439,6 +10441,7 @@ duell_defines_DuellDefines.PLATFORM_CONFIG_FILENAME = "duell_platform.xml"
 duell_defines_DuellDefines.DEFAULT_HXCPP_VERSION = "3.2.94"
 duell_defines_DuellDefines.HAXE_VERSION = "3.2.0"
 duell_defines_DuellDefines.ALLOWED_HAXE_VERSIONS = "3.2.0,3.2.1"
+duell_defines_DuellDefines.DUELL_API_LEVEL = 411
 duell_helpers_ConnectionHelper.TIMEOUT = 3
 duell_helpers_ConnectionHelper.online = True
 duell_helpers_ConnectionHelper.initialized = False
