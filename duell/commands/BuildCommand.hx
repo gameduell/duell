@@ -321,6 +321,9 @@ class BuildCommand implements IGDCommand
         buildArguments.push("-D");
         buildArguments.push("platform_" + platformName);
 
+        buildArguments.push("-D");
+        buildArguments.push("duell_api_level=" + DuellDefines.DUELL_API_LEVEL);
+
         buildArguments.push("-resource");
         buildArguments.push(Path.join([DuellLibHelper.getPath("duell"), Arguments.CONFIG_XML_FILE]) + "@generalArguments");
 
