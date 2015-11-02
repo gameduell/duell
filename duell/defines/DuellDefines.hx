@@ -33,7 +33,7 @@ class DuellDefines
 	public static var PROJECT_CONFIG_FILENAME = 'duell_project.xml';
 	public static var LIB_CONFIG_FILENAME = 'duell_library.xml';
 	public static var PLATFORM_CONFIG_FILENAME = 'duell_platform.xml';
-	public static var DEFAULT_HXCPP_VERSION = "3.2.94";
+	public static var DEFAULT_HXCPP_VERSION = "3.2.180";
     @:deprecated('use duell_api_level define instead')
 	public static var HAXE_VERSION = "3.2.0";
     public static var ALLOWED_HAXE_VERSIONS = "3.2.0,3.2.1";
@@ -43,5 +43,5 @@ class DuellDefines
      * This value changes for example when hxcpp or haxe versions
      * change. It can be used to provide better backwards compatibility.
      **/
-    public static var DUELL_API_LEVEL = 411;
+    public static var DUELL_API_LEVEL = 412;
 }

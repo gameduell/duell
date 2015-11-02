@@ -26,6 +26,7 @@
 
 package duell.build.objects;
 
+import duell.defines.DuellDefines;
 import duell.build.plugin.platform.PlatformConfiguration;
 
 typedef ConfigurationData = {
@@ -56,7 +57,7 @@ typedef ConfigurationData = {
 							FILESYSTEM : duell.build.plugin.library.LibraryConfigurationData
 						}
 						*/
-
+    DUELL_API_LEVEL : Int,
 	NDLLS : Array<{NAME : String, BIN_PATH : String, BUILD_FILE_PATH : String, REGISTER_STATICS : Bool, DEBUG_SUFFIX : Bool}>,
 
 	/// functions to be used during template processing on the macro parameter
@@ -112,7 +113,7 @@ class Configuration
 					MAIN : "Main",
 					PLATFORM : PlatformConfiguration.getData(),
 					LIBRARY : {},
-
+                    DUELL_API_LEVEL : DuellDefines.DUELL_API_LEVEL,
 					NDLLS : [],
 
 					TEMPLATE_FUNCTIONS :
