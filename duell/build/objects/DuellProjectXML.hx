@@ -289,6 +289,8 @@ class DuellProjectXML
 		if (element.has.resolve("package")) ///package is a keyword
 		{
 			Configuration.getData().APP.PACKAGE = element.att.resolve("package");
+
+			checkForInvalidCharacterInPackageName(Configuration.getData().APP.PACKAGE);
 		}
 
 		if (element.has.company)
@@ -423,6 +425,28 @@ class DuellProjectXML
 		path = Path.join([currentXMLPath[currentXMLPath.length - 1], path]);
 		return path;
 	}
+
+	private function checkForInvalidCharacterInPackageName(packageName: String): Void
+    {
+		var validNonAlphaNumericCharacters: Array<Int> = ['_'.code, '.'.code];
+		for (i in 0...packageName.length)
+		{
+			var char: String = packageName.charAt(i);
+			var charCode: Int = char.toLowerCase().charCodeAt(0);
+
+			if (charCode >= 48 && charCode <= 57) /// number
+				continue;
+
+			if (charCode >= 97 && charCode <= 122) /// lower case letter
+				continue;
+
+			if (validNonAlphaNumericCharacters.indexOf(charCode) != -1)
+				continue;
+
+            throw '[ERROR] Invalid character \'$char\' found at pos $i in package name \'$packageName\'';
+		}
+    }
+
 
 	private function processXML(xml : String) : String
 	{
