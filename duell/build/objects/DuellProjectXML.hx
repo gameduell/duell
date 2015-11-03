@@ -428,15 +428,24 @@ class DuellProjectXML
 
 	private function checkForInvalidCharacterInPackageName(packageName: String): Void
     {
-        var invalidCharacters: Array<String> = ['-'];
-        for (invalidCharacter in invalidCharacters)
-        {
-            var index = packageName.indexOf(invalidCharacter);
-            if (index != -1)
-            {
-                throw '[ERROR] Invalid character \'$invalidCharacter\' found at pos $index in package name \'$packageName\'';
-            }
-        }
+
+		var validNonAlfaNumericCharacters: Array<Int> = ['_'.code, '.'.code];
+		for (i in 0...packageName.length)
+		{
+			var char: String = packageName.charAt(i);
+			var charCode: Int = char.toLowerCase().charCodeAt(0);
+
+			if (charCode >= 48 && charCode <= 57) /// number
+				continue;
+
+			if (charCode >= 97 && charCode <= 122) /// lower case letter
+				continue;
+
+			if (validNonAlfaNumericCharacters.indexOf(charCode) != -1)
+				continue;
+
+            throw '[ERROR] Invalid character \'$char\' found at pos $i in package name \'$packageName\'';
+		}
     }
 
 
