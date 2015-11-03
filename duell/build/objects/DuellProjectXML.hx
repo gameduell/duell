@@ -428,8 +428,7 @@ class DuellProjectXML
 
 	private function checkForInvalidCharacterInPackageName(packageName: String): Void
     {
-
-		var validNonAlfaNumericCharacters: Array<Int> = ['_'.code, '.'.code];
+		var validNonAlphaNumericCharacters: Array<Int> = ['_'.code, '.'.code];
 		for (i in 0...packageName.length)
 		{
 			var char: String = packageName.charAt(i);
@@ -441,7 +440,7 @@ class DuellProjectXML
 			if (charCode >= 97 && charCode <= 122) /// lower case letter
 				continue;
 
-			if (validNonAlfaNumericCharacters.indexOf(charCode) != -1)
+			if (validNonAlphaNumericCharacters.indexOf(charCode) != -1)
 				continue;
 
             throw '[ERROR] Invalid character \'$char\' found at pos $i in package name \'$packageName\'';
