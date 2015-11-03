@@ -289,6 +289,8 @@ class DuellProjectXML
 		if (element.has.resolve("package")) ///package is a keyword
 		{
 			Configuration.getData().APP.PACKAGE = element.att.resolve("package");
+
+			checkForInvalidCharacterInPackageName(Configuration.getData().APP.PACKAGE);
 		}
 
 		if (element.has.company)
@@ -423,6 +425,20 @@ class DuellProjectXML
 		path = Path.join([currentXMLPath[currentXMLPath.length - 1], path]);
 		return path;
 	}
+
+	private function checkForInvalidCharacterInPackageName(packageName: String): Void
+    {
+        var invalidCharacters: Array<String> = ['-'];
+        for (invalidCharacter in invalidCharacters)
+        {
+            var index = packageName.indexOf(invalidCharacter);
+            if (index != -1)
+            {
+                throw '[ERROR] Invalid character \'$invalidCharacter\' found at pos $index in package name \'$packageName\'';
+            }
+        }
+    }
+
 
 	private function processXML(xml : String) : String
 	{
