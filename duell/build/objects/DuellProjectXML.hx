@@ -428,7 +428,7 @@ class DuellProjectXML
 
 	private function checkForInvalidCharacterInPackageName(packageName: String): Void
     {
-		var validNonAlphaNumericCharacters: Array<Int> = ['_'.code, '.'.code];
+		var validNonAlphaNumericCharacters: Array<Int> = ['.'.code];
 		for (i in 0...packageName.length)
 		{
 			var char: String = packageName.charAt(i);
