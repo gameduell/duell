@@ -43,6 +43,7 @@ class DuellLibListHelper
     public static var DEPENDENCY_LIST_FILENAME = "duell_dependencies.json";
 
 	private static var repoListCache : Map<String, DuellLibReference> = null;
+
     public static function getDuellLibReferenceList() : Map<String, DuellLibReference>
     {
     	if(repoListCache != null)
@@ -50,22 +51,10 @@ class DuellLibListHelper
 
         repoListCache = new Map<String, DuellLibReference>();
 
-    	var duellConfig : DuellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
-
+        var duellConfig : DuellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
         var libListFolder : String = DuellConfigHelper.getDuellConfigFolderLocation() + "/" + "lib_list";
 
-        if(duellConfig.repoListURLs == null || duellConfig.repoListURLs.length == 0)
-        {
-            throw "No repo urls are defined. Run \"duell setup\" to fix this.";
-        }
-
-        /// we remove because if the user changes lib lists urls, the result will be very undefined. This way is a bit slower but cleaner.
-        if(FileSystem.exists(libListFolder))
-        {
-            LogHelper.info("", "Cleaning up existing lib lists...");
-
-            PathHelper.removeDirectory(libListFolder);
-        }
+        validateAndCleanRepos(duellConfig, libListFolder);
 
         var repoListIndex = 1;
         /// reversed to give priority to the ones which are first on the list
@@ -97,21 +86,108 @@ class DuellLibListHelper
         return repoListCache;
     }
 
+    private static function validateAndCleanRepos(duellConfig : DuellConfigJSON, libListFolder : String)
+    {
+        if(duellConfig.repoListURLs == null || duellConfig.repoListURLs.length == 0)
+        {
+            throw "No repo urls are defined. Run \"duell setup\" to fix this.";
+        }
+
+        /// we remove because if the user changes lib lists urls, the result will be very undefined. This way is a bit slower but cleaner.
+        if(FileSystem.exists(libListFolder))
+        {
+            LogHelper.info("", "Cleaning up existing lib lists...");
+
+            PathHelper.removeDirectory(libListFolder);
+        }
+    }
+
     private static function addLibsToTheRepoCache(configJSON : Dynamic)
     {
         var listOfRepos = Reflect.fields(configJSON);
-
         var duellLibMap = new Map<String, DuellLibReference>();
+        var duplicates  = false;
 
         for(repo in listOfRepos)
         {
             var repoInfo = Reflect.field(configJSON, repo);
             if(repoListCache.exists(repo))
             {
-                LogHelper.info("Found duplicate for " + repo + " in the repo list URLs. Using " + repoInfo.git_path);
+                duplicates = true;//LogHelper.info("Found duplicate for " + repo + " in the repo list URLs. Using " + repoInfo.git_path);
             }
 
             repoListCache.set(repo, new DuellLibReference(repo, repoInfo.git_path, repoInfo.library_path, repoInfo.destination_path));
         }
+
+        if(duplicates){
+            LogHelper.info("Duplicates found in the repo list URLs. List duplicates by using \"duell repo_list\" command.");
+            LogHelper.info(" ");
+        }
+    }
+
+    public static function getDuplicatesFromRepoLists() : Map<String, Array<DuellLibReference>>
+    {
+        var duellConfig : DuellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+        var libListFolder : String = DuellConfigHelper.getDuellConfigFolderLocation() + "/" + "lib_list";
+
+        validateAndCleanRepos(duellConfig, libListFolder);
+
+        var source = new Map<String, DuellLibReference>();
+        var duplicates = new Map<String, Array<DuellLibReference>>();
+
+        var repoListIndex = 1;
+        /// reversed to give priority to the ones which are first on the list
+        var reverseRepoListduellConfig = duellConfig.repoListURLs.copy();
+        reverseRepoListduellConfig.reverse();
+        for(repoURL in reverseRepoListduellConfig)
+        {
+            var path = libListFolder + "/" + repoListIndex;
+            if(GitHelper.clone(repoURL, path) != 0)
+            {
+                throw "Can't access the repo list in " + repoURL + " or something is wrong with the folder " + path;
+            }
+
+            try
+            {
+                var configContent = File.getContent(path + "/haxe-repo-list.json");
+                var configJSON = Json.parse(configContent);
+
+                createDuplicateList(configJSON, source, duplicates);
+            }
+            catch (e : Error)
+            {
+                throw "Cannot Parse repo list. Check if this file is correct: " + path + "/haxe-repo-list.json";
+            }
+
+            repoListIndex++;
+        }
+
+        return duplicates;
+    }
+
+    private static function createDuplicateList(configJSON : Dynamic, source : Map<String, DuellLibReference>, duplicates : Map<String, Array<DuellLibReference>>)
+    {
+        var listOfRepos = Reflect.fields(configJSON);
+        for(repo in listOfRepos)
+        {
+            var repoInfo = Reflect.field(configJSON, repo);
+            if(source.exists(repo))
+            {
+                var duplicateList : Array<DuellLibReference>;
+                if(!duplicates.exists(repo))
+                {
+                    duplicateList = [source.get(repo)];
+                    duplicates.set(repo, duplicateList);
+                }
+                
+                duplicateList = duplicates.get(repo);
+                duplicateList.push(new DuellLibReference(repo, repoInfo.git_path, repoInfo.library_path, repoInfo.destination_path));
+            }
+            else
+            {
+                source.set(repo, new DuellLibReference(repo, repoInfo.git_path, repoInfo.library_path, repoInfo.destination_path));
+            }
+        }
     }
 }
+

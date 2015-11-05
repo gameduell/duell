@@ -129,6 +129,12 @@
                     Reverses the order of all urls in the repository list.
                 </documentation>
             </arg>
+
+            <arg name="-duplicates" type="void">
+                <documentation>
+                    List the duplicated repository keys.
+                </documentation>
+            </arg>
         </args>
 
     </command>
