@@ -86,7 +86,7 @@ class DirHashHelper
 		if (filters == null)
 			filters = [];
 
-		var outputSplitFiltered:Array<String> = outputSplit.filter(function(s) {
+		var outputSplitFiltered = outputSplit.filter(function(s) {
 			for (filter in filters)
 			{
 				if (filter.match(s))
@@ -95,17 +95,8 @@ class DirHashHelper
 			return true;
 		});
 
-		// filter the date
-		outputSplitFiltered = outputSplitFiltered.map(function(s) {
-			var fileInfoList:Array<String> = s.split(" ");
-			fileInfoList = fileInfoList.filter(function(s) return s != "");
-			// removes columns 5,6,7 presenting the modified date of a file
-			fileInfoList.splice(5,3);
-			s = fileInfoList.join(" ");
-			return s;
-		});
-
 		output = outputSplitFiltered.join("\n");
+
 		return output.getFnv32IntFromString();
 	}
 
