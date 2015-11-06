@@ -3293,7 +3293,7 @@ class duell_helpers_GitHelper:
 		folder = None
 		folder = (None if ((len(pathComponents) == 0)) else pathComponents.pop())
 		path = "/".join([python_Boot.toString1(x1,'') for x1 in pathComponents])
-		gitProcess = duell_objects_DuellProcess(path, "git", ["clone", gitURL, folder, "--depth 1"], _hx_AnonObject({'systemCommand': True, 'loggingPrefix': "[Git]", 'block': True, 'errorMessage': "cloning git"}))
+		gitProcess = duell_objects_DuellProcess(path, "git", ["clone", "--depth", "1", gitURL, folder], _hx_AnonObject({'systemCommand': True, 'loggingPrefix': "[Git]", 'block': True, 'errorMessage': "cloning git"}))
 		gitProcess.blockUntilFinished()
 		return gitProcess.exitCode()
 

@@ -60,7 +60,7 @@ class GitHelper
         var gitProcess = new DuellProcess(
                                         path,
                                         "git",
-                                        ["clone", gitURL, folder, "--depth 1"],
+                                        ["clone", "--depth", "1", gitURL, folder],
                                         {
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
