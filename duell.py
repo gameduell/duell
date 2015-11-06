@@ -3044,7 +3044,7 @@ _hx_classes["duell.helpers.DuellLibHelper"] = duell_helpers_DuellLibHelper
 
 class duell_helpers_DuellLibListHelper:
 	_hx_class_name = "duell.helpers.DuellLibListHelper"
-	_hx_statics = ["DEPENDENCY_LIST_FILENAME", "repoListCache", "getDuellLibReferenceList", "addLibsToTheRepoCache", "validateAndCleanRepos", "getDuplicatesFromRepoLists", "createDuplicateList"]
+	_hx_statics = ["DEPENDENCY_LIST_FILENAME", "repoListCache", "getDuellLibReferenceList", "validateAndCleanRepos", "addLibsToTheRepoCache", "getDuplicatesFromRepoLists", "createDuplicateList"]
 
 	@staticmethod
 	def getDuellLibReferenceList():
@@ -3079,6 +3079,14 @@ class duell_helpers_DuellLibListHelper:
 		return duell_helpers_DuellLibListHelper.repoListCache
 
 	@staticmethod
+	def validateAndCleanRepos(duellConfig,libListFolder):
+		if ((duellConfig.repoListURLs is None) or ((len(duellConfig.repoListURLs) == 0))):
+			raise _HxException("No repo urls are defined. Run \"duell setup\" to fix this.")
+		if sys_FileSystem.exists(libListFolder):
+			duell_helpers_LogHelper.info("","Cleaning up existing lib lists...")
+			duell_helpers_PathHelper.removeDirectory(libListFolder)
+
+	@staticmethod
 	def addLibsToTheRepoCache(configJSON):
 		listOfRepos = python_Boot.fields(configJSON)
 		duellLibMap = haxe_ds_StringMap()
@@ -3095,14 +3103,6 @@ class duell_helpers_DuellLibListHelper:
 		if duplicates:
 			duell_helpers_LogHelper.info("Duplicates found in the repo list URLs. List duplicates by using \"duell repo_list\" command.")
 			duell_helpers_LogHelper.info(" ")
-
-	@staticmethod
-	def validateAndCleanRepos(duellConfig,libListFolder):
-		if ((duellConfig.repoListURLs is None) or ((len(duellConfig.repoListURLs) == 0))):
-			raise _HxException("No repo urls are defined. Run \"duell setup\" to fix this.")
-		if sys_FileSystem.exists(libListFolder):
-			duell_helpers_LogHelper.info("","Cleaning up existing lib lists...")
-			duell_helpers_PathHelper.removeDirectory(libListFolder)
 
 	@staticmethod
 	def getDuplicatesFromRepoLists():
@@ -3293,7 +3293,7 @@ class duell_helpers_GitHelper:
 		folder = None
 		folder = (None if ((len(pathComponents) == 0)) else pathComponents.pop())
 		path = "/".join([python_Boot.toString1(x1,'') for x1 in pathComponents])
-		gitProcess = duell_objects_DuellProcess(path, "git", ["clone", gitURL, folder], _hx_AnonObject({'systemCommand': True, 'loggingPrefix': "[Git]", 'block': True, 'errorMessage': "cloning git"}))
+		gitProcess = duell_objects_DuellProcess(path, "git", ["clone", gitURL, folder, "--depth 1"], _hx_AnonObject({'systemCommand': True, 'loggingPrefix': "[Git]", 'block': True, 'errorMessage': "cloning git"}))
 		gitProcess.blockUntilFinished()
 		return gitProcess.exitCode()
 

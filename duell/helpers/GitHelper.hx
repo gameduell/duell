@@ -23,7 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 package duell.helpers;
 
 import duell.objects.DuellProcess;
@@ -36,10 +36,10 @@ class GitHelper
 	{
         var gitProcess = new DuellProcess(
                                         path,
-                                        "git", 
-                                        ["remote", "set-url", remoteName, url], 
+                                        "git",
+                                        ["remote", "set-url", remoteName, url],
                                         {
-                                            systemCommand : true, 
+                                            systemCommand : true,
                                             loggingPrefix : "[Git]",
                                             block : true,
                                             errorMessage: "setting git remote url"
@@ -59,10 +59,10 @@ class GitHelper
 
         var gitProcess = new DuellProcess(
                                         path,
-                                        "git", 
-                                        ["clone", gitURL, folder], 
+                                        "git",
+                                        ["clone", gitURL, folder, "--depth 1"],
                                         {
-                                            systemCommand : true, 
+                                            systemCommand : true,
                                             loggingPrefix : "[Git]",
                                             block : true,
                                             errorMessage: "cloning git"
@@ -81,10 +81,10 @@ class GitHelper
 
         var gitProcess = new DuellProcess(
                                         destination,
-                                        "git", 
-                                        ["pull"], 
+                                        "git",
+                                        ["pull"],
                                         {
-                                            systemCommand : true, 
+                                            systemCommand : true,
                                             loggingPrefix : "[Git]",
                                             block : true,
                                             errorMessage: "pulling git"
@@ -105,8 +105,8 @@ class GitHelper
 
         var gitProcess = new DuellProcess(
                                         destination,
-                                        "git", 
-                                        ["remote", "update"], 
+                                        "git",
+                                        ["remote", "update"],
                                         {
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
@@ -117,8 +117,8 @@ class GitHelper
 
         gitProcess = new DuellProcess(
                                         destination,
-                                        "git", 
-                                        ["status", "-b", "--porcelain"], 
+                                        "git",
+                                        ["status", "-b", "--porcelain"],
                                         {
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
@@ -143,8 +143,8 @@ class GitHelper
     {
         var gitProcess = new DuellProcess(
                                         destination,
-                                        "git", 
-                                        ["status", "-s", "--porcelain"], 
+                                        "git",
+                                        ["status", "-s", "--porcelain"],
                                         {
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
@@ -176,8 +176,8 @@ class GitHelper
 
         new DuellProcess(
                             destination,
-                            "git", 
-                            ["fetch", "--tags", "--prune"], 
+                            "git",
+                            ["fetch", "--tags", "--prune"],
                             {
                                 systemCommand : true,
                                 loggingPrefix : "[Git]",
@@ -191,8 +191,8 @@ class GitHelper
     {
         var gitProcess = new DuellProcess(
                                         destination,
-                                        "git", 
-                                        ["rev-parse", "--verify", "--abbrev-ref", "HEAD"], 
+                                        "git",
+                                        ["rev-parse", "--verify", "--abbrev-ref", "HEAD"],
                                         {
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
@@ -210,8 +210,8 @@ class GitHelper
     {
         var gitProcess = new DuellProcess(
                                         destination,
-                                        "git", 
-                                        ["rev-parse", "--verify", "HEAD"], 
+                                        "git",
+                                        ["rev-parse", "--verify", "HEAD"],
                                         {
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
@@ -229,8 +229,8 @@ class GitHelper
     {
         var gitProcess = new DuellProcess(
                                         destination,
-                                        "git", 
-                                        ["tag", "--contains", "HEAD"], 
+                                        "git",
+                                        ["tag", "--contains", "HEAD"],
                                         {
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
@@ -248,8 +248,8 @@ class GitHelper
     {
         var gitProcess = new DuellProcess(
                                         destination,
-                                        "git", 
-                                        ["rev-parse", tag + "~0"], 
+                                        "git",
+                                        ["rev-parse", tag + "~0"],
                                         {
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
@@ -310,8 +310,8 @@ class GitHelper
     {
         var gitProcess = new DuellProcess(
                                         destination,
-                                        "git", 
-                                        ["branch", "-a"], 
+                                        "git",
+                                        ["branch", "-a"],
                                         {
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
@@ -360,8 +360,8 @@ class GitHelper
     {
         var gitProcess = new DuellProcess(
                                         destination,
-                                        "git", 
-                                        ["tag"], 
+                                        "git",
+                                        ["tag"],
                                         {
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
@@ -379,8 +379,8 @@ class GitHelper
     {
         var gitProcess = new DuellProcess(
                                         destination,
-                                        "git", 
-                                        ["checkout", branch], 
+                                        "git",
+                                        ["checkout", branch],
                                         {
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
@@ -396,8 +396,8 @@ class GitHelper
     {
         var gitProcess = new DuellProcess(
                                         destination,
-                                        "git", 
-                                        ["checkout", commit], 
+                                        "git",
+                                        ["checkout", commit],
                                         {
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
