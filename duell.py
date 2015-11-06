@@ -1766,7 +1766,7 @@ _hx_classes["duell.commands.EnvironmentSetupCommand"] = duell_commands_Environme
 
 class duell_commands_RepoConfigCommand:
 	_hx_class_name = "duell.commands.RepoConfigCommand"
-	_hx_methods = ["execute", "printRepoList"]
+	_hx_methods = ["execute", "printRepoList", "printDuplicates"]
 	_hx_statics = ["defaultRepoListURL"]
 	_hx_interfaces = [duell_commands_IGDCommand]
 
@@ -1825,6 +1825,13 @@ class duell_commands_RepoConfigCommand:
 			duellConfig.repoListURLs.reverse()
 			duellConfig.writeToConfig()
 			duell_helpers_LogHelper.info("Reversed all entries")
+		elif duell_objects_Arguments.isSet("-duplicates"):
+			duell_helpers_LogHelper.info("\n")
+			duell_helpers_LogHelper.info("\x1B[2m------")
+			self.printDuplicates()
+			duell_helpers_LogHelper.info("")
+			duell_helpers_LogHelper.info("------\x1B[0m")
+			duell_helpers_LogHelper.info("\n")
 		duell_helpers_LogHelper.info("\n")
 		duell_helpers_LogHelper.info("\x1B[2m------")
 		duell_helpers_LogHelper.info("Repository List")
@@ -1841,6 +1848,13 @@ class duell_commands_RepoConfigCommand:
 			_g = (_g + 1)
 			duell_helpers_LogHelper.info(((Std.string(counter) + ". ") + ("null" if repo is None else repo)))
 			counter = (counter + 1)
+
+	def printDuplicates(self):
+		_hx_list = duell_helpers_DuellLibListHelper.getDuplicatesFromRepoLists()
+		_hx_local_0 = _hx_list.keys()
+		while _hx_local_0.hasNext():
+			repo = _hx_local_0.next()
+			duell_helpers_LogHelper.info(("Duplicated key: " + ("null" if repo is None else repo)))
 
 	@staticmethod
 	def _hx_empty_init(_hx_o):		pass
@@ -3030,7 +3044,7 @@ _hx_classes["duell.helpers.DuellLibHelper"] = duell_helpers_DuellLibHelper
 
 class duell_helpers_DuellLibListHelper:
 	_hx_class_name = "duell.helpers.DuellLibListHelper"
-	_hx_statics = ["DEPENDENCY_LIST_FILENAME", "repoListCache", "getDuellLibReferenceList", "addLibsToTheRepoCache"]
+	_hx_statics = ["DEPENDENCY_LIST_FILENAME", "repoListCache", "getDuellLibReferenceList", "addLibsToTheRepoCache", "validateAndCleanRepos", "getDuplicatesFromRepoLists", "createDuplicateList"]
 
 	@staticmethod
 	def getDuellLibReferenceList():
@@ -3039,11 +3053,7 @@ class duell_helpers_DuellLibListHelper:
 		duell_helpers_DuellLibListHelper.repoListCache = haxe_ds_StringMap()
 		duellConfig = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
 		libListFolder = ((HxOverrides.stringOrNull(duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation()) + "/") + "lib_list")
-		if ((duellConfig.repoListURLs is None) or ((len(duellConfig.repoListURLs) == 0))):
-			raise _HxException("No repo urls are defined. Run \"duell setup\" to fix this.")
-		if sys_FileSystem.exists(libListFolder):
-			duell_helpers_LogHelper.info("","Cleaning up existing lib lists...")
-			duell_helpers_PathHelper.removeDirectory(libListFolder)
+		duell_helpers_DuellLibListHelper.validateAndCleanRepos(duellConfig,libListFolder)
 		repoListIndex = 1
 		reverseRepoListduellConfig = list(duellConfig.repoListURLs)
 		reverseRepoListduellConfig.reverse()
@@ -3072,15 +3082,78 @@ class duell_helpers_DuellLibListHelper:
 	def addLibsToTheRepoCache(configJSON):
 		listOfRepos = python_Boot.fields(configJSON)
 		duellLibMap = haxe_ds_StringMap()
+		duplicates = False
 		_g = 0
 		while (_g < len(listOfRepos)):
 			repo = (listOfRepos[_g] if _g >= 0 and _g < len(listOfRepos) else None)
 			_g = (_g + 1)
 			repoInfo = Reflect.field(configJSON,repo)
 			if repo in duell_helpers_DuellLibListHelper.repoListCache.h:
-				duell_helpers_LogHelper.info(((("Found duplicate for " + ("null" if repo is None else repo)) + " in the repo list URLs. Using ") + HxOverrides.stringOrNull(repoInfo.git_path)))
+				duplicates = True
 			value = duell_objects_DuellLibReference(repo, repoInfo.git_path, repoInfo.library_path, repoInfo.destination_path)
 			duell_helpers_DuellLibListHelper.repoListCache.h[repo] = value
+		if duplicates:
+			duell_helpers_LogHelper.info("Duplicates found in the repo list URLs. List duplicates by using \"duell repo_list\" command.")
+			duell_helpers_LogHelper.info(" ")
+
+	@staticmethod
+	def validateAndCleanRepos(duellConfig,libListFolder):
+		if ((duellConfig.repoListURLs is None) or ((len(duellConfig.repoListURLs) == 0))):
+			raise _HxException("No repo urls are defined. Run \"duell setup\" to fix this.")
+		if sys_FileSystem.exists(libListFolder):
+			duell_helpers_LogHelper.info("","Cleaning up existing lib lists...")
+			duell_helpers_PathHelper.removeDirectory(libListFolder)
+
+	@staticmethod
+	def getDuplicatesFromRepoLists():
+		duellConfig = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
+		libListFolder = ((HxOverrides.stringOrNull(duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation()) + "/") + "lib_list")
+		duell_helpers_DuellLibListHelper.validateAndCleanRepos(duellConfig,libListFolder)
+		source = haxe_ds_StringMap()
+		duplicates = haxe_ds_StringMap()
+		repoListIndex = 1
+		reverseRepoListduellConfig = list(duellConfig.repoListURLs)
+		reverseRepoListduellConfig.reverse()
+		_g = 0
+		while (_g < len(reverseRepoListduellConfig)):
+			repoURL = (reverseRepoListduellConfig[_g] if _g >= 0 and _g < len(reverseRepoListduellConfig) else None)
+			_g = (_g + 1)
+			path = ((("null" if libListFolder is None else libListFolder) + "/") + Std.string(repoListIndex))
+			if (duell_helpers_GitHelper.clone(repoURL,path) != 0):
+				raise _HxException(((("Can't access the repo list in " + ("null" if repoURL is None else repoURL)) + " or something is wrong with the folder ") + ("null" if path is None else path)))
+			try:
+				configContent = sys_io_File.getContent((("null" if path is None else path) + "/haxe-repo-list.json"))
+				configJSON = python_lib_Json.loads(configContent,**python__KwArgs_KwArgs_Impl_.fromT(_hx_AnonObject({'object_hook': python_Lib.dictToAnon})))
+				duell_helpers_DuellLibListHelper.createDuplicateList(configJSON,source,duplicates)
+			except Exception as _hx_e:
+				_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
+				if isinstance(_hx_e1, haxe_io_Error):
+					e = _hx_e1
+					raise _HxException((("Cannot Parse repo list. Check if this file is correct: " + ("null" if path is None else path)) + "/haxe-repo-list.json"))
+				else:
+					raise _hx_e
+			repoListIndex = (repoListIndex + 1)
+		return duplicates
+
+	@staticmethod
+	def createDuplicateList(configJSON,source,duplicates):
+		listOfRepos = python_Boot.fields(configJSON)
+		_g = 0
+		while (_g < len(listOfRepos)):
+			repo = (listOfRepos[_g] if _g >= 0 and _g < len(listOfRepos) else None)
+			_g = (_g + 1)
+			repoInfo = Reflect.field(configJSON,repo)
+			if repo in source.h:
+				duplicateList = None
+				if (not repo in duplicates.h):
+					duplicateList = [source.h.get(repo,None)]
+					duplicates.h[repo] = duplicateList
+				duplicateList = duplicates.h.get(repo,None)
+				x = duell_objects_DuellLibReference(repo, repoInfo.git_path, repoInfo.library_path, repoInfo.destination_path)
+				duplicateList.append(x)
+			else:
+				value = duell_objects_DuellLibReference(repo, repoInfo.git_path, repoInfo.library_path, repoInfo.destination_path)
+				source.h[repo] = value
 duell_helpers_DuellLibListHelper._hx_class = duell_helpers_DuellLibListHelper
 _hx_classes["duell.helpers.DuellLibListHelper"] = duell_helpers_DuellLibListHelper
 
@@ -4438,8 +4511,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_val
 					nonlocal _g_head
+					nonlocal _g_val
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val

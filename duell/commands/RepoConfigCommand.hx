@@ -30,6 +30,7 @@ import duell.objects.Arguments;
 import duell.helpers.LogHelper;
 import duell.helpers.DuellConfigHelper;
 import duell.objects.DuellConfigJSON;
+import duell.helpers.DuellLibListHelper;
 
 import haxe.CallStack;
 
@@ -134,6 +135,17 @@ class RepoConfigCommand implements IGDCommand
 			duellConfig.repoListURLs.reverse();
 			duellConfig.writeToConfig();
 			LogHelper.info("Reversed all entries");
+		} 
+		else if (Arguments.isSet("-duplicates"))
+		{
+			LogHelper.info("\n");
+			LogHelper.info("\x1b[2m------");
+
+			printDuplicates();
+			
+			LogHelper.info("");
+			LogHelper.info("------\x1b[0m");
+			LogHelper.info("\n");
 		}
 
 		LogHelper.info("\n");
@@ -153,6 +165,15 @@ class RepoConfigCommand implements IGDCommand
 		{
 			LogHelper.info(counter + ". " + repo);
 			counter++;
+		}
+	}
+
+	private function printDuplicates()
+	{
+		var list = DuellLibListHelper.getDuplicatesFromRepoLists();
+		for (repo in list.keys())
+		{
+			LogHelper.info("Duplicated key: " + repo);
 		}
 	}
 }
