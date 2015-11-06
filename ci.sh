@@ -8,6 +8,8 @@ cd test
 
 haxelib run duell_duell create unitTestProject -verbose -yestoall
 
+cd unitTestProject
+
 #because the unitTestProject sample has a specified duell tool version
 sed -i '' 's/supported-duell-tool version=".*"/supported-duell-tool version="master"/g' duell_project.xml
 
