@@ -1,1 +1,2 @@
 bin/* linguist-vendored=true
+pylib/* linguist-vendored=true
