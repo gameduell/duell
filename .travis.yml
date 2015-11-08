@@ -49,7 +49,9 @@ install:
   - haxelib install hxjava
   - haxelib install hxcs
   - haxelib list
-
+before_script:
+  - echo -e "Host heroku.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+  - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 script:
   - sh ci_environment.sh
   - sh ci.sh
