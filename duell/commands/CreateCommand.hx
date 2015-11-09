@@ -31,6 +31,7 @@ import duell.helpers.PathHelper;
 import duell.helpers.AskHelper;
 import duell.helpers.DuellLibHelper;
 import duell.helpers.PythonImportHelper;
+import duell.helpers.DuellLibListHelper;
 import duell.objects.DuellLib;
 import haxe.CallStack;
 import duell.helpers.LogHelper;
@@ -78,6 +79,12 @@ class CreateCommand implements IGDCommand
             throw 'Unknown plugin $pluginName, should be composed of only letters or numbers, no spaces of other characters. Example: \"duell create emptyProject\" or \"duell create helloWorld\"';
 
         var pluginLibName = "duellcreate" + pluginName;
+
+        var libList = DuellLibListHelper.getDuellLibReferenceList();
+        if (!libList.exists(pluginLibName))
+        {
+            LogHelper.exitWithFormattedError('Unknown plugin \'$pluginName\'. Run \"duell create -help\" to get a list of valid plugins.');
+        }
 
         setupLib = DuellLib.getDuellLib(pluginLibName);
 

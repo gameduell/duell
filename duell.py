@@ -1607,6 +1607,9 @@ class duell_commands_CreateCommand:
 		if (not _hx_local_0()):
 			raise _HxException((("Unknown plugin " + ("null" if pluginName is None else pluginName)) + ", should be composed of only letters or numbers, no spaces of other characters. Example: \"duell create emptyProject\" or \"duell create helloWorld\""))
 		pluginLibName = ("duellcreate" + ("null" if pluginName is None else pluginName))
+		libList = duell_helpers_DuellLibListHelper.getDuellLibReferenceList()
+		if (not pluginLibName in libList.h):
+			duell_helpers_LogHelper.exitWithFormattedError((("Unknown plugin '" + ("null" if pluginName is None else pluginName)) + "'. Run \"duell create -help\" to get a list of valid plugins."))
 		self.setupLib = duell_objects_DuellLib.getDuellLib(pluginLibName)
 		if duell_helpers_DuellLibHelper.isInstalled(pluginLibName):
 			if (duell_helpers_DuellLibHelper.updateNeeded(pluginLibName) == True):
@@ -3473,9 +3476,9 @@ class duell_helpers_LogHelper:
 		if ((message != "") and (not duell_helpers_LogHelper.get_mute())):
 			output = None
 			if (duell_helpers_LogHelper.get_verbose() and ((verboseMessage != ""))):
-				output = (("\x1B[31;1mError:\x1B[0m\x1B[1m " + ("null" if verboseMessage is None else verboseMessage)) + "\x1B[0m\n")
+				output = (((((("\x1B[31;1m" + "Error: ") + "\x1B[0m") + "\x1B[1m") + ("null" if verboseMessage is None else verboseMessage)) + "\x1B[0m") + "\n")
 			else:
-				output = (("\x1B[31;1mError:\x1B[0m \x1B[1m" + ("null" if message is None else message)) + "\x1B[0m\n")
+				output = (((((("\x1B[31;1m" + "Error: ") + "\x1B[0m") + "\x1B[1m") + ("null" if message is None else message)) + "\x1B[0m") + "\n")
 			Sys.stderr().write(haxe_io_Bytes.ofString(duell_helpers_LogHelper.stripColor(output)))
 		Sys.exit(-1)
 
@@ -3506,9 +3509,9 @@ class duell_helpers_LogHelper:
 		if (not duell_helpers_LogHelper.get_mute()):
 			output = ""
 			if (duell_helpers_LogHelper.get_verbose() and ((verboseMessage != ""))):
-				output = (("\x1B[33;1mWarning:\x1B[0m \x1B[1m" + ("null" if verboseMessage is None else verboseMessage)) + "\x1B[0m")
+				output = ((((((("\x1B[33;1m" + "Warning:") + "\x1B[0m") + " ") + "\x1B[1m") + ("null" if verboseMessage is None else verboseMessage)) + "\x1B[0m") + "\n")
 			elif (message != ""):
-				output = (("\x1B[33;1mWarning:\x1B[0m \x1B[1m" + ("null" if message is None else message)) + "\x1B[0m")
+				output = ((((((("\x1B[33;1m" + "Warning:") + "\x1B[0m") + " ") + "\x1B[1m") + ("null" if message is None else message)) + "\x1B[0m") + "\n")
 			if ((not allowRepeat) and output in duell_helpers_LogHelper.sentWarnings.h):
 				return
 			duell_helpers_LogHelper.sentWarnings.h[output] = True
@@ -4511,8 +4514,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_head
 					nonlocal _g_val
+					nonlocal _g_head
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val

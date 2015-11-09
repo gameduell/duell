@@ -70,11 +70,11 @@ class LogHelper
 			var output;
 			if(verbose && verboseMessage != "")
 			{
-				output = "\x1b[31;1mError:\x1b[0m\x1b[1m " + verboseMessage + "\x1b[0m\n";
+				output = RED + "Error: " + NORMAL + BOLD + verboseMessage + NORMAL + "\n";
 			}
 			else
 			{
-				output = "\x1b[31;1mError:\x1b[0m \x1b[1m" + message + "\x1b[0m\n";
+				output = RED + "Error: " + NORMAL + BOLD + message + NORMAL + "\n";
 			}
 
 			Sys.stderr().write(Bytes.ofString(stripColor(output)));
@@ -116,12 +116,12 @@ class LogHelper
 
 			if (verbose && verboseMessage != "")
 			{
-				output = "\x1b[33;1mWarning:\x1b[0m \x1b[1m" + verboseMessage + "\x1b[0m";
+				output = YELLOW + "Warning:" + NORMAL + " " + BOLD + verboseMessage + NORMAL + "\n";
 
 			}
 			else if (message != "")
 			{
-				output = "\x1b[33;1mWarning:\x1b[0m \x1b[1m" + message + "\x1b[0m";
+				output = YELLOW + "Warning:" + NORMAL + " " + BOLD + message + NORMAL + "\n";
 			}
 
 			if (!allowRepeat && sentWarnings.exists(output))
