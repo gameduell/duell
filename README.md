@@ -29,7 +29,7 @@ Getting Started
 ### Requirements
 
 #### haxe
-To install the Duell Tool, make sure that you have the the current [haxe](http://haxe.org/) version installed. [http://haxe.org/download/](http://haxe.org/download/) It comes along with 'haxelib', a library manager which is needed to install the tool.
+To install the Duell Tool, make sure that you have the the current [haxe](http://haxe.org/) version installed ([http://haxe.org/download/](http://haxe.org/download/)). It comes along with 'haxelib', a library manager which is needed to install the tool.
 
 #### Python
 From version 4 the duell tool requires Python 3 to be installed. If the tool can't find it, make sure you have defined DUELL_PYTHON to a python 3 executable.
@@ -71,12 +71,11 @@ Go to your workspace and enter:
 If you are using this command for the first time, the plugin 'emptyProject' is probabyl not installed, so let the tool install it. 
 After this plugin was successfully checked out, enter a certain project name for your test project or confirm the predefined name.
 
-Switch to that folder afterwards.
 `$ cd 'PROJECT_NAME'`
 
 `$ duell build html5`
 
-After the tool updated the project and checked the dependencies the cretain 'duellbuildhtml5' library needs to be checked out from the repository. After the build process you will have an 'Export' folder in your project '.../PROJECT_NAME/Export'. You will find the html5 files in '.../PROJECT_NAME/Export/html5/web'.
+After the tool updated the project and checked the dependencies the cretain 'duellbuildhtml5' library needs to be checked out from the repository. After the build process you will have an 'Export' folder where you can find the created html5 files '.../PROJECT_NAME/Export/html5/web'.
 
-**Hint:** If you run `$ duell build html5 -browser` the application will run in your default browser. You should be able to checkout a dummy trace inside your browser console.
+**Hint:** If you run `$ duell build html5 -browser` the application will run in your default browser. To be confirmed that your application is working, checkout your browser console.
 
