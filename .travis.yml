@@ -53,6 +53,6 @@ before_script:
   - echo -e "Host heroku.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 script:
-  - sh ci_environment.sh
   - git clone https://github.com/gameduell/duell-repository-list.git ~/.duell/lib_list/1
+  - sh ci_environment.sh
   - sh ci.sh
