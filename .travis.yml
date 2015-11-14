@@ -33,11 +33,6 @@ addons:
       - ia32-libs
       - ia32-libs-multiarch
 
-before_install:
-  - openssl aes-256-cbc -K $encrypted_c00a32cef101_key -iv $encrypted_c00a32cef101_iv -in publish-key.enc -out publish-key -d
-  - chmod u=rw,og= ~/.ssh/publish-key
-  - echo "Host github.com" >> ~/.ssh/config
-  - echo "  IdentityFile ~/.ssh/publish-key" >> ~/.ssh/config
 install:
   # os-specific config
   - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
