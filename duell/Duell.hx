@@ -45,6 +45,7 @@ import duell.commands.CreateCommand;
 import duell.commands.EnvironmentSetupCommand;
 import duell.commands.RepoConfigCommand;
 import duell.commands.ToolSetupCommand;
+import duell.commands.DependencyCommand;
 
 class Duell
 {

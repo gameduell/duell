@@ -189,5 +189,30 @@ class DuellLibListHelper
             }
         }
     }
-}
 
+    /**
+    * function libraryExists
+    * @param name String
+    * @return Boolean
+    *
+    * Checks if a certain libray name is available in the configured repository lists.
+    */
+    public static function libraryExists(name : String) : Bool
+    {
+        if(name == null)
+        {
+            return false;
+        }
+
+        var list = getDuellLibReferenceList();
+        for ( key in list.keys() )
+        {
+            if ( key == name )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}

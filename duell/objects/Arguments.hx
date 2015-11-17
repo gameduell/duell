@@ -533,12 +533,10 @@ class Arguments
 		LogHelper.info(LogHelper.UNDERLINE + "Description:" + LogHelper.NORMAL);
 		LogHelper.info(" ");
 		LogHelper.info(selectedCommand.documentation);
-
+		LogHelper.info(" ");
 
 		if (selectedCommand.hasPlugin)
-		{
-
-			LogHelper.info(" ");
+		{	
 			LogHelper.info(LogHelper.UNDERLINE + "Plugins:" + LogHelper.NORMAL);
 			LogHelper.info(" ");
 
@@ -564,9 +562,11 @@ class Arguments
 			{
 				printArgument(arg);
 			}
+			
+			LogHelper.info(" ");
 		}
 
-		LogHelper.info(" ");
+		
 		if (selectedCommand.configurationDocumentation != null)
 		{
 			LogHelper.info(LogHelper.UNDERLINE + "Project Configuration Documentation:" + LogHelper.NORMAL);

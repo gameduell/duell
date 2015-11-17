@@ -1660,6 +1660,55 @@ duell_commands_CreateCommand._hx_class = duell_commands_CreateCommand
 _hx_classes["duell.commands.CreateCommand"] = duell_commands_CreateCommand
 
 
+class duell_commands_DependencyCommand:
+	_hx_class_name = "duell.commands.DependencyCommand"
+	_hx_methods = ["execute", "checkRequirements", "validateLibraryName", "checkIfItIsAProjectFolder"]
+	_hx_interfaces = [duell_commands_IGDCommand]
+
+	def __init__(self):
+		pass
+
+	def execute(self):
+		self.checkRequirements()
+		duellConfig = duell_helpers_DuellConfigHelper.getDuellConfigFileLocation()
+		dotPath = haxe_io_Path.join([haxe_io_Path.directory(duellConfig), "lib", "duell", "bin", "graphviz", "dot"])
+		duell_helpers_CommandHelper.runCommand("","chmod",["+x", dotPath],_hx_AnonObject({'errorMessage': "setting permissions on the 'dot' executable."}))
+		dotFolder = haxe_io_Path.directory(dotPath)
+		args = ["-Tpng", haxe_io_Path.join([dotFolder, "dotFile.dot"]), "-o", haxe_io_Path.join([dotFolder, "firstFile.png"])]
+		duell_helpers_CommandHelper.runCommand(dotFolder,"dot",args,_hx_AnonObject({'systemCommand': False, 'errorMessage': "running the simulator"}))
+		return "success"
+
+	def checkRequirements(self):
+		duell_helpers_LogHelper.info(" ")
+		duell_helpers_LogHelper.info("\x1B[2m------------------------")
+		duell_helpers_LogHelper.info("Checking requirements")
+		duell_helpers_LogHelper.info("------------------------\x1B[0m")
+		duell_helpers_LogHelper.info("")
+		duellConfig = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
+		if (len(duellConfig.repoListURLs) == 0):
+			duell_helpers_LogHelper.exitWithFormattedError("No repository urls defined!.")
+		if duell_objects_Arguments.isSet("-library"):
+			libraryName = duell_objects_Arguments.get("-library")
+			if (libraryName is None):
+				duell_helpers_LogHelper.exitWithFormattedError("You need to add valid library name.")
+			elif (not self.validateLibraryName(duell_objects_Arguments.get("-library"))):
+				duell_helpers_LogHelper.exitWithFormattedError((("Name '" + Std.string(duell_objects_Arguments.get("-library"))) + "' couldn't be found in the configured repository lists."))
+		if duell_objects_Arguments.isSet("-project"):
+			self.checkIfItIsAProjectFolder()
+
+	def validateLibraryName(self,name):
+		return duell_helpers_DuellLibListHelper.libraryExists(name)
+
+	def checkIfItIsAProjectFolder(self):
+		if (not sys_FileSystem.exists(duell_defines_DuellDefines.PROJECT_CONFIG_FILENAME)):
+			duell_helpers_LogHelper.exitWithFormattedError((("It's not a valid project folder! " + HxOverrides.stringOrNull(duell_defines_DuellDefines.PROJECT_CONFIG_FILENAME)) + " is missing."))
+
+	@staticmethod
+	def _hx_empty_init(_hx_o):		pass
+duell_commands_DependencyCommand._hx_class = duell_commands_DependencyCommand
+_hx_classes["duell.commands.DependencyCommand"] = duell_commands_DependencyCommand
+
+
 class duell_commands_EnvironmentSetupCommand:
 	_hx_class_name = "duell.commands.EnvironmentSetupCommand"
 	_hx_fields = ["setupLib", "platformName", "gitvers"]
@@ -3044,7 +3093,7 @@ _hx_classes["duell.helpers.DuellLibHelper"] = duell_helpers_DuellLibHelper
 
 class duell_helpers_DuellLibListHelper:
 	_hx_class_name = "duell.helpers.DuellLibListHelper"
-	_hx_statics = ["DEPENDENCY_LIST_FILENAME", "repoListCache", "getDuellLibReferenceList", "validateAndCleanRepos", "addLibsToTheRepoCache", "getDuplicatesFromRepoLists", "createDuplicateList"]
+	_hx_statics = ["DEPENDENCY_LIST_FILENAME", "repoListCache", "getDuellLibReferenceList", "validateAndCleanRepos", "addLibsToTheRepoCache", "getDuplicatesFromRepoLists", "createDuplicateList", "libraryExists"]
 
 	@staticmethod
 	def getDuellLibReferenceList():
@@ -3154,6 +3203,18 @@ class duell_helpers_DuellLibListHelper:
 			else:
 				value = duell_objects_DuellLibReference(repo, repoInfo.git_path, repoInfo.library_path, repoInfo.destination_path)
 				source.h[repo] = value
+
+	@staticmethod
+	def libraryExists(name):
+		if (name is None):
+			return False
+		_hx_list = duell_helpers_DuellLibListHelper.getDuellLibReferenceList()
+		_hx_local_0 = _hx_list.keys()
+		while _hx_local_0.hasNext():
+			key = _hx_local_0.next()
+			if (key == name):
+				return True
+		return False
 duell_helpers_DuellLibListHelper._hx_class = duell_helpers_DuellLibListHelper
 _hx_classes["duell.helpers.DuellLibListHelper"] = duell_helpers_DuellLibListHelper
 
@@ -4511,8 +4572,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_head
 					nonlocal _g_val
+					nonlocal _g_head
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -4562,8 +4623,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -5148,8 +5209,8 @@ class duell_objects_Arguments:
 		duell_helpers_LogHelper.info((("\x1B[4m" + "Description:") + "\x1B[0m"))
 		duell_helpers_LogHelper.info(" ")
 		duell_helpers_LogHelper.info(duell_objects_Arguments.selectedCommand.documentation)
+		duell_helpers_LogHelper.info(" ")
 		if duell_objects_Arguments.selectedCommand.hasPlugin:
-			duell_helpers_LogHelper.info(" ")
 			duell_helpers_LogHelper.info((("\x1B[4m" + "Plugins:") + "\x1B[0m"))
 			duell_helpers_LogHelper.info(" ")
 			libList = duell_helpers_DuellLibListHelper.getDuellLibReferenceList()
@@ -5167,7 +5228,7 @@ class duell_objects_Arguments:
 			while _hx_local_1.hasNext():
 				arg = _hx_local_1.next()
 				duell_objects_Arguments.printArgument(arg)
-		duell_helpers_LogHelper.info(" ")
+			duell_helpers_LogHelper.info(" ")
 		if (duell_objects_Arguments.selectedCommand.configurationDocumentation is not None):
 			duell_helpers_LogHelper.info((("\x1B[4m" + "Project Configuration Documentation:") + "\x1B[0m"))
 			_hx_local_2 = duell_objects_Arguments.selectedCommand.configurationDocumentation.keys()
