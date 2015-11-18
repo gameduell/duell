@@ -556,7 +556,29 @@ _hx_classes["StringBuf"] = StringBuf
 
 class StringTools:
 	_hx_class_name = "StringTools"
-	_hx_statics = ["htmlUnescape", "startsWith", "isSpace", "ltrim", "rtrim", "trim", "lpad", "replace", "hex"]
+	_hx_statics = ["htmlEscape", "htmlUnescape", "startsWith", "isSpace", "ltrim", "rtrim", "trim", "lpad", "replace", "hex"]
+
+	@staticmethod
+	def htmlEscape(s,quotes = None):
+		_this = None
+		_this1 = None
+		_this2 = None
+		_this3 = None
+		_this4 = s.split("&")
+		_this3 = "&amp;".join([python_Boot.toString1(x1,'') for x1 in _this4])
+		_this2 = _this3.split("<")
+		_this1 = "&lt;".join([python_Boot.toString1(x1,'') for x1 in _this2])
+		_this = _this1.split(">")
+		s = "&gt;".join([python_Boot.toString1(x1,'') for x1 in _this])
+		if quotes:
+			_this5 = None
+			_this6 = None
+			_this7 = s.split("\"")
+			_this6 = "&quot;".join([python_Boot.toString1(x1,'') for x1 in _this7])
+			_this5 = _this6.split("'")
+			return "&#039;".join([python_Boot.toString1(x1,'') for x1 in _this5])
+		else:
+			return s
 
 	@staticmethod
 	def htmlUnescape(s):
@@ -1030,7 +1052,7 @@ _hx_classes["Type"] = Type
 class Xml:
 	_hx_class_name = "Xml"
 	_hx_fields = ["nodeType", "nodeName", "nodeValue", "parent", "children", "attributeMap"]
-	_hx_methods = ["get", "set", "exists", "elements", "elementsNamed", "firstElement", "addChild", "removeChild"]
+	_hx_methods = ["get", "set", "exists", "attributes", "elements", "elementsNamed", "firstElement", "addChild", "removeChild"]
 	_hx_statics = ["Element", "PCData", "CData", "Comment", "DocType", "ProcessingInstruction", "Document", "parse", "createElement", "createPCData", "createCData", "createComment", "createDocType", "createProcessingInstruction", "createDocument"]
 
 	def __init__(self,nodeType):
@@ -1058,6 +1080,11 @@ class Xml:
 		if (self.nodeType != Xml.Element):
 			raise _HxException(("Bad node type, expected Element but found " + Std.string(self.nodeType)))
 		return att in self.attributeMap.h
+
+	def attributes(self):
+		if (self.nodeType != Xml.Element):
+			raise _HxException(("Bad node type, expected Element but found " + Std.string(self.nodeType)))
+		return self.attributeMap.keys()
 
 	def elements(self):
 		if ((self.nodeType != Xml.Document) and ((self.nodeType != Xml.Element))):
@@ -1662,7 +1689,7 @@ _hx_classes["duell.commands.CreateCommand"] = duell_commands_CreateCommand
 
 class duell_commands_DependencyCommand:
 	_hx_class_name = "duell.commands.DependencyCommand"
-	_hx_methods = ["execute", "checkRequirements", "validateLibraryName", "checkIfItIsAProjectFolder"]
+	_hx_methods = ["execute", "createOuputFile", "parseLibrayDependencies", "parseProjectDependencies", "logAction", "checkRequirements", "validateLibraryName", "checkIfItIsAProjectFolder"]
 	_hx_interfaces = [duell_commands_IGDCommand]
 
 	def __init__(self):
@@ -1670,6 +1697,10 @@ class duell_commands_DependencyCommand:
 
 	def execute(self):
 		self.checkRequirements()
+		if duell_objects_Arguments.isSet("-library"):
+			self.parseLibrayDependencies()
+		elif duell_objects_Arguments.isSet("-project"):
+			self.parseProjectDependencies()
 		duellConfig = duell_helpers_DuellConfigHelper.getDuellConfigFileLocation()
 		dotPath = haxe_io_Path.join([haxe_io_Path.directory(duellConfig), "lib", "duell", "bin", "graphviz", "dot"])
 		duell_helpers_CommandHelper.runCommand("","chmod",["+x", dotPath],_hx_AnonObject({'errorMessage': "setting permissions on the 'dot' executable."}))
@@ -1678,21 +1709,63 @@ class duell_commands_DependencyCommand:
 		duell_helpers_CommandHelper.runCommand(dotFolder,"dot",args,_hx_AnonObject({'systemCommand': False, 'errorMessage': "running the simulator"}))
 		return "success"
 
-	def checkRequirements(self):
+	def createOuputFile(self):
+		pass
+
+	def parseLibrayDependencies(self):
+		libraryName = duell_objects_Arguments.get("-library")
+		self.logAction((("Checking dependencies for library '" + ("null" if libraryName is None else libraryName)) + "'"))
+
+	def parseProjectDependencies(self):
+		self.logAction("Checking library dependencies for current project")
+		fileContent = sys_io_File.getContent(duell_defines_DuellDefines.PROJECT_CONFIG_FILENAME)
+		try:
+			fileXmlContent = Xml.parse(fileContent)
+			content = haxe_xml_Fast(fileXmlContent.firstElement())
+			_hx_local_1 = content.get_elements()
+			while _hx_local_1.hasNext():
+				element = _hx_local_1.next()
+				duell_helpers_LogHelper.info(("name: " + HxOverrides.stringOrNull(element.get_name())))
+				_g = element.get_name()
+				_hx_local_0 = len(_g)
+				if (_hx_local_0 == 7):
+					if (_g == "haxelib"):
+						duell_helpers_LogHelper.info(("found haxelib: " + HxOverrides.stringOrNull(haxe_xml_Printer.print(element.x))))
+				elif (_hx_local_0 == 8):
+					if (_g == "duelllib"):
+						duell_helpers_LogHelper.info(("found duelllib: " + HxOverrides.stringOrNull(haxe_xml_Printer.print(element.x))))
+				else:
+					pass
+		except Exception as _hx_e:
+			_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
+			error = _hx_e1
+			duell_helpers_LogHelper.exitWithFormattedError("Error parsing proejct xml.")
+
+	def logAction(self,action):
+		line = ""
+		_g1 = 0
+		_g = len(action)
+		while (_g1 < _g):
+			i = _g1
+			_g1 = (_g1 + 1)
+			line = (("null" if line is None else line) + "-")
 		duell_helpers_LogHelper.info(" ")
-		duell_helpers_LogHelper.info("\x1B[2m------------------------")
-		duell_helpers_LogHelper.info("Checking requirements")
-		duell_helpers_LogHelper.info("------------------------\x1B[0m")
-		duell_helpers_LogHelper.info("")
+		duell_helpers_LogHelper.info(("\x1B[2m" + ("null" if line is None else line)))
+		duell_helpers_LogHelper.info(action)
+		duell_helpers_LogHelper.info((("null" if line is None else line) + "\x1B[0m"))
+		duell_helpers_LogHelper.info(" ")
+
+	def checkRequirements(self):
+		self.logAction("Checking requirements")
 		duellConfig = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
 		if (len(duellConfig.repoListURLs) == 0):
 			duell_helpers_LogHelper.exitWithFormattedError("No repository urls defined!.")
 		if duell_objects_Arguments.isSet("-library"):
 			libraryName = duell_objects_Arguments.get("-library")
 			if (libraryName is None):
-				duell_helpers_LogHelper.exitWithFormattedError("You need to add valid library name.")
-			elif (not self.validateLibraryName(duell_objects_Arguments.get("-library"))):
-				duell_helpers_LogHelper.exitWithFormattedError((("Name '" + Std.string(duell_objects_Arguments.get("-library"))) + "' couldn't be found in the configured repository lists."))
+				duell_helpers_LogHelper.exitWithFormattedError("You need to add valid library name, like '-library YOUR_LIBRARY_NAME'")
+			elif (not self.validateLibraryName(libraryName)):
+				duell_helpers_LogHelper.exitWithFormattedError((("Name '" + ("null" if libraryName is None else libraryName)) + "' couldn't be found in the configured repository lists."))
 		if duell_objects_Arguments.isSet("-project"):
 			self.checkIfItIsAProjectFolder()
 
@@ -4572,8 +4645,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_val
 					nonlocal _g_head
+					nonlocal _g_val
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -8952,6 +9025,158 @@ class haxe_xml_Parser:
 		raise _HxException("Unexpected end")
 haxe_xml_Parser._hx_class = haxe_xml_Parser
 _hx_classes["haxe.xml.Parser"] = haxe_xml_Parser
+
+
+class haxe_xml_Printer:
+	_hx_class_name = "haxe.xml.Printer"
+	_hx_fields = ["output", "pretty"]
+	_hx_methods = ["writeNode", "hasChildren"]
+	_hx_statics = ["print"]
+
+	def __init__(self,pretty):
+		self.output = None
+		self.pretty = None
+		self.output = StringBuf()
+		self.pretty = pretty
+
+	def writeNode(self,value,tabs):
+		_g = value.nodeType
+		if ((_g) == 2):
+			self.output.b.write(Std.string((("null" if tabs is None else tabs) + "<![CDATA[")))
+			def _hx_local_0():
+				if ((value.nodeType == Xml.Document) or ((value.nodeType == Xml.Element))):
+					raise _HxException(("Bad node type, unexpected " + Std.string(value.nodeType)))
+				return value.nodeValue
+			input = StringTools.trim(_hx_local_0())
+			self.output.b.write(Std.string(input))
+			self.output.b.write("]]>")
+			if self.pretty:
+				self.output.b.write("")
+		elif ((_g) == 3):
+			commentContent = None
+			if ((value.nodeType == Xml.Document) or ((value.nodeType == Xml.Element))):
+				raise _HxException(("Bad node type, unexpected " + Std.string(value.nodeType)))
+			commentContent = value.nodeValue
+			commentContent = EReg("[\n\r\t]+", "g").replace(commentContent,"")
+			commentContent = (("<!--" + ("null" if commentContent is None else commentContent)) + "-->")
+			self.output.b.write(Std.string(tabs))
+			input1 = StringTools.trim(commentContent)
+			self.output.b.write(Std.string(input1))
+			if self.pretty:
+				self.output.b.write("")
+		elif ((_g) == 6):
+			def _hx_local_1():
+				if ((value.nodeType != Xml.Document) and ((value.nodeType != Xml.Element))):
+					raise _HxException(("Bad node type, expected Element or Document but found " + Std.string(value.nodeType)))
+				return python_HaxeIterator(value.children.__iter__())
+			_hx_local_2 = _hx_local_1()
+			while _hx_local_2.hasNext():
+				child = _hx_local_2.next()
+				self.writeNode(child,tabs)
+		elif ((_g) == 0):
+			self.output.b.write(Std.string((("null" if tabs is None else tabs) + "<")))
+			input2 = None
+			if (value.nodeType != Xml.Element):
+				raise _HxException(("Bad node type, expected Element but found " + Std.string(value.nodeType)))
+			input2 = value.nodeName
+			self.output.b.write(Std.string(input2))
+			_hx_local_3 = value.attributes()
+			while _hx_local_3.hasNext():
+				attribute = _hx_local_3.next()
+				self.output.b.write(Std.string(((" " + ("null" if attribute is None else attribute)) + "=\"")))
+				input3 = StringTools.htmlEscape(value.get(attribute),True)
+				self.output.b.write(Std.string(input3))
+				self.output.b.write("\"")
+			if self.hasChildren(value):
+				self.output.b.write(">")
+				if self.pretty:
+					self.output.b.write("")
+				def _hx_local_4():
+					if ((value.nodeType != Xml.Document) and ((value.nodeType != Xml.Element))):
+						raise _HxException(("Bad node type, expected Element or Document but found " + Std.string(value.nodeType)))
+					return python_HaxeIterator(value.children.__iter__())
+				_hx_local_5 = _hx_local_4()
+				while _hx_local_5.hasNext():
+					child1 = _hx_local_5.next()
+					self.writeNode(child1,((("null" if tabs is None else tabs) + "\t") if (self.pretty) else tabs))
+				self.output.b.write(Std.string((("null" if tabs is None else tabs) + "</")))
+				input4 = None
+				if (value.nodeType != Xml.Element):
+					raise _HxException(("Bad node type, expected Element but found " + Std.string(value.nodeType)))
+				input4 = value.nodeName
+				self.output.b.write(Std.string(input4))
+				self.output.b.write(">")
+				if self.pretty:
+					self.output.b.write("")
+			else:
+				self.output.b.write("/>")
+				if self.pretty:
+					self.output.b.write("")
+		elif ((_g) == 1):
+			nodeValue = None
+			if ((value.nodeType == Xml.Document) or ((value.nodeType == Xml.Element))):
+				raise _HxException(("Bad node type, unexpected " + Std.string(value.nodeType)))
+			nodeValue = value.nodeValue
+			if (len(nodeValue) != 0):
+				input5 = (("null" if tabs is None else tabs) + HxOverrides.stringOrNull(StringTools.htmlEscape(nodeValue)))
+				self.output.b.write(Std.string(input5))
+				if self.pretty:
+					self.output.b.write("")
+		elif ((_g) == 5):
+			input6 = None
+			def _hx_local_6():
+				if ((value.nodeType == Xml.Document) or ((value.nodeType == Xml.Element))):
+					raise _HxException(("Bad node type, unexpected " + Std.string(value.nodeType)))
+				return value.nodeValue
+			input6 = (("<?" + HxOverrides.stringOrNull(_hx_local_6())) + "?>")
+			self.output.b.write(Std.string(input6))
+		elif ((_g) == 4):
+			input7 = None
+			def _hx_local_7():
+				if ((value.nodeType == Xml.Document) or ((value.nodeType == Xml.Element))):
+					raise _HxException(("Bad node type, unexpected " + Std.string(value.nodeType)))
+				return value.nodeValue
+			input7 = (("<!DOCTYPE " + HxOverrides.stringOrNull(_hx_local_7())) + ">")
+			self.output.b.write(Std.string(input7))
+		else:
+			pass
+
+	def hasChildren(self,value):
+		def _hx_local_0():
+			if ((value.nodeType != Xml.Document) and ((value.nodeType != Xml.Element))):
+				raise _HxException(("Bad node type, expected Element or Document but found " + Std.string(value.nodeType)))
+			return python_HaxeIterator(value.children.__iter__())
+		_hx_local_2 = _hx_local_0()
+		while _hx_local_2.hasNext():
+			child = _hx_local_2.next()
+			_g = child.nodeType
+			if (((_g) == 1) or (((_g) == 0))):
+				return True
+			elif (((_g) == 3) or (((_g) == 2))):
+				def _hx_local_1():
+					if ((child.nodeType == Xml.Document) or ((child.nodeType == Xml.Element))):
+						raise _HxException(("Bad node type, unexpected " + Std.string(child.nodeType)))
+					return child.nodeValue
+				if (len(StringTools.ltrim(_hx_local_1())) != 0):
+					return True
+			else:
+				pass
+		return False
+
+	@staticmethod
+	def print(xml,pretty = False):
+		if (pretty is None):
+			pretty = False
+		printer = haxe_xml_Printer(pretty)
+		printer.writeNode(xml,"")
+		return printer.output.b.getvalue()
+
+	@staticmethod
+	def _hx_empty_init(_hx_o):
+		_hx_o.output = None
+		_hx_o.pretty = None
+haxe_xml_Printer._hx_class = haxe_xml_Printer
+_hx_classes["haxe.xml.Printer"] = haxe_xml_Printer
 
 
 class python_Boot:

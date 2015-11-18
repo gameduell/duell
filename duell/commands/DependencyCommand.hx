@@ -9,7 +9,10 @@ import duell.helpers.DuellLibListHelper;
 import duell.objects.Arguments;
 import duell.defines.DuellDefines;
 
+import sys.io.File;
 import sys.FileSystem;
+
+import haxe.xml.Fast;
 
 class DependencyCommand implements IGDCommand
 {
@@ -23,7 +26,7 @@ class DependencyCommand implements IGDCommand
 		
 		if(Arguments.isSet("-library"))
 		{
-			parseLibraryDependencies();
+			parseLibrayDependencies();
 		} 
 		else if (Arguments.isSet("-project"))
 		{
@@ -42,30 +45,67 @@ class DependencyCommand implements IGDCommand
 		return "success";
 	}
 
+	private function createOuputFile()
+	{
+
+	}
+
 	private function parseLibrayDependencies()
 	{
 		var libraryName : String = Arguments.get("-library");
 
 		logAction("Checking dependencies for library '" + libraryName + "'");
 
-		//check if folder exist
+		//check if library in correct version exist
 
-		//check out library
-		
-		//check if its the right version 
+		//check out library / update to correct version
+
+		//check for 'duell_libraray.xml'
+
+		//parse duelllib's => loop process
 	}
 
 	private function parseProjectDependencies()
 	{
+		logAction("Checking library dependencies for current project");
+		
+		var fileContent:String = File.getContent(DuellDefines.PROJECT_CONFIG_FILENAME);
+		try
+		{
+			var fileXmlContent : Xml = Xml.parse(fileContent);
+			var content : Fast = new Fast(fileXmlContent.firstElement());
 
+			for (element in content.elements)
+			{
+				LogHelper.info("name: " + element.name);
+				switch(element.name){
+					case "duelllib":
+						 LogHelper.info("found duelllib: " + element.x.toString());
+
+					case "haxelib":
+						 LogHelper.info("found haxelib: " + element.x.toString());
+				}
+			}
+
+		}
+		catch(error : Dynamic)
+		{
+			LogHelper.exitWithFormattedError("Error parsing proejct xml.");
+		}
 	}
 
 	private function logAction(action : String)
 	{
+		var line : String = "";
+		for ( i in 0...action.length )
+		{
+			line += "-";
+		}
+
 		LogHelper.info(" ");
-        LogHelper.info("\x1b[2m------------------------");
+        LogHelper.info("\x1b[2m" + line);
         LogHelper.info(action);
-        LogHelper.info("------------------------\x1b[0m");
+        LogHelper.info(line + "\x1b[0m");
         LogHelper.info(" ");
 	}
 
