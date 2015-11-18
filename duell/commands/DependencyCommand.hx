@@ -1,16 +1,20 @@
 package duell.commands;
 
 import duell.commands.IGDCommand;
-import duell.helpers.CommandHelper;
-import duell.helpers.DuellConfigHelper;
 import duell.objects.DuellConfigJSON;
+import duell.objects.Arguments;
+import duell.objects.dependencies.DependencyLibraryObject;
+import duell.objects.DuellLib;
 import duell.helpers.LogHelper;
 import duell.helpers.DuellLibListHelper;
-import duell.objects.Arguments;
+import duell.helpers.DuellLibHelper;
+import duell.helpers.CommandHelper;
+import duell.helpers.DuellConfigHelper;
 import duell.defines.DuellDefines;
 
 import sys.io.File;
 import sys.FileSystem;
+import haxe.io.Path;
 
 import haxe.xml.Fast;
 
@@ -69,7 +73,43 @@ class DependencyCommand implements IGDCommand
 	{
 		logAction("Checking library dependencies for current project");
 		
-		var fileContent:String = File.getContent(DuellDefines.PROJECT_CONFIG_FILENAME);
+		var libraries = getLibsFromConfigFile(Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME);
+		LogHelper.info("Libs: " + libraries);
+		parseLibraries(libraries);
+	}
+
+	private function parseLibraries(libs : Array<DependencyLibraryObject>)
+	{
+		for (library in libs)
+		{
+			setupLibrary(library.get_lib());
+		}
+	}
+
+	private function setupLibrary(lib : DuellLib)
+	{
+		if (!DuellLibHelper.isInstalled(lib.name))
+		{
+			DuellLibHelper.install(lib.name);
+		}
+
+		if (!DuellLibHelper.isPathValid(lib.name))
+		{
+			throw 'DuellLib ${lib.name} has an invalid path - ${DuellLibHelper.getPath(lib.name)} - check your "haxelib list"';
+		}
+	}
+
+	private function getLibsFromConfigFile(path : String, fileName : String) : Array<DependencyLibraryObject>
+	{
+		var filePath : String = Path.join([path, fileName]);
+		if(!FileSystem.exists(filePath))
+		{
+			LogHelper.warn("File '" + filePath + "' did not exist!");
+			return new Array<DependencyLibraryObject>();
+		}
+
+		var fileContent:String = File.getContent(filePath);
+		var libraries = new Array<DependencyLibraryObject>();
 		try
 		{
 			var fileXmlContent : Xml = Xml.parse(fileContent);
@@ -77,21 +117,28 @@ class DependencyCommand implements IGDCommand
 
 			for (element in content.elements)
 			{
-				LogHelper.info("name: " + element.name);
 				switch(element.name){
 					case "duelllib":
-						 LogHelper.info("found duelllib: " + element.x.toString());
+						 parseLibraryElement(libraries, element);
 
 					case "haxelib":
 						 LogHelper.info("found haxelib: " + element.x.toString());
 				}
 			}
-
 		}
 		catch(error : Dynamic)
 		{
 			LogHelper.exitWithFormattedError("Error parsing proejct xml.");
 		}
+
+		return libraries;
+	}
+
+	private function parseLibraryElement(libraries : Array<DependencyLibraryObject>, element : Fast)
+	{
+		var name = element.has.name ? element.att.name : "";
+		var version = element.has.version ? element.att.version : "";
+		libraries.push(new DependencyLibraryObject(name, version));
 	}
 
 	private function logAction(action : String)

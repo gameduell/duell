@@ -1689,7 +1689,7 @@ _hx_classes["duell.commands.CreateCommand"] = duell_commands_CreateCommand
 
 class duell_commands_DependencyCommand:
 	_hx_class_name = "duell.commands.DependencyCommand"
-	_hx_methods = ["execute", "createOuputFile", "parseLibrayDependencies", "parseProjectDependencies", "logAction", "checkRequirements", "validateLibraryName", "checkIfItIsAProjectFolder"]
+	_hx_methods = ["execute", "createOuputFile", "parseLibrayDependencies", "parseProjectDependencies", "parseLibraries", "setupLibrary", "getLibsFromConfigFile", "parseLibraryElement", "logAction", "checkRequirements", "validateLibraryName", "checkIfItIsAProjectFolder"]
 	_hx_interfaces = [duell_commands_IGDCommand]
 
 	def __init__(self):
@@ -1718,14 +1718,36 @@ class duell_commands_DependencyCommand:
 
 	def parseProjectDependencies(self):
 		self.logAction("Checking library dependencies for current project")
-		fileContent = sys_io_File.getContent(duell_defines_DuellDefines.PROJECT_CONFIG_FILENAME)
+		libraries = self.getLibsFromConfigFile(Sys.getCwd(),duell_defines_DuellDefines.PROJECT_CONFIG_FILENAME)
+		duell_helpers_LogHelper.info(("Libs: " + Std.string(libraries)))
+		self.parseLibraries(libraries)
+
+	def parseLibraries(self,libs):
+		_g = 0
+		while (_g < len(libs)):
+			library = (libs[_g] if _g >= 0 and _g < len(libs) else None)
+			_g = (_g + 1)
+			self.setupLibrary(library.get_lib())
+
+	def setupLibrary(self,lib):
+		if (not duell_helpers_DuellLibHelper.isInstalled(lib.name)):
+			duell_helpers_DuellLibHelper.install(lib.name)
+		if (not duell_helpers_DuellLibHelper.isPathValid(lib.name)):
+			raise _HxException((((("DuellLib " + HxOverrides.stringOrNull(lib.name)) + " has an invalid path - ") + HxOverrides.stringOrNull(duell_helpers_DuellLibHelper.getPath(lib.name))) + " - check your \"haxelib list\""))
+
+	def getLibsFromConfigFile(self,path,fileName):
+		filePath = haxe_io_Path.join([path, fileName])
+		if (not sys_FileSystem.exists(filePath)):
+			duell_helpers_LogHelper.warn((("File '" + ("null" if filePath is None else filePath)) + "' did not exist!"))
+			return list()
+		fileContent = sys_io_File.getContent(filePath)
+		libraries = list()
 		try:
 			fileXmlContent = Xml.parse(fileContent)
 			content = haxe_xml_Fast(fileXmlContent.firstElement())
 			_hx_local_1 = content.get_elements()
 			while _hx_local_1.hasNext():
 				element = _hx_local_1.next()
-				duell_helpers_LogHelper.info(("name: " + HxOverrides.stringOrNull(element.get_name())))
 				_g = element.get_name()
 				_hx_local_0 = len(_g)
 				if (_hx_local_0 == 7):
@@ -1733,13 +1755,28 @@ class duell_commands_DependencyCommand:
 						duell_helpers_LogHelper.info(("found haxelib: " + HxOverrides.stringOrNull(haxe_xml_Printer.print(element.x))))
 				elif (_hx_local_0 == 8):
 					if (_g == "duelllib"):
-						duell_helpers_LogHelper.info(("found duelllib: " + HxOverrides.stringOrNull(haxe_xml_Printer.print(element.x))))
+						self.parseLibraryElement(libraries,element)
 				else:
 					pass
 		except Exception as _hx_e:
 			_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
 			error = _hx_e1
 			duell_helpers_LogHelper.exitWithFormattedError("Error parsing proejct xml.")
+		return libraries
+
+	def parseLibraryElement(self,libraries,element):
+		name = None
+		if element.has.resolve("name"):
+			name = element.att.resolve("name")
+		else:
+			name = ""
+		version = None
+		if element.has.resolve("version"):
+			version = element.att.resolve("version")
+		else:
+			version = ""
+		x = duell_objects_dependencies_DependencyLibraryObject(name, version)
+		libraries.append(x)
 
 	def logAction(self,action):
 		line = ""
@@ -6333,6 +6370,60 @@ class duell_objects_SemVer:
 		_hx_o.rc = None
 duell_objects_SemVer._hx_class = duell_objects_SemVer
 _hx_classes["duell.objects.SemVer"] = duell_objects_SemVer
+
+class duell_objects_dependencies_LibraryType(Enum):
+	_hx_class_name = "duell.objects.dependencies.LibraryType"
+	_hx_constructs = ["DUELLLIB", "HAXELIB"]
+duell_objects_dependencies_LibraryType.DUELLLIB = duell_objects_dependencies_LibraryType("DUELLLIB", 0, list())
+duell_objects_dependencies_LibraryType.HAXELIB = duell_objects_dependencies_LibraryType("HAXELIB", 1, list())
+duell_objects_dependencies_LibraryType._hx_class = duell_objects_dependencies_LibraryType
+_hx_classes["duell.objects.dependencies.LibraryType"] = duell_objects_dependencies_LibraryType
+
+
+class duell_objects_dependencies_DependencyLibraryObject:
+	_hx_class_name = "duell.objects.dependencies.DependencyLibraryObject"
+	_hx_fields = ["lib", "type", "dependencies"]
+	_hx_methods = ["generateOuptutFile", "toString", "get_lib", "get_dependencies", "set_dependencies"]
+
+	def __init__(self,name,version = "master"):
+		if (version is None):
+			version = "master"
+		self.lib = None
+		self.type = None
+		self.dependencies = None
+		self.lib = duell_objects_DuellLib.getDuellLib(name,version)
+		self.type = duell_objects_dependencies_LibraryType.DUELLLIB
+		self.dependencies = list()
+
+	def generateOuptutFile(self,creator):
+		return "todo!!"
+
+	def toString(self):
+		return ((("\nDependencyLibraryObject\n name:" + HxOverrides.stringOrNull(self.lib.name)) + "\n version:") + HxOverrides.stringOrNull(self.lib.version))
+
+	def get_lib(self):
+		return self.lib
+
+	def get_dependencies(self):
+		return self.dependencies
+
+	def set_dependencies(self,value):
+		self.dependencies = value
+
+	@staticmethod
+	def _hx_empty_init(_hx_o):
+		_hx_o.lib = None
+		_hx_o.type = None
+		_hx_o.dependencies = None
+duell_objects_dependencies_DependencyLibraryObject._hx_class = duell_objects_dependencies_DependencyLibraryObject
+_hx_classes["duell.objects.dependencies.DependencyLibraryObject"] = duell_objects_dependencies_DependencyLibraryObject
+
+
+class duell_objects_dependencies_IFileContentCreator:
+	_hx_class_name = "duell.objects.dependencies.IFileContentCreator"
+	_hx_methods = ["parse"]
+duell_objects_dependencies_IFileContentCreator._hx_class = duell_objects_dependencies_IFileContentCreator
+_hx_classes["duell.objects.dependencies.IFileContentCreator"] = duell_objects_dependencies_IFileContentCreator
 
 class duell_versioning_VersionType(Enum):
 	_hx_class_name = "duell.versioning.VersionType"
