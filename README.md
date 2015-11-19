@@ -13,16 +13,6 @@ then a plugin name like "ios" or "emptyProject". For example, "duell build ios" 
 execution by prefixing with "-", e.g. "duell build ios -verbose".
 
 
-## Release Log
-4.0.0
-----------------------------------------------
-* Now running on Python 3 instead of neko
-----------------------------------------------
-3.2.0
-----------------------------------------------
-* Initial setup for github
-
-
 Getting Started
 ----------------------------------------------
 
@@ -56,8 +46,6 @@ Done.
 * Make sure that the haxelib repository path is **NOT** the same like Duell Tools library path '~/.duell/lib' else the setup will fail.
 
 * On both Linux and Mac systems, the installation of the actual duell executable can fail (because of missing administrator rights). If this happens, the installer will notify you about it. For Macs, the best workaround in that case is creating an alias in your .bash_profile or .profile (Mac) file in your home folder, i.e. alias duell='haxelib run duell_duell'. For Linux systems, the install script always creates a small duell script in /home/<USERNAME>/bin.
-
-* If you're installing on a Linux system, one extra step is required: Google Protobuf is included in our Haxe setup but the setup somehow fails to make protoc executable. Do this with chmod +x  /home/<USERNAME>/.duell/lib/serialization/protobuffers/tools/protoc/linux/protoc
 
 * You should avoid using paths with mutated vowels included. This could lead into corrupted config files.
 
@@ -125,7 +113,11 @@ The checkout of the first added repository will be located in a folder '.duell/l
 }
 ```
 
-
+## Release Log
+### 4.0.0
+Now running on Python 3 instead of neko
+### 3.0.2
+Initial setup for github
 
 
 
