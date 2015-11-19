@@ -73,45 +73,6 @@ After the tool updated the project and checked the dependencies the cretain 'due
 To get a list of possible commands run '$ duell' or '$ duell -help'. To get more information for a specific command use '-help' property, e.g. '$ duell create -help'.
 
 
-### Additional informations
-
-#### Folder structure of '.duell'
-
-Files:
-* config.json
-Local configuration file which will store the basic configuration. If you open that file, you will see the configured repository paths, last project file, the Duell Tool path to the repository list etc. This file will be automatically kept up to date by using certain commands. 
-
-* duell_user.xml
-Automatically created to define user specific xsd and set the namespace.
-
-* schema.xsd
-Schema definition.
-
-Folders:
-* lib
-Main folder to store libraries for the Duell Tool. If the tool needs to checkout a new library or plugin, this is the folder where you will find it.  
-
-* lib_list
-Regarding the order and number of your configured repositories, you will find a folder for each of them here. If you have configured the default repository you should see the default repository on position one: '1. git@github.com:gameduell/duell-repository-list.git' ('$ duell repo_list')
-
-The checkout of the first added repository will be located in a folder '.duell/lib_list/1', a second one in '.duell/lib_list/2' etc. The structure of these repository lists needs to be JSON formatted, e.g.:
-```javascript
-{
-	"duell":
-	{
-		"git_path":"git@github.com:gameduell/duell.git",
-		"library_path": "duell",
-		"destination_path": "duell"
-	},
-	"duellbuildhtml5":
-	{
-		"git_path":"git@github.com:gameduell/duellbuildhtml5.git",
-		"library_path": "duellbuildhtml5",
-		"destination_path": "duellbuildhtml5"
-	},
-	...
-}
-```
 
 ## Release Log
 ### 4.0.0
