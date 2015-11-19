@@ -1,5 +1,3 @@
 digraph G {
-    one -> two -> three -> four;
-    one -> five -> six -> two;
-	elven -> twelve -> thirteen;
+    Empty Project -> protohx;
 }

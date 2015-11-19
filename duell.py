@@ -556,29 +556,7 @@ _hx_classes["StringBuf"] = StringBuf
 
 class StringTools:
 	_hx_class_name = "StringTools"
-	_hx_statics = ["htmlEscape", "htmlUnescape", "startsWith", "isSpace", "ltrim", "rtrim", "trim", "lpad", "replace", "hex"]
-
-	@staticmethod
-	def htmlEscape(s,quotes = None):
-		_this = None
-		_this1 = None
-		_this2 = None
-		_this3 = None
-		_this4 = s.split("&")
-		_this3 = "&amp;".join([python_Boot.toString1(x1,'') for x1 in _this4])
-		_this2 = _this3.split("<")
-		_this1 = "&lt;".join([python_Boot.toString1(x1,'') for x1 in _this2])
-		_this = _this1.split(">")
-		s = "&gt;".join([python_Boot.toString1(x1,'') for x1 in _this])
-		if quotes:
-			_this5 = None
-			_this6 = None
-			_this7 = s.split("\"")
-			_this6 = "&quot;".join([python_Boot.toString1(x1,'') for x1 in _this7])
-			_this5 = _this6.split("'")
-			return "&#039;".join([python_Boot.toString1(x1,'') for x1 in _this5])
-		else:
-			return s
+	_hx_statics = ["htmlUnescape", "startsWith", "isSpace", "ltrim", "rtrim", "trim", "lpad", "replace", "hex"]
 
 	@staticmethod
 	def htmlUnescape(s):
@@ -1052,7 +1030,7 @@ _hx_classes["Type"] = Type
 class Xml:
 	_hx_class_name = "Xml"
 	_hx_fields = ["nodeType", "nodeName", "nodeValue", "parent", "children", "attributeMap"]
-	_hx_methods = ["get", "set", "exists", "attributes", "elements", "elementsNamed", "firstElement", "addChild", "removeChild"]
+	_hx_methods = ["get", "set", "exists", "elements", "elementsNamed", "firstElement", "addChild", "removeChild"]
 	_hx_statics = ["Element", "PCData", "CData", "Comment", "DocType", "ProcessingInstruction", "Document", "parse", "createElement", "createPCData", "createCData", "createComment", "createDocType", "createProcessingInstruction", "createDocument"]
 
 	def __init__(self,nodeType):
@@ -1080,11 +1058,6 @@ class Xml:
 		if (self.nodeType != Xml.Element):
 			raise _HxException(("Bad node type, expected Element but found " + Std.string(self.nodeType)))
 		return att in self.attributeMap.h
-
-	def attributes(self):
-		if (self.nodeType != Xml.Element):
-			raise _HxException(("Bad node type, expected Element but found " + Std.string(self.nodeType)))
-		return self.attributeMap.keys()
 
 	def elements(self):
 		if ((self.nodeType != Xml.Document) and ((self.nodeType != Xml.Element))):
@@ -1689,7 +1662,7 @@ _hx_classes["duell.commands.CreateCommand"] = duell_commands_CreateCommand
 
 class duell_commands_DependencyCommand:
 	_hx_class_name = "duell.commands.DependencyCommand"
-	_hx_methods = ["execute", "createOuputFile", "parseLibrayDependencies", "parseProjectDependencies", "parseLibraries", "setupLibrary", "getLibsFromConfigFile", "parseLibraryElement", "logAction", "checkRequirements", "validateLibraryName", "checkIfItIsAProjectFolder"]
+	_hx_methods = ["execute", "createOuputFile", "parseLibrayDependencies", "parseProjectDependencies", "parseLibraries", "logAction", "checkRequirements", "validateLibraryName", "checkIfItIsAProjectFolder"]
 	_hx_interfaces = [duell_commands_IGDCommand]
 
 	def __init__(self):
@@ -1709,74 +1682,43 @@ class duell_commands_DependencyCommand:
 		duell_helpers_CommandHelper.runCommand(dotFolder,"dot",args,_hx_AnonObject({'systemCommand': False, 'errorMessage': "running the simulator"}))
 		return "success"
 
-	def createOuputFile(self):
-		pass
+	def createOuputFile(self,rootNode):
+		creator = duell_objects_dependencies_DotFileContentCreator()
+		rootNode.generateOuptutFile(creator)
+		duell_helpers_LogHelper.info(("OUTPUT: " + HxOverrides.stringOrNull(creator.getContent())))
 
 	def parseLibrayDependencies(self):
 		libraryName = duell_objects_Arguments.get("-library")
-		self.logAction((("Checking dependencies for library '" + ("null" if libraryName is None else libraryName)) + "'"))
+		self.logAction((("Updating dependencies for library '" + ("null" if libraryName is None else libraryName)) + "'"))
 
 	def parseProjectDependencies(self):
 		self.logAction("Checking library dependencies for current project")
-		libraries = self.getLibsFromConfigFile(Sys.getCwd(),duell_defines_DuellDefines.PROJECT_CONFIG_FILENAME)
-		duell_helpers_LogHelper.info(("Libs: " + Std.string(libraries)))
-		self.parseLibraries(libraries)
+		file = duell_objects_dependencies_DependencyConfigFile(Sys.getCwd(), duell_defines_DuellDefines.PROJECT_CONFIG_FILENAME)
+		rootNode = duell_objects_dependencies_DependencyLibraryObject(file, file.get_applicationName())
+		if (len(file.get_duellLibs()) > 0):
+			duell_helpers_CommandHelper.runHaxelib(Sys.getCwd(),["run", "duell_duell", "update", "-yestoall"])
+		else:
+			duell_helpers_LogHelper.info("No dependencies defined.")
+			Sys.exit(0)
+		self.logAction("Parsing libraries..")
+		self.parseLibraries(rootNode)
+		self.createOuputFile(rootNode)
+		self.logAction("DONE")
+		duell_helpers_LogHelper.info(rootNode.toString())
 
-	def parseLibraries(self,libs):
+	def parseLibraries(self,rootNode):
+		duellConfigJSON = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
+		libs = rootNode.get_configFile().get_duellLibs()
 		_g = 0
 		while (_g < len(libs)):
-			library = (libs[_g] if _g >= 0 and _g < len(libs) else None)
+			l = (libs[_g] if _g >= 0 and _g < len(libs) else None)
 			_g = (_g + 1)
-			self.setupLibrary(library.get_lib())
-
-	def setupLibrary(self,lib):
-		if (not duell_helpers_DuellLibHelper.isInstalled(lib.name)):
-			duell_helpers_DuellLibHelper.install(lib.name)
-		if (not duell_helpers_DuellLibHelper.isPathValid(lib.name)):
-			raise _HxException((((("DuellLib " + HxOverrides.stringOrNull(lib.name)) + " has an invalid path - ") + HxOverrides.stringOrNull(duell_helpers_DuellLibHelper.getPath(lib.name))) + " - check your \"haxelib list\""))
-
-	def getLibsFromConfigFile(self,path,fileName):
-		filePath = haxe_io_Path.join([path, fileName])
-		if (not sys_FileSystem.exists(filePath)):
-			duell_helpers_LogHelper.warn((("File '" + ("null" if filePath is None else filePath)) + "' did not exist!"))
-			return list()
-		fileContent = sys_io_File.getContent(filePath)
-		libraries = list()
-		try:
-			fileXmlContent = Xml.parse(fileContent)
-			content = haxe_xml_Fast(fileXmlContent.firstElement())
-			_hx_local_1 = content.get_elements()
-			while _hx_local_1.hasNext():
-				element = _hx_local_1.next()
-				_g = element.get_name()
-				_hx_local_0 = len(_g)
-				if (_hx_local_0 == 7):
-					if (_g == "haxelib"):
-						duell_helpers_LogHelper.info(("found haxelib: " + HxOverrides.stringOrNull(haxe_xml_Printer.print(element.x))))
-				elif (_hx_local_0 == 8):
-					if (_g == "duelllib"):
-						self.parseLibraryElement(libraries,element)
-				else:
-					pass
-		except Exception as _hx_e:
-			_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
-			error = _hx_e1
-			duell_helpers_LogHelper.exitWithFormattedError("Error parsing proejct xml.")
-		return libraries
-
-	def parseLibraryElement(self,libraries,element):
-		name = None
-		if element.has.resolve("name"):
-			name = element.att.resolve("name")
-		else:
-			name = ""
-		version = None
-		if element.has.resolve("version"):
-			version = element.att.resolve("version")
-		else:
-			version = ""
-		x = duell_objects_dependencies_DependencyLibraryObject(name, version)
-		libraries.append(x)
+			libPath = haxe_io_Path.join([duellConfigJSON.localLibraryPath, l.name])
+			libConfig = duell_defines_DuellDefines.LIB_CONFIG_FILENAME
+			config = duell_objects_dependencies_DependencyConfigFile(libPath, libConfig)
+			subNode = duell_objects_dependencies_DependencyLibraryObject(config, l.name)
+			rootNode.addDependency(subNode)
+			self.parseLibraries(subNode)
 
 	def logAction(self,action):
 		line = ""
@@ -4733,8 +4675,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -6371,59 +6313,177 @@ class duell_objects_SemVer:
 duell_objects_SemVer._hx_class = duell_objects_SemVer
 _hx_classes["duell.objects.SemVer"] = duell_objects_SemVer
 
-class duell_objects_dependencies_LibraryType(Enum):
-	_hx_class_name = "duell.objects.dependencies.LibraryType"
-	_hx_constructs = ["DUELLLIB", "HAXELIB"]
-duell_objects_dependencies_LibraryType.DUELLLIB = duell_objects_dependencies_LibraryType("DUELLLIB", 0, list())
-duell_objects_dependencies_LibraryType.HAXELIB = duell_objects_dependencies_LibraryType("HAXELIB", 1, list())
-duell_objects_dependencies_LibraryType._hx_class = duell_objects_dependencies_LibraryType
-_hx_classes["duell.objects.dependencies.LibraryType"] = duell_objects_dependencies_LibraryType
+
+class duell_objects_dependencies_DependencyConfigFile:
+	_hx_class_name = "duell.objects.dependencies.DependencyConfigFile"
+	_hx_fields = ["path", "fileName"]
+	_hx_methods = ["parse", "parseApp", "parseLibraryElement", "getAbsolutePath", "get_applicationName", "get_duellLibs"]
+
+	def __init__(self,path,fileName):
+		self.path = None
+		self.fileName = None
+		self.applicationName = None
+		self.duellLibs = None
+		self.path = path
+		self.fileName = fileName
+		self.duellLibs = list()
+		self.parse()
+
+	def parse(self):
+		filePath = self.getAbsolutePath()
+		if (not sys_FileSystem.exists(filePath)):
+			raise _HxException((("File \"" + ("null" if filePath is None else filePath)) + "\" does not exist!"))
+		fileContent = sys_io_File.getContent(filePath)
+		try:
+			fileXmlContent = Xml.parse(fileContent)
+			content = haxe_xml_Fast(fileXmlContent.firstElement())
+			_hx_local_1 = content.get_elements()
+			while _hx_local_1.hasNext():
+				element = _hx_local_1.next()
+				_g = element.get_name()
+				_hx_local_0 = len(_g)
+				if (_hx_local_0 == 3):
+					if (_g == "app"):
+						self.parseApp(element)
+				elif (_hx_local_0 == 8):
+					if (_g == "duelllib"):
+						self.parseLibraryElement(element)
+				else:
+					pass
+		except Exception as _hx_e:
+			_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
+			e = _hx_e1
+			raise _HxException((("Invalid file \"" + ("null" if filePath is None else filePath)) + "\"!"))
+
+	def parseApp(self,e):
+		if (e.has.resolve("title") and e.has.resolve("company")):
+			self.applicationName = e.att.resolve("title")
+
+	def parseLibraryElement(self,e):
+		name = None
+		if e.has.resolve("name"):
+			name = e.att.resolve("name")
+		else:
+			name = ""
+		version = None
+		if e.has.resolve("version"):
+			version = e.att.resolve("version")
+		else:
+			version = ""
+		_this = self.get_duellLibs()
+		x = duell_objects_DuellLib.getDuellLib(name,version)
+		_this.append(x)
+
+	def getAbsolutePath(self):
+		return haxe_io_Path.join([self.path, self.fileName])
+
+	def get_applicationName(self):
+		return self.applicationName
+
+	def get_duellLibs(self):
+		return self.duellLibs
+
+	@staticmethod
+	def _hx_empty_init(_hx_o):
+		_hx_o.path = None
+		_hx_o.fileName = None
+duell_objects_dependencies_DependencyConfigFile._hx_class = duell_objects_dependencies_DependencyConfigFile
+_hx_classes["duell.objects.dependencies.DependencyConfigFile"] = duell_objects_dependencies_DependencyConfigFile
 
 
 class duell_objects_dependencies_DependencyLibraryObject:
 	_hx_class_name = "duell.objects.dependencies.DependencyLibraryObject"
-	_hx_fields = ["lib", "type", "dependencies"]
-	_hx_methods = ["generateOuptutFile", "toString", "get_lib", "get_dependencies", "set_dependencies"]
+	_hx_fields = ["libraryDependencyObjects"]
+	_hx_methods = ["generateOuptutFile", "addDependency", "get_name", "get_lib", "get_configFile", "toString"]
 
-	def __init__(self,name,version = "master"):
-		if (version is None):
-			version = "master"
+	def __init__(self,configFile,name):
+		self.name = None
+		self.configFile = None
 		self.lib = None
-		self.type = None
-		self.dependencies = None
-		self.lib = duell_objects_DuellLib.getDuellLib(name,version)
-		self.type = duell_objects_dependencies_LibraryType.DUELLLIB
-		self.dependencies = list()
+		self.libraryDependencyObjects = None
+		self.name = name
+		self.configFile = configFile
+		self.lib = duell_objects_DuellLib.getDuellLib(name)
+		self.libraryDependencyObjects = list()
 
 	def generateOuptutFile(self,creator):
-		return "todo!!"
+		creator.parse(self)
+		_g = 0
+		_g1 = self.libraryDependencyObjects
+		while (_g < len(_g1)):
+			dependency = (_g1[_g] if _g >= 0 and _g < len(_g1) else None)
+			_g = (_g + 1)
+			dependency.generateOuptutFile(creator)
+		creator.next()
 
-	def toString(self):
-		return ((("\nDependencyLibraryObject\n name:" + HxOverrides.stringOrNull(self.lib.name)) + "\n version:") + HxOverrides.stringOrNull(self.lib.version))
+	def addDependency(self,libraryObject):
+		_this = self.libraryDependencyObjects
+		_this.append(libraryObject)
+
+	def get_name(self):
+		return self.name
 
 	def get_lib(self):
 		return self.lib
 
-	def get_dependencies(self):
-		return self.dependencies
+	def get_configFile(self):
+		return self.configFile
 
-	def set_dependencies(self,value):
-		self.dependencies = value
+	def toString(self):
+		return ((("DependencyLibraryObject :: name: " + HxOverrides.stringOrNull(self.get_name())) + " dependencies: ") + Std.string(self.libraryDependencyObjects))
 
 	@staticmethod
 	def _hx_empty_init(_hx_o):
-		_hx_o.lib = None
-		_hx_o.type = None
-		_hx_o.dependencies = None
+		_hx_o.libraryDependencyObjects = None
 duell_objects_dependencies_DependencyLibraryObject._hx_class = duell_objects_dependencies_DependencyLibraryObject
 _hx_classes["duell.objects.dependencies.DependencyLibraryObject"] = duell_objects_dependencies_DependencyLibraryObject
 
 
 class duell_objects_dependencies_IFileContentCreator:
 	_hx_class_name = "duell.objects.dependencies.IFileContentCreator"
-	_hx_methods = ["parse"]
+	_hx_methods = ["parse", "getContent", "next"]
 duell_objects_dependencies_IFileContentCreator._hx_class = duell_objects_dependencies_IFileContentCreator
 _hx_classes["duell.objects.dependencies.IFileContentCreator"] = duell_objects_dependencies_IFileContentCreator
+
+
+class duell_objects_dependencies_DotFileContentCreator:
+	_hx_class_name = "duell.objects.dependencies.DotFileContentCreator"
+	_hx_fields = ["content", "isNext"]
+	_hx_methods = ["parse", "next", "getContent"]
+	_hx_interfaces = [duell_objects_dependencies_IFileContentCreator]
+
+	def __init__(self):
+		self.content = None
+		self.isNext = None
+		self.isNext = True
+
+	def parse(self,lib):
+		if (self.isNext and ((self.content is None))):
+			self.content = ("    " + HxOverrides.stringOrNull(lib.get_name()))
+		elif self.isNext:
+			_hx_local_0 = self
+			_hx_local_1 = _hx_local_0.content
+			_hx_local_0.content = (("null" if _hx_local_1 is None else _hx_local_1) + HxOverrides.stringOrNull(((";\n    " + HxOverrides.stringOrNull(lib.get_name())))))
+			_hx_local_0.content
+		else:
+			_hx_local_2 = self
+			_hx_local_3 = _hx_local_2.content
+			_hx_local_2.content = (("null" if _hx_local_3 is None else _hx_local_3) + HxOverrides.stringOrNull(((" -> " + HxOverrides.stringOrNull(lib.get_name())))))
+			_hx_local_2.content
+		self.isNext = False
+
+	def next(self):
+		self.isNext = True
+
+	def getContent(self):
+		return (("digraph G {\n" + HxOverrides.stringOrNull(self.content)) + ";\n}")
+
+	@staticmethod
+	def _hx_empty_init(_hx_o):
+		_hx_o.content = None
+		_hx_o.isNext = None
+duell_objects_dependencies_DotFileContentCreator._hx_class = duell_objects_dependencies_DotFileContentCreator
+_hx_classes["duell.objects.dependencies.DotFileContentCreator"] = duell_objects_dependencies_DotFileContentCreator
 
 class duell_versioning_VersionType(Enum):
 	_hx_class_name = "duell.versioning.VersionType"
@@ -9116,158 +9176,6 @@ class haxe_xml_Parser:
 		raise _HxException("Unexpected end")
 haxe_xml_Parser._hx_class = haxe_xml_Parser
 _hx_classes["haxe.xml.Parser"] = haxe_xml_Parser
-
-
-class haxe_xml_Printer:
-	_hx_class_name = "haxe.xml.Printer"
-	_hx_fields = ["output", "pretty"]
-	_hx_methods = ["writeNode", "hasChildren"]
-	_hx_statics = ["print"]
-
-	def __init__(self,pretty):
-		self.output = None
-		self.pretty = None
-		self.output = StringBuf()
-		self.pretty = pretty
-
-	def writeNode(self,value,tabs):
-		_g = value.nodeType
-		if ((_g) == 2):
-			self.output.b.write(Std.string((("null" if tabs is None else tabs) + "<![CDATA[")))
-			def _hx_local_0():
-				if ((value.nodeType == Xml.Document) or ((value.nodeType == Xml.Element))):
-					raise _HxException(("Bad node type, unexpected " + Std.string(value.nodeType)))
-				return value.nodeValue
-			input = StringTools.trim(_hx_local_0())
-			self.output.b.write(Std.string(input))
-			self.output.b.write("]]>")
-			if self.pretty:
-				self.output.b.write("")
-		elif ((_g) == 3):
-			commentContent = None
-			if ((value.nodeType == Xml.Document) or ((value.nodeType == Xml.Element))):
-				raise _HxException(("Bad node type, unexpected " + Std.string(value.nodeType)))
-			commentContent = value.nodeValue
-			commentContent = EReg("[\n\r\t]+", "g").replace(commentContent,"")
-			commentContent = (("<!--" + ("null" if commentContent is None else commentContent)) + "-->")
-			self.output.b.write(Std.string(tabs))
-			input1 = StringTools.trim(commentContent)
-			self.output.b.write(Std.string(input1))
-			if self.pretty:
-				self.output.b.write("")
-		elif ((_g) == 6):
-			def _hx_local_1():
-				if ((value.nodeType != Xml.Document) and ((value.nodeType != Xml.Element))):
-					raise _HxException(("Bad node type, expected Element or Document but found " + Std.string(value.nodeType)))
-				return python_HaxeIterator(value.children.__iter__())
-			_hx_local_2 = _hx_local_1()
-			while _hx_local_2.hasNext():
-				child = _hx_local_2.next()
-				self.writeNode(child,tabs)
-		elif ((_g) == 0):
-			self.output.b.write(Std.string((("null" if tabs is None else tabs) + "<")))
-			input2 = None
-			if (value.nodeType != Xml.Element):
-				raise _HxException(("Bad node type, expected Element but found " + Std.string(value.nodeType)))
-			input2 = value.nodeName
-			self.output.b.write(Std.string(input2))
-			_hx_local_3 = value.attributes()
-			while _hx_local_3.hasNext():
-				attribute = _hx_local_3.next()
-				self.output.b.write(Std.string(((" " + ("null" if attribute is None else attribute)) + "=\"")))
-				input3 = StringTools.htmlEscape(value.get(attribute),True)
-				self.output.b.write(Std.string(input3))
-				self.output.b.write("\"")
-			if self.hasChildren(value):
-				self.output.b.write(">")
-				if self.pretty:
-					self.output.b.write("")
-				def _hx_local_4():
-					if ((value.nodeType != Xml.Document) and ((value.nodeType != Xml.Element))):
-						raise _HxException(("Bad node type, expected Element or Document but found " + Std.string(value.nodeType)))
-					return python_HaxeIterator(value.children.__iter__())
-				_hx_local_5 = _hx_local_4()
-				while _hx_local_5.hasNext():
-					child1 = _hx_local_5.next()
-					self.writeNode(child1,((("null" if tabs is None else tabs) + "\t") if (self.pretty) else tabs))
-				self.output.b.write(Std.string((("null" if tabs is None else tabs) + "</")))
-				input4 = None
-				if (value.nodeType != Xml.Element):
-					raise _HxException(("Bad node type, expected Element but found " + Std.string(value.nodeType)))
-				input4 = value.nodeName
-				self.output.b.write(Std.string(input4))
-				self.output.b.write(">")
-				if self.pretty:
-					self.output.b.write("")
-			else:
-				self.output.b.write("/>")
-				if self.pretty:
-					self.output.b.write("")
-		elif ((_g) == 1):
-			nodeValue = None
-			if ((value.nodeType == Xml.Document) or ((value.nodeType == Xml.Element))):
-				raise _HxException(("Bad node type, unexpected " + Std.string(value.nodeType)))
-			nodeValue = value.nodeValue
-			if (len(nodeValue) != 0):
-				input5 = (("null" if tabs is None else tabs) + HxOverrides.stringOrNull(StringTools.htmlEscape(nodeValue)))
-				self.output.b.write(Std.string(input5))
-				if self.pretty:
-					self.output.b.write("")
-		elif ((_g) == 5):
-			input6 = None
-			def _hx_local_6():
-				if ((value.nodeType == Xml.Document) or ((value.nodeType == Xml.Element))):
-					raise _HxException(("Bad node type, unexpected " + Std.string(value.nodeType)))
-				return value.nodeValue
-			input6 = (("<?" + HxOverrides.stringOrNull(_hx_local_6())) + "?>")
-			self.output.b.write(Std.string(input6))
-		elif ((_g) == 4):
-			input7 = None
-			def _hx_local_7():
-				if ((value.nodeType == Xml.Document) or ((value.nodeType == Xml.Element))):
-					raise _HxException(("Bad node type, unexpected " + Std.string(value.nodeType)))
-				return value.nodeValue
-			input7 = (("<!DOCTYPE " + HxOverrides.stringOrNull(_hx_local_7())) + ">")
-			self.output.b.write(Std.string(input7))
-		else:
-			pass
-
-	def hasChildren(self,value):
-		def _hx_local_0():
-			if ((value.nodeType != Xml.Document) and ((value.nodeType != Xml.Element))):
-				raise _HxException(("Bad node type, expected Element or Document but found " + Std.string(value.nodeType)))
-			return python_HaxeIterator(value.children.__iter__())
-		_hx_local_2 = _hx_local_0()
-		while _hx_local_2.hasNext():
-			child = _hx_local_2.next()
-			_g = child.nodeType
-			if (((_g) == 1) or (((_g) == 0))):
-				return True
-			elif (((_g) == 3) or (((_g) == 2))):
-				def _hx_local_1():
-					if ((child.nodeType == Xml.Document) or ((child.nodeType == Xml.Element))):
-						raise _HxException(("Bad node type, unexpected " + Std.string(child.nodeType)))
-					return child.nodeValue
-				if (len(StringTools.ltrim(_hx_local_1())) != 0):
-					return True
-			else:
-				pass
-		return False
-
-	@staticmethod
-	def print(xml,pretty = False):
-		if (pretty is None):
-			pretty = False
-		printer = haxe_xml_Printer(pretty)
-		printer.writeNode(xml,"")
-		return printer.output.b.getvalue()
-
-	@staticmethod
-	def _hx_empty_init(_hx_o):
-		_hx_o.output = None
-		_hx_o.pretty = None
-haxe_xml_Printer._hx_class = haxe_xml_Printer
-_hx_classes["haxe.xml.Printer"] = haxe_xml_Printer
 
 
 class python_Boot:

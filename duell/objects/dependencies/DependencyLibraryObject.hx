@@ -1,35 +1,42 @@
 package duell.objects.dependencies;
 
+import duell.objects.dependencies.DependencyConfigFile;
 import duell.objects.DuellLib;
-
-enum LibraryType
-{
-	DUELLLIB;
-	HAXELIB;
-}
 
 class DependencyLibraryObject
 {
-	private var lib : DuellLib;
-	private var type : LibraryType;
-	private var dependencies : Array<DependencyLibraryObject>;
-
-	public function new(name : String, version : String = "master")
+	private var name(get, null) : String;
+	private var configFile(get, null) : DependencyConfigFile;
+	private var lib(get, null) : DuellLib;
+	private var libraryDependencyObjects : Array<DependencyLibraryObject>;
+	
+	public function new(configFile : DependencyConfigFile, name : String)
 	{
-		lib = DuellLib.getDuellLib(name, version);
-		type = LibraryType.DUELLLIB;
-		dependencies = new Array<DependencyLibraryObject>();
+		this.name = name;
+		this.configFile = configFile;
+		lib = DuellLib.getDuellLib(name);
+		libraryDependencyObjects = new Array<DependencyLibraryObject>();
 	}
 
-	public function generateOuptutFile( creator:IFileContentCreator ) : String
+	public function generateOuptutFile(creator : IFileContentCreator)
 	{
-		//TODO clue
-		return "todo!!";
+		creator.parse(this);
+
+		for (dependency in libraryDependencyObjects){
+			dependency.generateOuptutFile(creator);
+		}
+
+		creator.next();
 	}
 
-	public function toString() : String
+	public function addDependency(libraryObject : DependencyLibraryObject)
 	{
-		return "\nDependencyLibraryObject\n name:" + lib.name + "\n version:" + lib.version;
+		libraryDependencyObjects.push(libraryObject);
+	}
+
+	public function get_name() : String
+	{
+		return name;
 	}
 
 	public function get_lib() : DuellLib
@@ -37,13 +44,13 @@ class DependencyLibraryObject
 		return lib;
 	}
 
-	public function get_dependencies() : Array<DependencyLibraryObject>
+	public function get_configFile() : DependencyConfigFile
 	{
-		return dependencies;
+		return configFile;
 	}
 
-	public function set_dependencies(value : Array<DependencyLibraryObject>) 
+	public function toString() : String
 	{
-		this.dependencies = value;
+		return "DependencyLibraryObject :: name: " + name + " dependencies: " + libraryDependencyObjects;
 	}
 }

@@ -4,6 +4,8 @@ import duell.commands.IGDCommand;
 import duell.objects.DuellConfigJSON;
 import duell.objects.Arguments;
 import duell.objects.dependencies.DependencyLibraryObject;
+import duell.objects.dependencies.DependencyConfigFile;
+import duell.objects.dependencies.DotFileContentCreator;
 import duell.objects.DuellLib;
 import duell.helpers.LogHelper;
 import duell.helpers.DuellLibListHelper;
@@ -49,96 +51,63 @@ class DependencyCommand implements IGDCommand
 		return "success";
 	}
 
-	private function createOuputFile()
+	private function createOuputFile(rootNode : DependencyLibraryObject)
 	{
+		var creator = new DotFileContentCreator();
+		rootNode.generateOuptutFile(creator);
 
+		LogHelper.info("OUTPUT: " + creator.getContent());
 	}
 
 	private function parseLibrayDependencies()
 	{
 		var libraryName : String = Arguments.get("-library");
 
-		logAction("Checking dependencies for library '" + libraryName + "'");
+		logAction("Updating dependencies for library '" + libraryName + "'");
 
-		//check if library in correct version exist
-
-		//check out library / update to correct version
-
-		//check for 'duell_libraray.xml'
-
-		//parse duelllib's => loop process
 	}
 
 	private function parseProjectDependencies()
 	{
 		logAction("Checking library dependencies for current project");
+		var file = new DependencyConfigFile(Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME);
+		var rootNode = new DependencyLibraryObject(file, file.get_applicationName());
+		if(file.get_duellLibs().length > 0)
+		{
+			CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell", "update", "-yestoall"]);	
+		}
+		else
+		{
+			LogHelper.info("No dependencies defined.");
+			Sys.exit(0);
+		}
+
+		logAction("Parsing libraries..");
 		
-		var libraries = getLibsFromConfigFile(Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME);
-		LogHelper.info("Libs: " + libraries);
-		parseLibraries(libraries);
+		parseLibraries(rootNode);
+
+		createOuputFile(rootNode);
+		
+		logAction("DONE");
+
+		LogHelper.info(rootNode.toString());
 	}
 
-	private function parseLibraries(libs : Array<DependencyLibraryObject>)
+	//TODO: avoid looping through libraries!! Have tmp container where library-name, version and parsed flag are stored
+	private function parseLibraries(rootNode : DependencyLibraryObject)
 	{
-		for (library in libs)
+		var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+		var libs = rootNode.get_configFile().get_duellLibs();
+		for (l in libs)
 		{
-			setupLibrary(library.get_lib());
+			var libPath = Path.join([duellConfigJSON.localLibraryPath, l.name]);
+			var libConfig = DuellDefines.LIB_CONFIG_FILENAME;
+			var config = new DependencyConfigFile(libPath, libConfig);
+			var subNode = new DependencyLibraryObject(config, l.name);
+			rootNode.addDependency(subNode);
+
+			parseLibraries(subNode);
 		}
-	}
-
-	private function setupLibrary(lib : DuellLib)
-	{
-		if (!DuellLibHelper.isInstalled(lib.name))
-		{
-			DuellLibHelper.install(lib.name);
-		}
-
-		if (!DuellLibHelper.isPathValid(lib.name))
-		{
-			throw 'DuellLib ${lib.name} has an invalid path - ${DuellLibHelper.getPath(lib.name)} - check your "haxelib list"';
-		}
-	}
-
-	private function getLibsFromConfigFile(path : String, fileName : String) : Array<DependencyLibraryObject>
-	{
-		var filePath : String = Path.join([path, fileName]);
-		if(!FileSystem.exists(filePath))
-		{
-			LogHelper.warn("File '" + filePath + "' did not exist!");
-			return new Array<DependencyLibraryObject>();
-		}
-
-		var fileContent:String = File.getContent(filePath);
-		var libraries = new Array<DependencyLibraryObject>();
-		try
-		{
-			var fileXmlContent : Xml = Xml.parse(fileContent);
-			var content : Fast = new Fast(fileXmlContent.firstElement());
-
-			for (element in content.elements)
-			{
-				switch(element.name){
-					case "duelllib":
-						 parseLibraryElement(libraries, element);
-
-					case "haxelib":
-						 LogHelper.info("found haxelib: " + element.x.toString());
-				}
-			}
-		}
-		catch(error : Dynamic)
-		{
-			LogHelper.exitWithFormattedError("Error parsing proejct xml.");
-		}
-
-		return libraries;
-	}
-
-	private function parseLibraryElement(libraries : Array<DependencyLibraryObject>, element : Fast)
-	{
-		var name = element.has.name ? element.att.name : "";
-		var version = element.has.version ? element.att.version : "";
-		libraries.push(new DependencyLibraryObject(name, version));
 	}
 
 	private function logAction(action : String)
