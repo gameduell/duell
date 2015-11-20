@@ -1,13 +1,13 @@
 package duell.objects.dependencies;
 
 import duell.objects.DuellLib;
+import duell.objects.Haxelib;
 
 import sys.FileSystem;
 import sys.io.File;
 
 import haxe.io.Path;
 import haxe.xml.Fast;
-
 
 class DependencyConfigFile
 {
@@ -16,12 +16,14 @@ class DependencyConfigFile
 	private var fileName : String;
 	private var applicationName(get, null) : String;
 	private var duellLibs(get, null) : Array<DuellLib>;
+	private var haxeLibs(get, null) : Array<Haxelib>;
 
 	public function new (path : String , fileName:String)
 	{
 		this.path = path;
 		this.fileName = fileName;
 		duellLibs = new Array<DuellLib>();
+		haxeLibs = new Array<Haxelib>();
 
 		parse();
 	}
@@ -46,7 +48,10 @@ class DependencyConfigFile
 						 parseApp(element);
 
 					case "duelllib":
-						 parseLibraryElement(element);
+						 parseDuellLib(element);
+
+					case "haxelib":
+						 parseHaxeLib(element);
 				}
 			}
 		}
@@ -54,6 +59,14 @@ class DependencyConfigFile
 		{
 			throw ('Invalid file "$filePath"!');	
 		}
+	}
+
+	private function parseHaxeLib(e : Fast)
+	{
+		var name = e.has.name ? e.att.name : "";
+		var version = e.has.version ? e.att.version : "";
+
+		haxeLibs.push(Haxelib.getHaxelib(name, version));
 	}
 
 	private function parseApp(e : Fast)
@@ -64,7 +77,7 @@ class DependencyConfigFile
 		}
 	}
 
-	private function parseLibraryElement(e : Fast)
+	private function parseDuellLib(e : Fast)
 	{
 		var name = e.has.name ? e.att.name : "";
 		var version = e.has.version ? e.att.version : "";
@@ -85,5 +98,15 @@ class DependencyConfigFile
 	public function get_duellLibs() : Array<DuellLib>
 	{
 		return duellLibs;
+	}
+
+	public function hasHaxeLibs() : Bool
+	{
+		return haxeLibs.length > 0;
+	}
+
+	public function get_haxeLibs() : Array<Haxelib>
+	{
+		return haxeLibs;
 	}
 }

@@ -2,36 +2,75 @@ package duell.objects.dependencies;
 
 class DotFileContentCreator implements IFileContentCreator
 {
-	private var content = "";
+	private var duellLibContent = "";
+	private var haxeLibsContent = "";
 
 	public function new()
 	{}
 
-	public function parse(rootNode : DependencyLibraryObject)
+	public function parseDuellLibs(rootNode : DependencyLibraryObject)
 	{
 		var subnodes = rootNode.get_libraryDependencyObjects();
 		var nodeName = rootNode.get_name();
 
-		if(content.length == 0 && subnodes.length == 0) //if the inital object has no child nodes
+		if(duellLibContent.length == 0 && subnodes.length == 0) //if the inital object has no child nodes
 		{
-			content = nodeName + ';\n    ';
+			duellLibContent = nodeName + ';\n    ';
 		}
 
 		for (subnode in subnodes)
 		{
 			var lib = subnode.get_lib();
 			var label = lib != null ? ' [label="' + lib.version + '"]' : ''; 
-			content += '    "' + nodeName + '" -> "' + subnode.get_name() + '"' + label + ';\n';
+			duellLibContent += '    "' + nodeName + '" -> "' + subnode.get_name() + '"' + label + ';\n';
 		}
 
 		for (subnode in subnodes){
-			parse(subnode);
+			parseDuellLibs(subnode);
 		}
+	}
+
+	public function parseHaxeLibs(rootNode : DependencyLibraryObject) : Void
+	{
+		var config = rootNode.get_configFile();
+		if(config.hasHaxeLibs())
+		{
+			var haxeLibs = config.get_haxeLibs();
+			for (lib in haxeLibs){
+				var label = ' [label="' + lib.version + '", fontcolor="#999999"]';
+				haxeLibsContent += '   "' + rootNode.get_name() + '" -> "' + lib.name + '"' + label + ';\n';
+			}
+		}
+
+		var subNodes = rootNode.get_libraryDependencyObjects();
+		for (subNode in subNodes)
+		{
+			parseHaxeLibs(subNode);
+		}
+	}
+
+	private function getDuellLibContent() : String
+	{
+		if(duellLibContent.length > 0){
+			return getBaseFormat() + duellLibContent;
+		}
+
+		return "";
+	}
+
+	private function getHaxeLibsContent() : String
+	{
+		if(haxeLibsContent.length > 0)
+		{
+			return getHaxelibsFormat() + haxeLibsContent;
+		}
+
+		return "";
 	}
 
 	public function getContent() : String
 	{
-		return "digraph G {\n" + getBaseFormat() + content + "}";
+		return "digraph G {\n" + getDuellLibContent() + getHaxeLibsContent() + "}";
 	}
 
 	public function getFilename() : String
@@ -46,5 +85,14 @@ class DotFileContentCreator implements IFileContentCreator
  			   '    node [fillcolor="#FC861C44"]\n' +
  			   '    node [color="#FC332244"]\n' +
  			   '    edge [color="#FC861C"]\n';
+	}
+
+	private function getHaxelibsFormat() : String
+	{
+		return '    node [fontname=Verdana,fontsize=12, fontcolor="#999999"]\n' +
+ 			   '    node [style=filled]\n' +
+ 			   '    node [fillcolor="#EEEEEE"]\n' +
+ 			   '    node [color="#AAAAAA"]\n' +
+ 			   '    edge [color="#AAAAAA"]\n';
 	}
 }

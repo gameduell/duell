@@ -69,7 +69,8 @@ class DependencyCommand implements IGDCommand
 	private function createOuputFile(rootNode : DependencyLibraryObject) : IFileContentCreator
 	{
 		var creator = new DotFileContentCreator();
-		creator.parse(rootNode);
+		creator.parseDuellLibs(rootNode);
+		creator.parseHaxeLibs(rootNode);
 
 		var targetFolder = Path.join([Sys.getCwd(), "dependencies"]);
 		if(!FileSystem.exists(targetFolder))
@@ -110,7 +111,7 @@ class DependencyCommand implements IGDCommand
 
 		logAction("Parsing libraries..");
 		
-		parseLibraries(rootNode);
+		parseDuellLibraries(rootNode);
 
 		var creator = createOuputFile(rootNode);
 
@@ -121,7 +122,7 @@ class DependencyCommand implements IGDCommand
 		logAction("DONE");
 	}
 
-	private function parseLibraries(rootNode : DependencyLibraryObject)
+	private function parseDuellLibraries(rootNode : DependencyLibraryObject)
 	{
 		var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 		var libs = rootNode.get_configFile().get_duellLibs();
@@ -136,7 +137,7 @@ class DependencyCommand implements IGDCommand
 			if(canBeProcessed(subNode.get_lib())){
 				addParsingLib(subNode.get_lib());
 
-				parseLibraries(subNode);
+				parseDuellLibraries(subNode);
 
 				setParsedLib(subNode.get_lib());
 			}
