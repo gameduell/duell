@@ -24,7 +24,8 @@ import haxe.xml.Fast;
 class DependencyCommand implements IGDCommand
 {
 
-	private var executablePath : String; 
+	private var executablePath : String;
+	private var libraryCache = new Map<String, Map<String, Bool>>();//new Map<LibraryName, Map<Version, parsed>>
 
 	public function new()
 	{
@@ -129,8 +130,43 @@ class DependencyCommand implements IGDCommand
 			var subNode = new DependencyLibraryObject(config, l.name);
 			rootNode.addDependency(subNode);
 
-			parseLibraries(subNode);
+			if(canBeProcessed(subNode.get_lib())){
+				addParsingLib(subNode.get_lib());
+
+				parseLibraries(subNode);
+
+				setParsedLib(subNode.get_lib());
+			}
 		}
+	}
+
+	private function canBeProcessed(lib : DuellLib) : Bool
+	{
+		if(libraryCache.exists(lib.name))
+		{
+			var versions = libraryCache.get(lib.name);
+
+			return versions.exists(lib.version);
+		}
+
+		return true;
+	}
+
+	private function addParsingLib(lib : DuellLib)
+	{
+		if(!libraryCache.exists(lib.name))
+		{
+			libraryCache.set(lib.name, new Map<String, Bool>());
+		}
+		
+		var versions = libraryCache.get(lib.name);
+		versions.set(lib.version, false);
+	}
+
+	private function setParsedLib(lib : DuellLib)
+	{
+		var versions = libraryCache.get(lib.name);
+		versions.set(lib.version, true);	
 	}
 
 	private function logAction(action : String)

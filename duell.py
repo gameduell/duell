@@ -1662,12 +1662,14 @@ _hx_classes["duell.commands.CreateCommand"] = duell_commands_CreateCommand
 
 class duell_commands_DependencyCommand:
 	_hx_class_name = "duell.commands.DependencyCommand"
-	_hx_fields = ["executablePath"]
-	_hx_methods = ["execute", "buildVisualization", "openVisualization", "createOuputFile", "parseLibrayDependencies", "parseProjectDependencies", "parseLibraries", "logAction", "checkRequirements", "validateLibraryName", "checkIfItIsAProjectFolder"]
+	_hx_fields = ["executablePath", "libraryCache"]
+	_hx_methods = ["execute", "buildVisualization", "openVisualization", "createOuputFile", "parseLibrayDependencies", "parseProjectDependencies", "parseLibraries", "canBeProcessed", "addParsingLib", "setParsedLib", "logAction", "checkRequirements", "validateLibraryName", "checkIfItIsAProjectFolder"]
 	_hx_interfaces = [duell_commands_IGDCommand]
 
 	def __init__(self):
 		self.executablePath = None
+		self.libraryCache = None
+		self.libraryCache = haxe_ds_StringMap()
 		duellConfigJSON = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
 		self.executablePath = haxe_io_Path.join([duellConfigJSON.localLibraryPath, "duell", "bin", "graphviz"])
 
@@ -1731,7 +1733,27 @@ class duell_commands_DependencyCommand:
 			config = duell_objects_dependencies_DependencyConfigFile(libPath, libConfig)
 			subNode = duell_objects_dependencies_DependencyLibraryObject(config, l.name)
 			rootNode.addDependency(subNode)
-			self.parseLibraries(subNode)
+			if self.canBeProcessed(subNode.get_lib()):
+				self.addParsingLib(subNode.get_lib())
+				self.parseLibraries(subNode)
+				self.setParsedLib(subNode.get_lib())
+
+	def canBeProcessed(self,lib):
+		if lib.name in self.libraryCache.h:
+			versions = self.libraryCache.h.get(lib.name,None)
+			return lib.version in versions.h
+		return True
+
+	def addParsingLib(self,lib):
+		if (not lib.name in self.libraryCache.h):
+			value = haxe_ds_StringMap()
+			self.libraryCache.h[lib.name] = value
+		versions = self.libraryCache.h.get(lib.name,None)
+		versions.h[lib.version] = False
+
+	def setParsedLib(self,lib):
+		versions = self.libraryCache.h.get(lib.name,None)
+		versions.h[lib.version] = True
 
 	def logAction(self,action):
 		line = ""
@@ -1771,6 +1793,7 @@ class duell_commands_DependencyCommand:
 	@staticmethod
 	def _hx_empty_init(_hx_o):
 		_hx_o.executablePath = None
+		_hx_o.libraryCache = None
 duell_commands_DependencyCommand._hx_class = duell_commands_DependencyCommand
 _hx_classes["duell.commands.DependencyCommand"] = duell_commands_DependencyCommand
 
@@ -4638,8 +4661,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_val
 					nonlocal _g_head
+					nonlocal _g_val
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
