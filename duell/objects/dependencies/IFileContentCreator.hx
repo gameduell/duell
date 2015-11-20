@@ -5,4 +5,5 @@ interface IFileContentCreator
 	public function parse(lib : DependencyLibraryObject) : Void;
 	public function getContent() : String;
 	public function next() : Void;
+	public function getFilename() : String;
 }

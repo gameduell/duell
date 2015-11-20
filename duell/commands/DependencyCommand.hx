@@ -6,6 +6,7 @@ import duell.objects.Arguments;
 import duell.objects.dependencies.DependencyLibraryObject;
 import duell.objects.dependencies.DependencyConfigFile;
 import duell.objects.dependencies.DotFileContentCreator;
+import duell.objects.dependencies.IFileContentCreator;
 import duell.objects.DuellLib;
 import duell.helpers.LogHelper;
 import duell.helpers.DuellLibListHelper;
@@ -50,13 +51,18 @@ class DependencyCommand implements IGDCommand
 	private function buildVisualization(creator : IFileContentCreator)
 	{
 		var path = Path.join([executablePath, 'dot']);
-		CommandHelper.runCommand("", "chmod", ["+x", dotPath], {errorMessage: "setting permissions on the 'dot' executable."});
+		CommandHelper.runCommand("", "chmod", ["+x", path], {errorMessage: "setting permissions on the 'dot' executable."});
 		
 		var args = ["-Tpng", Path.join([executablePath, creator.getFilename()]), "-o", Path.join([executablePath, "visualization.png"])];
 		CommandHelper.runCommand(executablePath, "dot", args, {systemCommand: false, errorMessage: "running dot command"});
 	}
 
-	private function createOuputFile(rootNode : DependencyLibraryObject)
+	private function openVisualization()
+	{
+		CommandHelper.runCommand("", "open", [Path.join([executablePath, "visualization.png"])]);
+	}
+
+	private function createOuputFile(rootNode : DependencyLibraryObject) : IFileContentCreator
 	{
 		var creator = new DotFileContentCreator();
 		rootNode.generateOuptutFile(creator);
@@ -70,6 +76,8 @@ class DependencyCommand implements IGDCommand
 		var fileOutput = File.write(outputFile, false);
 		fileOutput.writeString(creator.getContent());
 		fileOutput.close();
+
+		return creator;
 	}
 
 	private function parseLibrayDependencies()
@@ -99,11 +107,13 @@ class DependencyCommand implements IGDCommand
 		
 		parseLibraries(rootNode);
 
-		createOuputFile(rootNode);
+		var creator = createOuputFile(rootNode);
+
+		buildVisualization(creator);
+
+		openVisualization();
 		
 		logAction("DONE");
-
-		LogHelper.info(rootNode.toString());
 	}
 
 	//TODO: avoid looping through libraries!! Have tmp container where library-name, version and parsed flag are stored
