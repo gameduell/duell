@@ -12,19 +12,19 @@ class DotFileContentCreator implements IFileContentCreator
 
 	public function parse(lib : DependencyLibraryObject)
 	{
-		var name = lib.get_name();//Continue
+		var name = lib.get_name().split(" ").join("_");
 
 		if(isNext && content == null)
 		{
-			content = "    " + lib.get_name();
+			content = "    " + name;
 		}
 		else if (isNext)
 		{
-			content += ";\n    " + lib.get_name();
+			content += ";\n    " + name;
 		}
 		else
 		{
-			content += " -> " + lib.get_name();
+			content += " -> " + name;
 		}
 
 		isNext = false;
@@ -38,5 +38,10 @@ class DotFileContentCreator implements IFileContentCreator
 	public function getContent() : String
 	{
 		return "digraph G {\n" + content + ";\n}";
+	}
+
+	public function getFilename() : String
+	{
+		return "dotFile.dot";
 	}
 }

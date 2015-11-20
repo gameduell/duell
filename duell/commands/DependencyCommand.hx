@@ -22,8 +22,13 @@ import haxe.xml.Fast;
 
 class DependencyCommand implements IGDCommand
 {
+
+	private var executablePath : String; 
+
 	public function new()
 	{
+		var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+		executablePath = Path.join([duellConfigJSON.localLibraryPath, 'duell', 'bin', 'graphviz']);
 	}
 
 	public function execute():String
@@ -39,16 +44,16 @@ class DependencyCommand implements IGDCommand
 			parseProjectDependencies();
 		}
 
-		var duellConfig = DuellConfigHelper.getDuellConfigFileLocation();
-		var dotPath = haxe.io.Path.join([haxe.io.Path.directory(duellConfig), 'lib', 'duell', 'bin', 'graphviz', 'dot']);
+		return "success";
+	}
 
+	private function buildVisualization(creator : IFileContentCreator)
+	{
+		var path = Path.join([executablePath, 'dot']);
 		CommandHelper.runCommand("", "chmod", ["+x", dotPath], {errorMessage: "setting permissions on the 'dot' executable."});
 		
-		var dotFolder = haxe.io.Path.directory(dotPath);
-		var args = ["-Tpng", haxe.io.Path.join([dotFolder, "dotFile.dot"]), "-o", haxe.io.Path.join([dotFolder, "firstFile.png"])];
-		CommandHelper.runCommand(dotFolder, "dot", args, {systemCommand: false, errorMessage: "running the simulator"});
-
-		return "success";
+		var args = ["-Tpng", Path.join([executablePath, creator.getFilename()]), "-o", Path.join([executablePath, "visualization.png"])];
+		CommandHelper.runCommand(executablePath, "dot", args, {systemCommand: false, errorMessage: "running dot command"});
 	}
 
 	private function createOuputFile(rootNode : DependencyLibraryObject)
@@ -56,7 +61,15 @@ class DependencyCommand implements IGDCommand
 		var creator = new DotFileContentCreator();
 		rootNode.generateOuptutFile(creator);
 
-		LogHelper.info("OUTPUT: " + creator.getContent());
+		var outputFile = Path.join([executablePath, creator.getFilename()]);
+		if(FileSystem.exists(outputFile))
+		{
+			FileSystem.deleteFile(Path.join([executablePath, creator.getFilename()]));
+		}
+
+		var fileOutput = File.write(outputFile, false);
+		fileOutput.writeString(creator.getContent());
+		fileOutput.close();
 	}
 
 	private function parseLibrayDependencies()
