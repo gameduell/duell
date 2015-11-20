@@ -4661,8 +4661,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_head
 					nonlocal _g_val
+					nonlocal _g_head
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -6477,7 +6477,7 @@ _hx_classes["duell.objects.dependencies.IFileContentCreator"] = duell_objects_de
 class duell_objects_dependencies_DotFileContentCreator:
 	_hx_class_name = "duell.objects.dependencies.DotFileContentCreator"
 	_hx_fields = ["content"]
-	_hx_methods = ["parse", "getContent", "getFilename"]
+	_hx_methods = ["parse", "getContent", "getFilename", "getBaseFormat"]
 	_hx_interfaces = [duell_objects_dependencies_IFileContentCreator]
 
 	def __init__(self):
@@ -6493,9 +6493,15 @@ class duell_objects_dependencies_DotFileContentCreator:
 		while (_g < len(subnodes)):
 			subnode = (subnodes[_g] if _g >= 0 and _g < len(subnodes) else None)
 			_g = (_g + 1)
+			lib = subnode.get_lib()
+			label = None
+			if (lib is not None):
+				label = ((" [label=\"" + HxOverrides.stringOrNull(lib.version)) + "\"]")
+			else:
+				label = ""
 			_hx_local_1 = self
 			_hx_local_2 = _hx_local_1.content
-			_hx_local_1.content = (("null" if _hx_local_2 is None else _hx_local_2) + HxOverrides.stringOrNull(((((("    \"" + ("null" if nodeName is None else nodeName)) + "\" -> \"") + HxOverrides.stringOrNull(subnode.get_name())) + "\";\n"))))
+			_hx_local_1.content = (("null" if _hx_local_2 is None else _hx_local_2) + HxOverrides.stringOrNull(((((((("    \"" + ("null" if nodeName is None else nodeName)) + "\" -> \"") + HxOverrides.stringOrNull(subnode.get_name())) + "\"") + ("null" if label is None else label)) + ";\n"))))
 			_hx_local_1.content
 		_g1 = 0
 		while (_g1 < len(subnodes)):
@@ -6504,10 +6510,13 @@ class duell_objects_dependencies_DotFileContentCreator:
 			self.parse(subnode1)
 
 	def getContent(self):
-		return (("digraph G {\n" + HxOverrides.stringOrNull(self.content)) + "}")
+		return ((("digraph G {\n" + HxOverrides.stringOrNull(self.getBaseFormat())) + HxOverrides.stringOrNull(self.content)) + "}")
 
 	def getFilename(self):
 		return "dotFile.dot"
+
+	def getBaseFormat(self):
+		return (((("    node [fontname=Verdana,fontsize=12]\n" + "    node [style=filled]\n") + "    node [fillcolor=\"#EEEEEE\"]\n") + "    node [color=\"#EEEEEE\"]\n") + "    edge [color=\"#31CEF0\"]\n")
 
 	@staticmethod
 	def _hx_empty_init(_hx_o):

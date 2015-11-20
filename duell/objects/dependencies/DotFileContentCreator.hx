@@ -19,7 +19,9 @@ class DotFileContentCreator implements IFileContentCreator
 
 		for (subnode in subnodes)
 		{
-			content += '    "' + nodeName + '" -> "' + subnode.get_name() + '";\n';
+			var lib = subnode.get_lib();
+			var label = lib != null ? ' [label="' + lib.version + '"]' : ''; 
+			content += '    "' + nodeName + '" -> "' + subnode.get_name() + '"' + label + ';\n';
 		}
 
 		for (subnode in subnodes){
@@ -29,11 +31,20 @@ class DotFileContentCreator implements IFileContentCreator
 
 	public function getContent() : String
 	{
-		return "digraph G {\n" + content + "}";
+		return "digraph G {\n" + getBaseFormat() + content + "}";
 	}
 
 	public function getFilename() : String
 	{
 		return "dotFile.dot";
+	}
+
+	private function getBaseFormat() : String 
+	{
+		return '    node [fontname=Verdana,fontsize=12]\n' +
+ 			   '    node [style=filled]\n' +
+ 			   '    node [fillcolor="#EEEEEE"]\n' +
+ 			   '    node [color="#EEEEEE"]\n' +
+ 			   '    edge [color="#31CEF0"]\n';
 	}
 }

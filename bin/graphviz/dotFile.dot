@@ -1,5 +1,10 @@
 digraph G {
-    "Empty Project" -> "protohx";
-    "Empty Project" -> "events";
-    "events" -> "polygonal-ds";
+    node [fontname=Verdana,fontsize=12]
+    node [style=filled]
+    node [fillcolor="#EEEEEE"]
+    node [color="#EEEEEE"]
+    edge [color="#31CEF0"]
+    "Empty Project" -> "protohx" [label="master"];
+    "Empty Project" -> "events" [label="master"];
+    "events" -> "polygonal-ds" [label="master"];
 }

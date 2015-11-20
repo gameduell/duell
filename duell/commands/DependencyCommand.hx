@@ -117,7 +117,6 @@ class DependencyCommand implements IGDCommand
 		logAction("DONE");
 	}
 
-	//TODO: avoid looping through libraries!! Have tmp container where library-name, version and parsed flag are stored
 	private function parseLibraries(rootNode : DependencyLibraryObject)
 	{
 		var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());

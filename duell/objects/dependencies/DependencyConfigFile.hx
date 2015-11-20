@@ -31,7 +31,6 @@ class DependencyConfigFile
 		var filePath = getAbsolutePath();
 		if(!FileSystem.exists(filePath))
 		{
-			//throw ('File "$filePath" does not exist!');
 			return;
 		}
 
