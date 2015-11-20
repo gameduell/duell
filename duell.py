@@ -1687,6 +1687,7 @@ class duell_commands_DependencyCommand:
 		dotFile = haxe_io_Path.join([Sys.getCwd(), "dependencies", creator.getFilename()])
 		args = ["-Tpng", dotFile, "-o", haxe_io_Path.join([Sys.getCwd(), "dependencies", "visualization.png"])]
 		duell_helpers_CommandHelper.runCommand(self.executablePath,"dot",args,_hx_AnonObject({'systemCommand': False, 'errorMessage': "running dot command"}))
+		sys_FileSystem.deleteFile(dotFile)
 
 	def openVisualization(self):
 		duell_helpers_CommandHelper.runCommand("","open",[haxe_io_Path.join([Sys.getCwd(), "dependencies", "visualization.png"])])
@@ -1733,7 +1734,7 @@ class duell_commands_DependencyCommand:
 			libPath = haxe_io_Path.join([duellConfigJSON.localLibraryPath, l.name])
 			libConfig = duell_defines_DuellDefines.LIB_CONFIG_FILENAME
 			config = duell_objects_dependencies_DependencyConfigFile(libPath, libConfig)
-			subNode = duell_objects_dependencies_DependencyLibraryObject(config, l.name)
+			subNode = duell_objects_dependencies_DependencyLibraryObject(config, l.name, l.version)
 			rootNode.addDependency(subNode)
 			if self.canBeProcessed(subNode.get_lib()):
 				self.addParsingLib(subNode.get_lib())
@@ -4663,8 +4664,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_val
 					nonlocal _g_head
+					nonlocal _g_val
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -4714,8 +4715,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -6434,14 +6435,16 @@ class duell_objects_dependencies_DependencyLibraryObject:
 	_hx_class_name = "duell.objects.dependencies.DependencyLibraryObject"
 	_hx_methods = ["addDependency", "get_name", "get_lib", "get_configFile", "get_libraryDependencyObjects", "toString"]
 
-	def __init__(self,configFile,name):
+	def __init__(self,configFile,name,version = "master"):
+		if (version is None):
+			version = "master"
 		self.name = None
 		self.configFile = None
 		self.lib = None
 		self.libraryDependencyObjects = None
 		self.name = name
 		self.configFile = configFile
-		self.lib = duell_objects_DuellLib.getDuellLib(name)
+		self.lib = duell_objects_DuellLib.getDuellLib(name,version)
 		self.libraryDependencyObjects = list()
 
 	def addDependency(self,libraryObject):

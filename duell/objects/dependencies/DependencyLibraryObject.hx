@@ -10,11 +10,11 @@ class DependencyLibraryObject
 	private var lib(get, null) : DuellLib;
 	private var libraryDependencyObjects(get, null) : Array<DependencyLibraryObject>;
 	
-	public function new(configFile : DependencyConfigFile, name : String)
+	public function new(configFile : DependencyConfigFile, name : String, ?version : String = "master")
 	{
 		this.name = name;
 		this.configFile = configFile;
-		lib = DuellLib.getDuellLib(name);
+		lib = DuellLib.getDuellLib(name, version);
 		libraryDependencyObjects = new Array<DependencyLibraryObject>();
 	}
 

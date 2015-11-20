@@ -58,7 +58,7 @@ class DependencyCommand implements IGDCommand
 		var args = ["-Tpng", dotFile, "-o", Path.join([Sys.getCwd(), "dependencies", "visualization.png"])];
 		CommandHelper.runCommand(executablePath, "dot", args, {systemCommand: false, errorMessage: "running dot command"});
 
-		//FileSystem.deleteFile(dotFile);
+		FileSystem.deleteFile(dotFile);
 	}
 
 	private function openVisualization()
@@ -130,7 +130,7 @@ class DependencyCommand implements IGDCommand
 			var libPath = Path.join([duellConfigJSON.localLibraryPath, l.name]);
 			var libConfig = DuellDefines.LIB_CONFIG_FILENAME;
 			var config = new DependencyConfigFile(libPath, libConfig);
-			var subNode = new DependencyLibraryObject(config, l.name);
+			var subNode = new DependencyLibraryObject(config, l.name, l.version);
 			rootNode.addDependency(subNode);
 
 			if(canBeProcessed(subNode.get_lib())){
