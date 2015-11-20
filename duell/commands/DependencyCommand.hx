@@ -54,13 +54,16 @@ class DependencyCommand implements IGDCommand
 		var path = Path.join([executablePath, 'dot']);
 		CommandHelper.runCommand("", "chmod", ["+x", path], {errorMessage: "setting permissions on the 'dot' executable."});
 		
-		var args = ["-Tpng", Path.join([executablePath, creator.getFilename()]), "-o", Path.join([executablePath, "visualization.png"])];
+		var dotFile = Path.join([Sys.getCwd(), "dependencies", creator.getFilename()]);
+		var args = ["-Tpng", dotFile, "-o", Path.join([Sys.getCwd(), "dependencies", "visualization.png"])];
 		CommandHelper.runCommand(executablePath, "dot", args, {systemCommand: false, errorMessage: "running dot command"});
+
+		//FileSystem.deleteFile(dotFile);
 	}
 
 	private function openVisualization()
 	{
-		CommandHelper.runCommand("", "open", [Path.join([executablePath, "visualization.png"])]);
+		CommandHelper.runCommand("", "open", [Path.join([Sys.getCwd(), "dependencies", "visualization.png"])]);
 	}
 
 	private function createOuputFile(rootNode : DependencyLibraryObject) : IFileContentCreator
@@ -68,12 +71,13 @@ class DependencyCommand implements IGDCommand
 		var creator = new DotFileContentCreator();
 		creator.parse(rootNode);
 
-		var outputFile = Path.join([executablePath, creator.getFilename()]);
-		if(FileSystem.exists(outputFile))
+		var targetFolder = Path.join([Sys.getCwd(), "dependencies"]);
+		if(!FileSystem.exists(targetFolder))
 		{
-			FileSystem.deleteFile(Path.join([executablePath, creator.getFilename()]));
+			FileSystem.createDirectory(targetFolder);
 		}
-
+		
+		var outputFile = Path.join([targetFolder, creator.getFilename()]);
 		var fileOutput = File.write(outputFile, false);
 		fileOutput.writeString(creator.getContent());
 		fileOutput.close();

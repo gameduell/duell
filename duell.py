@@ -1684,18 +1684,20 @@ class duell_commands_DependencyCommand:
 	def buildVisualization(self,creator):
 		path = haxe_io_Path.join([self.executablePath, "dot"])
 		duell_helpers_CommandHelper.runCommand("","chmod",["+x", path],_hx_AnonObject({'errorMessage': "setting permissions on the 'dot' executable."}))
-		args = ["-Tpng", haxe_io_Path.join([self.executablePath, creator.getFilename()]), "-o", haxe_io_Path.join([self.executablePath, "visualization.png"])]
+		dotFile = haxe_io_Path.join([Sys.getCwd(), "dependencies", creator.getFilename()])
+		args = ["-Tpng", dotFile, "-o", haxe_io_Path.join([Sys.getCwd(), "dependencies", "visualization.png"])]
 		duell_helpers_CommandHelper.runCommand(self.executablePath,"dot",args,_hx_AnonObject({'systemCommand': False, 'errorMessage': "running dot command"}))
 
 	def openVisualization(self):
-		duell_helpers_CommandHelper.runCommand("","open",[haxe_io_Path.join([self.executablePath, "visualization.png"])])
+		duell_helpers_CommandHelper.runCommand("","open",[haxe_io_Path.join([Sys.getCwd(), "dependencies", "visualization.png"])])
 
 	def createOuputFile(self,rootNode):
 		creator = duell_objects_dependencies_DotFileContentCreator()
 		creator.parse(rootNode)
-		outputFile = haxe_io_Path.join([self.executablePath, creator.getFilename()])
-		if sys_FileSystem.exists(outputFile):
-			sys_FileSystem.deleteFile(haxe_io_Path.join([self.executablePath, creator.getFilename()]))
+		targetFolder = haxe_io_Path.join([Sys.getCwd(), "dependencies"])
+		if (not sys_FileSystem.exists(targetFolder)):
+			sys_FileSystem.createDirectory(targetFolder)
+		outputFile = haxe_io_Path.join([targetFolder, creator.getFilename()])
 		fileOutput = sys_io_File.write(outputFile,False)
 		fileOutput.writeString(creator.getContent())
 		fileOutput.close()
@@ -4712,8 +4714,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -6516,7 +6518,7 @@ class duell_objects_dependencies_DotFileContentCreator:
 		return "dotFile.dot"
 
 	def getBaseFormat(self):
-		return (((("    node [fontname=Verdana,fontsize=12]\n" + "    node [style=filled]\n") + "    node [fillcolor=\"#EEEEEE\"]\n") + "    node [color=\"#EEEEEE\"]\n") + "    edge [color=\"#31CEF0\"]\n")
+		return (((("    node [fontname=Verdana,fontsize=12]\n" + "    node [style=filled]\n") + "    node [fillcolor=\"#FC861C44\"]\n") + "    node [color=\"#FC332244\"]\n") + "    edge [color=\"#FC861C\"]\n")
 
 	@staticmethod
 	def _hx_empty_init(_hx_o):

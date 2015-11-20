@@ -43,8 +43,8 @@ class DotFileContentCreator implements IFileContentCreator
 	{
 		return '    node [fontname=Verdana,fontsize=12]\n' +
  			   '    node [style=filled]\n' +
- 			   '    node [fillcolor="#EEEEEE"]\n' +
- 			   '    node [color="#EEEEEE"]\n' +
- 			   '    edge [color="#31CEF0"]\n';
+ 			   '    node [fillcolor="#FC861C44"]\n' +
+ 			   '    node [color="#FC332244"]\n' +
+ 			   '    edge [color="#FC861C"]\n';
 	}
 }
