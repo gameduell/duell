@@ -8,7 +8,7 @@ class DependencyLibraryObject
 	private var name(get, null) : String;
 	private var configFile(get, null) : DependencyConfigFile;
 	private var lib(get, null) : DuellLib;
-	private var libraryDependencyObjects : Array<DependencyLibraryObject>;
+	private var libraryDependencyObjects(get, null) : Array<DependencyLibraryObject>;
 	
 	public function new(configFile : DependencyConfigFile, name : String)
 	{
@@ -16,17 +16,6 @@ class DependencyLibraryObject
 		this.configFile = configFile;
 		lib = DuellLib.getDuellLib(name);
 		libraryDependencyObjects = new Array<DependencyLibraryObject>();
-	}
-
-	public function generateOuptutFile(creator : IFileContentCreator)
-	{
-		creator.parse(this);
-
-		for (dependency in libraryDependencyObjects){
-			dependency.generateOuptutFile(creator);
-		}
-
-		creator.next();
 	}
 
 	public function addDependency(libraryObject : DependencyLibraryObject)
@@ -47,6 +36,11 @@ class DependencyLibraryObject
 	public function get_configFile() : DependencyConfigFile
 	{
 		return configFile;
+	}
+
+	public function get_libraryDependencyObjects() : Array<DependencyLibraryObject>
+	{
+		return libraryDependencyObjects;
 	}
 
 	public function toString() : String

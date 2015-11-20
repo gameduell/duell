@@ -1,3 +1,5 @@
 digraph G {
-    Empty_Project -> protohx;
+    "Empty Project" -> "protohx";
+    "Empty Project" -> "events";
+    "events" -> "polygonal-ds";
 }

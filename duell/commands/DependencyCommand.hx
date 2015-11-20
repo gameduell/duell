@@ -65,7 +65,7 @@ class DependencyCommand implements IGDCommand
 	private function createOuputFile(rootNode : DependencyLibraryObject) : IFileContentCreator
 	{
 		var creator = new DotFileContentCreator();
-		rootNode.generateOuptutFile(creator);
+		creator.parse(rootNode);
 
 		var outputFile = Path.join([executablePath, creator.getFilename()]);
 		if(FileSystem.exists(outputFile))

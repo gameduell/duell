@@ -1690,7 +1690,7 @@ class duell_commands_DependencyCommand:
 
 	def createOuputFile(self,rootNode):
 		creator = duell_objects_dependencies_DotFileContentCreator()
-		rootNode.generateOuptutFile(creator)
+		creator.parse(rootNode)
 		outputFile = haxe_io_Path.join([self.executablePath, creator.getFilename()])
 		if sys_FileSystem.exists(outputFile):
 			sys_FileSystem.deleteFile(haxe_io_Path.join([self.executablePath, creator.getFilename()]))
@@ -4638,8 +4638,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_head
 					nonlocal _g_val
+					nonlocal _g_head
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -4689,8 +4689,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -6346,7 +6346,7 @@ class duell_objects_dependencies_DependencyConfigFile:
 	def parse(self):
 		filePath = self.getAbsolutePath()
 		if (not sys_FileSystem.exists(filePath)):
-			raise _HxException((("File \"" + ("null" if filePath is None else filePath)) + "\" does not exist!"))
+			return
 		fileContent = sys_io_File.getContent(filePath)
 		try:
 			fileXmlContent = Xml.parse(fileContent)
@@ -6407,8 +6407,7 @@ _hx_classes["duell.objects.dependencies.DependencyConfigFile"] = duell_objects_d
 
 class duell_objects_dependencies_DependencyLibraryObject:
 	_hx_class_name = "duell.objects.dependencies.DependencyLibraryObject"
-	_hx_fields = ["libraryDependencyObjects"]
-	_hx_methods = ["generateOuptutFile", "addDependency", "get_name", "get_lib", "get_configFile", "toString"]
+	_hx_methods = ["addDependency", "get_name", "get_lib", "get_configFile", "get_libraryDependencyObjects", "toString"]
 
 	def __init__(self,configFile,name):
 		self.name = None
@@ -6420,18 +6419,8 @@ class duell_objects_dependencies_DependencyLibraryObject:
 		self.lib = duell_objects_DuellLib.getDuellLib(name)
 		self.libraryDependencyObjects = list()
 
-	def generateOuptutFile(self,creator):
-		creator.parse(self)
-		_g = 0
-		_g1 = self.libraryDependencyObjects
-		while (_g < len(_g1)):
-			dependency = (_g1[_g] if _g >= 0 and _g < len(_g1) else None)
-			_g = (_g + 1)
-			dependency.generateOuptutFile(creator)
-		creator.next()
-
 	def addDependency(self,libraryObject):
-		_this = self.libraryDependencyObjects
+		_this = self.get_libraryDependencyObjects()
 		_this.append(libraryObject)
 
 	def get_name(self):
@@ -6443,59 +6432,56 @@ class duell_objects_dependencies_DependencyLibraryObject:
 	def get_configFile(self):
 		return self.configFile
 
+	def get_libraryDependencyObjects(self):
+		return self.libraryDependencyObjects
+
 	def toString(self):
-		return ((("DependencyLibraryObject :: name: " + HxOverrides.stringOrNull(self.get_name())) + " dependencies: ") + Std.string(self.libraryDependencyObjects))
+		return ((("DependencyLibraryObject :: name: " + HxOverrides.stringOrNull(self.get_name())) + " dependencies: ") + Std.string(self.get_libraryDependencyObjects()))
 
 	@staticmethod
-	def _hx_empty_init(_hx_o):
-		_hx_o.libraryDependencyObjects = None
+	def _hx_empty_init(_hx_o):		pass
 duell_objects_dependencies_DependencyLibraryObject._hx_class = duell_objects_dependencies_DependencyLibraryObject
 _hx_classes["duell.objects.dependencies.DependencyLibraryObject"] = duell_objects_dependencies_DependencyLibraryObject
 
 
 class duell_objects_dependencies_IFileContentCreator:
 	_hx_class_name = "duell.objects.dependencies.IFileContentCreator"
-	_hx_methods = ["parse", "getContent", "next", "getFilename"]
+	_hx_methods = ["parse", "getContent", "getFilename"]
 duell_objects_dependencies_IFileContentCreator._hx_class = duell_objects_dependencies_IFileContentCreator
 _hx_classes["duell.objects.dependencies.IFileContentCreator"] = duell_objects_dependencies_IFileContentCreator
 
 
 class duell_objects_dependencies_DotFileContentCreator:
 	_hx_class_name = "duell.objects.dependencies.DotFileContentCreator"
-	_hx_fields = ["content", "isNext"]
-	_hx_methods = ["parse", "next", "getContent", "getFilename"]
+	_hx_fields = ["content"]
+	_hx_methods = ["parse", "getContent", "getFilename"]
 	_hx_interfaces = [duell_objects_dependencies_IFileContentCreator]
 
 	def __init__(self):
 		self.content = None
-		self.isNext = None
-		self.isNext = True
+		self.content = ""
 
-	def parse(self,lib):
-		name = None
-		_this = None
-		_this1 = lib.get_name()
-		_this = _this1.split(" ")
-		name = "_".join([python_Boot.toString1(x1,'') for x1 in _this])
-		if (self.isNext and ((self.content is None))):
-			self.content = ("    " + ("null" if name is None else name))
-		elif self.isNext:
-			_hx_local_0 = self
-			_hx_local_1 = _hx_local_0.content
-			_hx_local_0.content = (("null" if _hx_local_1 is None else _hx_local_1) + HxOverrides.stringOrNull(((";\n    " + ("null" if name is None else name)))))
-			_hx_local_0.content
-		else:
-			_hx_local_2 = self
-			_hx_local_3 = _hx_local_2.content
-			_hx_local_2.content = (("null" if _hx_local_3 is None else _hx_local_3) + HxOverrides.stringOrNull(((" -> " + ("null" if name is None else name)))))
-			_hx_local_2.content
-		self.isNext = False
-
-	def next(self):
-		self.isNext = True
+	def parse(self,rootNode):
+		subnodes = rootNode.get_libraryDependencyObjects()
+		nodeName = rootNode.get_name()
+		if ((len(self.content) == 0) and ((len(subnodes) == 0))):
+			self.content = (("null" if nodeName is None else nodeName) + ";\n    ")
+		_g = 0
+		while (_g < len(subnodes)):
+			subnode = (subnodes[_g] if _g >= 0 and _g < len(subnodes) else None)
+			_g = (_g + 1)
+			_hx_local_1 = self
+			_hx_local_2 = _hx_local_1.content
+			_hx_local_1.content = (("null" if _hx_local_2 is None else _hx_local_2) + HxOverrides.stringOrNull(((((("    \"" + ("null" if nodeName is None else nodeName)) + "\" -> \"") + HxOverrides.stringOrNull(subnode.get_name())) + "\";\n"))))
+			_hx_local_1.content
+		_g1 = 0
+		while (_g1 < len(subnodes)):
+			subnode1 = (subnodes[_g1] if _g1 >= 0 and _g1 < len(subnodes) else None)
+			_g1 = (_g1 + 1)
+			self.parse(subnode1)
 
 	def getContent(self):
-		return (("digraph G {\n" + HxOverrides.stringOrNull(self.content)) + ";\n}")
+		return (("digraph G {\n" + HxOverrides.stringOrNull(self.content)) + "}")
 
 	def getFilename(self):
 		return "dotFile.dot"
@@ -6503,7 +6489,6 @@ class duell_objects_dependencies_DotFileContentCreator:
 	@staticmethod
 	def _hx_empty_init(_hx_o):
 		_hx_o.content = None
-		_hx_o.isNext = None
 duell_objects_dependencies_DotFileContentCreator._hx_class = duell_objects_dependencies_DotFileContentCreator
 _hx_classes["duell.objects.dependencies.DotFileContentCreator"] = duell_objects_dependencies_DotFileContentCreator
 
