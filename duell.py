@@ -6530,7 +6530,7 @@ class duell_objects_dependencies_DotFileContentCreator:
 			lib = subnode.get_lib()
 			label = None
 			if (lib is not None):
-				label = ((" [label=\"" + HxOverrides.stringOrNull(lib.version)) + "\"]")
+				label = ((" [label=\"" + HxOverrides.stringOrNull(lib.version)) + "\", fontsize=10]")
 			else:
 				label = ""
 			_hx_local_1 = self
@@ -6551,7 +6551,7 @@ class duell_objects_dependencies_DotFileContentCreator:
 			while (_g < len(haxeLibs)):
 				lib = (haxeLibs[_g] if _g >= 0 and _g < len(haxeLibs) else None)
 				_g = (_g + 1)
-				label = ((" [label=\"" + HxOverrides.stringOrNull(lib.version)) + "\", fontcolor=\"#999999\"]")
+				label = ((" [label=\"" + HxOverrides.stringOrNull(lib.version)) + "\", fontcolor=\"#999999\", fontsize=10]")
 				_hx_local_1 = self
 				_hx_local_2 = _hx_local_1.haxeLibsContent
 				_hx_local_1.haxeLibsContent = (("null" if _hx_local_2 is None else _hx_local_2) + HxOverrides.stringOrNull(((((((("   \"" + HxOverrides.stringOrNull(rootNode.get_name())) + "\" -> \"") + HxOverrides.stringOrNull(lib.name)) + "\"") + ("null" if label is None else label)) + ";\n"))))

@@ -21,7 +21,7 @@ class DotFileContentCreator implements IFileContentCreator
 		for (subnode in subnodes)
 		{
 			var lib = subnode.get_lib();
-			var label = lib != null ? ' [label="' + lib.version + '"]' : ''; 
+			var label = lib != null ? ' [label="' + lib.version + '", fontsize=10]' : ''; 
 			duellLibContent += '    "' + nodeName + '" -> "' + subnode.get_name() + '"' + label + ';\n';
 		}
 
@@ -37,7 +37,7 @@ class DotFileContentCreator implements IFileContentCreator
 		{
 			var haxeLibs = config.get_haxeLibs();
 			for (lib in haxeLibs){
-				var label = ' [label="' + lib.version + '", fontcolor="#999999"]';
+				var label = ' [label="' + lib.version + '", fontcolor="#999999", fontsize=10]';
 				haxeLibsContent += '   "' + rootNode.get_name() + '" -> "' + lib.name + '"' + label + ';\n';
 			}
 		}
