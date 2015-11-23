@@ -3590,7 +3590,7 @@ _hx_classes["duell.helpers.HXCPPConfigXMLHelper"] = duell_helpers_HXCPPConfigXML
 
 class duell_helpers_LogHelper:
 	_hx_class_name = "duell.helpers.LogHelper"
-	_hx_statics = ["enableColor", "mute", "verbose", "colorCodes", "colorSupported", "sentWarnings", "RED", "YELLOW", "NORMAL", "BOLD", "UNDERLINE", "get_enableColor", "get_mute", "get_verbose", "exitWithFormattedError", "info", "print", "println", "warn", "stripColor"]
+	_hx_statics = ["enableColor", "mute", "verbose", "colorCodes", "colorSupported", "sentWarnings", "RED", "YELLOW", "NORMAL", "BOLD", "UNDERLINE", "get_enableColor", "get_mute", "get_verbose", "exitWithFormattedError", "info", "print", "println", "warn", "stripColor", "wrapInfo", "cutoutMetadata"]
 	enableColor = None
 	mute = None
 	verbose = None
@@ -3680,6 +3680,36 @@ class duell_helpers_LogHelper:
 				e1 = _hx_e1
 				print("error on color replace")
 				return output
+
+	@staticmethod
+	def wrapInfo(message,msgArgs = None,lineColor = "\x1B[31;1m",wrappingSign = "-"):
+		if (lineColor is None):
+			lineColor = "\x1B[31;1m"
+		if (wrappingSign is None):
+			wrappingSign = "-"
+		if (msgArgs is not None):
+			_g1 = 0
+			_g = len(msgArgs)
+			while (_g1 < _g):
+				i = _g1
+				_g1 = (_g1 + 1)
+				_hx_str = (msgArgs[i] if i >= 0 and i < len(msgArgs) else None)
+				message = StringTools.replace(message,(("#{" + Std.string(i)) + "}"),_hx_str)
+		rawMessage = duell_helpers_LogHelper.colorCodes.replace(message,"")
+		line = ""
+		_g11 = 0
+		_g2 = len(rawMessage)
+		while (_g11 < _g2):
+			i1 = _g11
+			_g11 = (_g11 + 1)
+			line = (("null" if line is None else line) + ("null" if wrappingSign is None else wrappingSign))
+		message = (((((((((("\n" + ("null" if lineColor is None else lineColor)) + ("null" if line is None else line)) + "\x1B[0m") + "\n") + ("null" if message is None else message)) + "\n") + ("null" if lineColor is None else lineColor)) + ("null" if line is None else line)) + "\x1B[0m") + "\n")
+		duell_helpers_LogHelper.info(message)
+
+	@staticmethod
+	def cutoutMetadata(value):
+		copy = value
+		return duell_helpers_LogHelper.colorCodes.replace(copy,"")
 duell_helpers_LogHelper._hx_class = duell_helpers_LogHelper
 _hx_classes["duell.helpers.LogHelper"] = duell_helpers_LogHelper
 
@@ -4703,8 +4733,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -5249,11 +5279,7 @@ class duell_objects_Arguments:
 
 	@staticmethod
 	def printGeneralHelp():
-		duell_helpers_LogHelper.info(" ")
-		duell_helpers_LogHelper.info((("\x1B[31;1m" + "--------------------------------------------") + "\x1B[0m"))
-		duell_helpers_LogHelper.info(((((((("  Help for the " + "\x1B[1m") + "Duell Tool") + "\x1B[0m") + ", Version ") + "\x1B[1m") + HxOverrides.stringOrNull(duell_Duell.VERSION)) + "\x1B[0m"))
-		duell_helpers_LogHelper.info((("\x1B[31;1m" + "--------------------------------------------") + "\x1B[0m"))
-		duell_helpers_LogHelper.info(" ")
+		duell_helpers_LogHelper.wrapInfo((((((((("  Help for the " + "\x1B[1m") + "Duell Tool") + "\x1B[0m") + ", Version ") + "\x1B[1m") + "#{0}") + "\x1B[0m") + "  "),[duell_Duell.VERSION])
 		duell_helpers_LogHelper.info((("\x1B[4m" + "Description:") + "\x1B[0m"))
 		duell_helpers_LogHelper.info(" ")
 		duell_helpers_LogHelper.info(duell_objects_Arguments.generalDocumentation)
@@ -5281,11 +5307,7 @@ class duell_objects_Arguments:
 
 	@staticmethod
 	def printCommandHelp():
-		duell_helpers_LogHelper.info(" ")
-		duell_helpers_LogHelper.info((("\x1B[31;1m" + "-----------------------------") + "\x1B[0m"))
-		duell_helpers_LogHelper.info((((("  Help for the " + "\x1B[1m") + HxOverrides.stringOrNull(duell_objects_Arguments.selectedCommand.name)) + "\x1B[0m") + " command"))
-		duell_helpers_LogHelper.info((("\x1B[31;1m" + "-----------------------------") + "\x1B[0m"))
-		duell_helpers_LogHelper.info(" ")
+		duell_helpers_LogHelper.wrapInfo((((("  Help for the " + "\x1B[1m") + "#{0}") + "\x1B[0m") + " command  "),[duell_objects_Arguments.selectedCommand.name])
 		duell_helpers_LogHelper.info((("\x1B[4m" + "Description:") + "\x1B[0m"))
 		duell_helpers_LogHelper.info(" ")
 		duell_helpers_LogHelper.info(duell_objects_Arguments.selectedCommand.documentation)
@@ -5318,11 +5340,7 @@ class duell_objects_Arguments:
 
 	@staticmethod
 	def printPluginHelp():
-		duell_helpers_LogHelper.info(" ")
-		duell_helpers_LogHelper.info((("\x1B[31;1m" + "----------------------------------------------------------") + "\x1B[0m"))
-		duell_helpers_LogHelper.info((((((((("  Help for the " + "\x1B[1m") + HxOverrides.stringOrNull(duell_objects_Arguments.plugin)) + "\x1B[0m") + " plugin in the ") + "\x1B[1m") + HxOverrides.stringOrNull(duell_objects_Arguments.selectedCommand.name)) + "\x1B[0m") + " command"))
-		duell_helpers_LogHelper.info((("\x1B[31;1m" + "----------------------------------------------------------") + "\x1B[0m"))
-		duell_helpers_LogHelper.info(" ")
+		duell_helpers_LogHelper.wrapInfo((((((((("  Help for the " + "\x1B[1m") + "#{0}") + "\x1B[0m") + " plugin in the ") + "\x1B[1m") + "#{1}") + "\x1B[0m") + " command  "),[duell_objects_Arguments.plugin, duell_objects_Arguments.selectedCommand.name])
 		duell_helpers_LogHelper.info((("\x1B[4m" + "Description:") + "\x1B[0m"))
 		duell_helpers_LogHelper.info(" ")
 		duell_helpers_LogHelper.info(duell_objects_Arguments.pluginDocumentation)

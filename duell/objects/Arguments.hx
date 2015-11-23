@@ -481,12 +481,8 @@ class Arguments
 
 	public static function printGeneralHelp()
 	{
-		LogHelper.info(" ");
-		LogHelper.info(LogHelper.RED + "--------------------------------------------" + LogHelper.NORMAL);
-		LogHelper.info('  Help for the ${LogHelper.BOLD}Duell Tool${LogHelper.NORMAL}, Version ${LogHelper.BOLD}${Duell.VERSION}${LogHelper.NORMAL}');
-		LogHelper.info(LogHelper.RED + "--------------------------------------------" + LogHelper.NORMAL);
+		LogHelper.wrapInfo('  Help for the ${LogHelper.BOLD}Duell Tool${LogHelper.NORMAL}, Version ${LogHelper.BOLD}#{0}${LogHelper.NORMAL}  ', [Duell.VERSION]);
 
-		LogHelper.info(" ");
 		LogHelper.info(LogHelper.UNDERLINE + "Description:" + LogHelper.NORMAL);
 		LogHelper.info(" ");
 		LogHelper.info(generalDocumentation);
@@ -524,12 +520,8 @@ class Arguments
 
 	public static function printCommandHelp()
 	{
-		LogHelper.info(" ");
-		LogHelper.info(LogHelper.RED + "-----------------------------" + LogHelper.NORMAL);
-		LogHelper.info('  Help for the ${LogHelper.BOLD}${selectedCommand.name}${LogHelper.NORMAL} command');
-		LogHelper.info(LogHelper.RED + "-----------------------------" + LogHelper.NORMAL);
+		LogHelper.wrapInfo('  Help for the ${LogHelper.BOLD}#{0}${LogHelper.NORMAL} command  ', [selectedCommand.name]);
 
-		LogHelper.info(" ");
 		LogHelper.info(LogHelper.UNDERLINE + "Description:" + LogHelper.NORMAL);
 		LogHelper.info(" ");
 		LogHelper.info(selectedCommand.documentation);
@@ -580,12 +572,8 @@ class Arguments
 
 	public static function printPluginHelp()
 	{
-		LogHelper.info(" ");
-		LogHelper.info(LogHelper.RED + "----------------------------------------------------------" + LogHelper.NORMAL);
-		LogHelper.info('  Help for the ${LogHelper.BOLD}${plugin}${LogHelper.NORMAL} plugin in the ${LogHelper.BOLD}${selectedCommand.name}${LogHelper.NORMAL} command');
-		LogHelper.info(LogHelper.RED + "----------------------------------------------------------" + LogHelper.NORMAL);
+		LogHelper.wrapInfo('  Help for the ${LogHelper.BOLD}#{0}${LogHelper.NORMAL} plugin in the ${LogHelper.BOLD}#{1}${LogHelper.NORMAL} command  ', [plugin, selectedCommand.name]);
 
-		LogHelper.info(" ");
 		LogHelper.info(LogHelper.UNDERLINE + "Description:" + LogHelper.NORMAL);
 		LogHelper.info(" ");
 		LogHelper.info(pluginDocumentation);

@@ -168,4 +168,33 @@ class LogHelper
 			};
 		}
 	}
+
+	public static function wrapInfo(message : String, ?msgArgs : Array<String> = null, lineColor : String = LogHelper.RED, wrappingSign : String = "-")
+	{
+		if(msgArgs != null)
+		{
+			for (i in 0...msgArgs.length)
+			{
+				var str = msgArgs[i];
+				message = StringTools.replace(message, "#{" + i + "}", str);
+			}
+		}
+
+		var rawMessage = colorCodes.replace(message, "");
+		var line = "";
+		for (i in 0...rawMessage.length) line += wrappingSign;
+
+		message = "\n" + 
+				  lineColor + line + LogHelper.NORMAL + "\n" + 
+				  message + "\n" +
+				  lineColor + line + LogHelper.NORMAL + "\n";
+
+		info(message);
+	}
+
+	public static function cutoutMetadata(value : String) : String
+	{
+		var copy = value;
+		return colorCodes.replace(copy, "");
+	}
 }
