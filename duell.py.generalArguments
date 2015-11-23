@@ -103,16 +103,6 @@
                     Use this flag to get the configured library dependencies of your project.
                 </documentation>
             </arg>
-            <arg name="-library" type="string">
-                <documentation>
-                    Use this flag if you want to see the dependecies of a certain library to other libraries.
-                </documentation>
-            </arg>
-            <arg name="-libraryReverse" type="string">
-                <documentation>
-                    Use this flag if you want to see the dependencies to a certain library.
-                </documentation>
-            </arg>
         </args>
     </command>
 

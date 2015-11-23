@@ -37,11 +37,7 @@ class DependencyCommand implements IGDCommand
 	{
 		checkRequirements();
 		
-		if(Arguments.isSet("-library"))
-		{
-			parseLibrayDependencies();
-		} 
-		else if (Arguments.isSet("-project"))
+		if (Arguments.isSet("-project"))
 		{
 			parseProjectDependencies();
 		}
@@ -84,14 +80,6 @@ class DependencyCommand implements IGDCommand
 		fileOutput.close();
 
 		return creator;
-	}
-
-	private function parseLibrayDependencies()
-	{
-		var libraryName : String = Arguments.get("-library");
-
-		logAction("Updating dependencies for library '" + libraryName + "'");
-
 	}
 
 	private function parseProjectDependencies()
@@ -190,41 +178,23 @@ class DependencyCommand implements IGDCommand
 
 	private function checkRequirements()
 	{
-		//check repolist
 		logAction("Checking requirements");
 
-        var duellConfig : DuellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
-        if(duellConfig.repoListURLs.length == 0){
-        	LogHelper.exitWithFormattedError("No repository urls defined!.");
-        }
-
-        //if '-library' is used, check valid library name
-        if(Arguments.isSet("-library"))
-        {
-        	var libraryName = Arguments.get("-library");
-        	if(libraryName == null)
-        	{
-        		LogHelper.exitWithFormattedError("You need to add valid library name, like '-library YOUR_LIBRARY_NAME'");
-        	}
-        	else
-        	{
-        		if(!validateLibraryName(libraryName))
-        		{
-        			LogHelper.exitWithFormattedError("Name '" + libraryName + "' couldn't be found in the configured repository lists.");
-        		}
-        	}
-        }
-
-        //if -project is used, check if its valid project folder / duell_project.xml is available
+		//if -project is used, check if its valid project folder / duell_project.xml is available
         if(Arguments.isSet("-project"))
         {
         	checkIfItIsAProjectFolder();
         }
-	}
+        else 
+        {
+        	LogHelper.exitWithFormattedError("Use duell dependencies -help for valid commands.");
+        }
 
-	private function validateLibraryName(name : String) : Bool
-	{
-		return DuellLibListHelper.libraryExists(name);
+		//check repolist
+        var duellConfig : DuellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+        if(duellConfig.repoListURLs.length == 0){
+        	LogHelper.exitWithFormattedError("No repository urls defined!.");
+        }
 	}
 
 	private function checkIfItIsAProjectFolder()
