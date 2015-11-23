@@ -1467,11 +1467,7 @@ class duell_commands_BuildCommand:
 				fileOutput1.writeString((("sys.path.insert(0, \"" + ("null" if path is None else path)) + "\")\n"))
 			fileOutput1.writeBytes(file,0,file.length)
 			fileOutput1.close()
-		duell_helpers_LogHelper.info("\n")
-		duell_helpers_LogHelper.info("\x1B[2m--------------------")
-		duell_helpers_LogHelper.info(("Building " + HxOverrides.stringOrNull(self.platformName)))
-		duell_helpers_LogHelper.info("--------------------\x1B[0m")
-		duell_helpers_LogHelper.info("\n")
+		duell_helpers_LogHelper.wrapInfo((("\x1B[2m" + "Building ") + HxOverrides.stringOrNull(self.platformName)),None,"\x1B[2m")
 		duell_helpers_PythonImportHelper.runPythonFile(outputRun)
 
 	def runFast(self):
