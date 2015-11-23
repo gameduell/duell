@@ -1713,7 +1713,7 @@ class duell_commands_DependencyCommand:
 		self.logAction("Checking library dependencies for current project")
 		file = duell_objects_dependencies_DependencyConfigFile(Sys.getCwd(), duell_defines_DuellDefines.PROJECT_CONFIG_FILENAME)
 		rootNode = duell_objects_dependencies_DependencyLibraryObject(file, file.get_applicationName())
-		if (len(file.get_duellLibs()) > 0):
+		if ((len(file.get_duellLibs()) > 0) or ((len(file.get_haxeLibs()) > 0))):
 			duell_helpers_CommandHelper.runHaxelib(Sys.getCwd(),["run", "duell_duell", "update", "-yestoall"])
 		else:
 			duell_helpers_LogHelper.info("No dependencies defined.")
@@ -6574,7 +6574,7 @@ class duell_objects_dependencies_DotFileContentCreator:
 		return ""
 
 	def getContent(self):
-		return ((("digraph G {\n" + HxOverrides.stringOrNull(self.getDuellLibContent())) + HxOverrides.stringOrNull(self.getHaxeLibsContent())) + "}")
+		return (((("digraph G {\n" + "    graph [size=\"10.3,5.3\", ranksep=0.5, nodesep=0.1, overlap=false, start=1]") + HxOverrides.stringOrNull(self.getDuellLibContent())) + HxOverrides.stringOrNull(self.getHaxeLibsContent())) + "}")
 
 	def getFilename(self):
 		return "dotFile.dot"

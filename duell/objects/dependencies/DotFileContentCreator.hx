@@ -68,9 +68,25 @@ class DotFileContentCreator implements IFileContentCreator
 		return "";
 	}
 
+	/*
+	* function getContent
+	* @returnType String
+	* 
+	* Returns the generated output for a dot renderer
+	* Generell attributes:
+	*   - size: in inches width,height => 10.3,5.3 will set max values to 1024px 
+	*   - ranksep: vertical distance between nodes in inches
+	*   - nodesep: horizontal distance between nodes
+	*   - overlap: allow overlapping of nodes
+	*   - start: determine the initial layout of nodes
+	*/
 	public function getContent() : String
 	{
-		return "digraph G {\n" + getDuellLibContent() + getHaxeLibsContent() + "}";
+		return 'digraph G {\n' + 
+			   '    graph [size="10.3,5.3", ranksep=0.5, nodesep=0.1, overlap=false, start=1]' + 
+			    getDuellLibContent() +
+			    getHaxeLibsContent() + 
+			   '}';
 	}
 
 	public function getFilename() : String

@@ -99,7 +99,7 @@ class DependencyCommand implements IGDCommand
 		logAction("Checking library dependencies for current project");
 		var file = new DependencyConfigFile(Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME);
 		var rootNode = new DependencyLibraryObject(file, file.get_applicationName());
-		if(file.get_duellLibs().length > 0)
+		if(file.get_duellLibs().length > 0 || file.get_haxeLibs().length > 0)
 		{
 			CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell", "update", "-yestoall"]);	
 		}
