@@ -103,37 +103,25 @@ class UpdateCommand implements IGDCommand
 
     public function execute() : String
     {
-    	LogHelper.info("\n");
-    	LogHelper.info("\x1b[2m------------");
-    	LogHelper.info("Update Dependencies");
-    	LogHelper.info("------------\x1b[0m");
-    	LogHelper.info("\n");
+    	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Update Dependencies", null, LogHelper.DARK_GREEN);
 
         synchronizeRemotes();
 
     	determineAndValidateDependenciesAndDefines();
 
-    	LogHelper.info("\x1b[2m------");
+    	LogHelper.info(LogHelper.DARK_GREEN + "------");
 
-    	LogHelper.info("\n");
-    	LogHelper.info("\x1b[2m-------------------------");
-    	LogHelper.info("Resulting dependencies update and resolution");
-    	LogHelper.info("--------------------------\x1b[0m");
-    	LogHelper.info("\n");
+    	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Resulting dependencies update and resolution", null, LogHelper.DARK_GREEN);
 
     	printFinalResult();
 
 		// schema validation requires internet connection
         if (duellFileHasDuellNamespace() && ConnectionHelper.isOnline())
         {
-            LogHelper.info("\x1b[2m------");
+            LogHelper.info(LogHelper.DARK_GREEN + "------");
 
-            LogHelper.info("\n");
-            LogHelper.info("\x1b[2m-------------------------");
-            LogHelper.info("Validating XML schema");
-            LogHelper.info("--------------------------\x1b[0m");
-            LogHelper.info("\n");
-
+            LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Validating XML schema", null, LogHelper.DARK_GREEN);
+            
 			if (userFileHasDuellNamespace())
 			{
 				validateUserSchemaXml();
@@ -146,11 +134,7 @@ class UpdateCommand implements IGDCommand
 
     	saveUpdateExecution();
 
-    	LogHelper.println("");
-    	LogHelper.info("\x1b[2m------");
-    	LogHelper.info("end");
-    	LogHelper.info("------\x1b[0m");
-
+    	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "end", null, LogHelper.DARK_GREEN);
 
 		if (isDifferentDuellToolVersion)
 		{

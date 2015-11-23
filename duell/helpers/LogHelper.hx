@@ -44,6 +44,7 @@ class LogHelper
 
 	public static inline var RED = "\x1b[31;1m";
 	public static inline var YELLOW = "\x1b[33;1m";
+	public static inline var DARK_GREEN = "\x1b[2m";
 	public static inline var NORMAL = "\x1b[0m";
 	public static inline var BOLD = "\x1b[1m";
 	public static inline var UNDERLINE = "\x1b[4m";

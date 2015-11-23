@@ -2319,36 +2319,21 @@ class duell_commands_UpdateCommand:
 		self.finalLibList = _hx_AnonObject({'duellLibs': [], 'haxelibs': []})
 
 	def execute(self):
-		duell_helpers_LogHelper.info("\n")
-		duell_helpers_LogHelper.info("\x1B[2m------------")
-		duell_helpers_LogHelper.info("Update Dependencies")
-		duell_helpers_LogHelper.info("------------\x1B[0m")
-		duell_helpers_LogHelper.info("\n")
+		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Update Dependencies"),None,"\x1B[2m")
 		self.synchronizeRemotes()
 		self.determineAndValidateDependenciesAndDefines()
-		duell_helpers_LogHelper.info("\x1B[2m------")
-		duell_helpers_LogHelper.info("\n")
-		duell_helpers_LogHelper.info("\x1B[2m-------------------------")
-		duell_helpers_LogHelper.info("Resulting dependencies update and resolution")
-		duell_helpers_LogHelper.info("--------------------------\x1B[0m")
-		duell_helpers_LogHelper.info("\n")
+		duell_helpers_LogHelper.info(("\x1B[2m" + "------"))
+		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Resulting dependencies update and resolution"),None,"\x1B[2m")
 		self.printFinalResult()
 		if (duell_commands_UpdateCommand.duellFileHasDuellNamespace() and duell_helpers_ConnectionHelper.isOnline()):
-			duell_helpers_LogHelper.info("\x1B[2m------")
-			duell_helpers_LogHelper.info("\n")
-			duell_helpers_LogHelper.info("\x1B[2m-------------------------")
-			duell_helpers_LogHelper.info("Validating XML schema")
-			duell_helpers_LogHelper.info("--------------------------\x1B[0m")
-			duell_helpers_LogHelper.info("\n")
+			duell_helpers_LogHelper.info(("\x1B[2m" + "------"))
+			duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Validating XML schema"),None,"\x1B[2m")
 			if duell_commands_UpdateCommand.userFileHasDuellNamespace():
 				duell_commands_UpdateCommand.validateUserSchemaXml()
 			duell_commands_UpdateCommand.validateSchemaXml()
 			duell_helpers_LogHelper.info("Success!")
 		self.saveUpdateExecution()
-		duell_helpers_LogHelper.println("")
-		duell_helpers_LogHelper.info("\x1B[2m------")
-		duell_helpers_LogHelper.info("end")
-		duell_helpers_LogHelper.info("------\x1B[0m")
+		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "end"),None,"\x1B[2m")
 		if self.isDifferentDuellToolVersion:
 			duell_helpers_LogHelper.info("Rerunning the update because the duell tool version changed.")
 			def _hx_local_0():
@@ -3590,7 +3575,7 @@ _hx_classes["duell.helpers.HXCPPConfigXMLHelper"] = duell_helpers_HXCPPConfigXML
 
 class duell_helpers_LogHelper:
 	_hx_class_name = "duell.helpers.LogHelper"
-	_hx_statics = ["enableColor", "mute", "verbose", "colorCodes", "colorSupported", "sentWarnings", "RED", "YELLOW", "NORMAL", "BOLD", "UNDERLINE", "get_enableColor", "get_mute", "get_verbose", "exitWithFormattedError", "info", "print", "println", "warn", "stripColor", "wrapInfo", "cutoutMetadata"]
+	_hx_statics = ["enableColor", "mute", "verbose", "colorCodes", "colorSupported", "sentWarnings", "RED", "YELLOW", "DARK_GREEN", "NORMAL", "BOLD", "UNDERLINE", "get_enableColor", "get_mute", "get_verbose", "exitWithFormattedError", "info", "print", "println", "warn", "stripColor", "wrapInfo", "cutoutMetadata"]
 	enableColor = None
 	mute = None
 	verbose = None
@@ -10925,6 +10910,7 @@ duell_helpers_LogHelper.colorSupported = None
 duell_helpers_LogHelper.sentWarnings = haxe_ds_StringMap()
 duell_helpers_LogHelper.RED = "\x1B[31;1m"
 duell_helpers_LogHelper.YELLOW = "\x1B[33;1m"
+duell_helpers_LogHelper.DARK_GREEN = "\x1B[2m"
 duell_helpers_LogHelper.NORMAL = "\x1B[0m"
 duell_helpers_LogHelper.BOLD = "\x1B[1m"
 duell_helpers_LogHelper.UNDERLINE = "\x1B[4m"
