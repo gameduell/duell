@@ -1701,8 +1701,8 @@ class duell_commands_DependencyCommand:
 	def parseProjectDependencies(self):
 		self.logAction("Checking library dependencies for current project")
 		file = duell_objects_dependencies_DependencyConfigFile(Sys.getCwd(), duell_defines_DuellDefines.PROJECT_CONFIG_FILENAME)
-		rootNode = duell_objects_dependencies_DependencyLibraryObject(file, file.get_applicationName())
-		if ((len(file.get_duellLibs()) > 0) or ((len(file.get_haxeLibs()) > 0))):
+		rootNode = duell_objects_dependencies_DependencyLibraryObject(file, file.applicationName)
+		if ((len(file.duellLibs) > 0) or ((len(file.haxeLibs) > 0))):
 			duell_helpers_CommandHelper.runHaxelib(Sys.getCwd(),["run", "duell_duell", "update", "-yestoall"])
 		else:
 			duell_helpers_LogHelper.info("No dependencies defined.")
@@ -1716,7 +1716,7 @@ class duell_commands_DependencyCommand:
 
 	def parseDuellLibraries(self,rootNode):
 		duellConfigJSON = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
-		libs = rootNode.get_configFile().get_duellLibs()
+		libs = rootNode.configFile.duellLibs
 		_g = 0
 		while (_g < len(libs)):
 			l = (libs[_g] if _g >= 0 and _g < len(libs) else None)
@@ -1726,10 +1726,10 @@ class duell_commands_DependencyCommand:
 			config = duell_objects_dependencies_DependencyConfigFile(libPath, libConfig)
 			subNode = duell_objects_dependencies_DependencyLibraryObject(config, l.name, l.version)
 			rootNode.addDependency(subNode)
-			if self.canBeProcessed(subNode.get_lib()):
-				self.addParsingLib(subNode.get_lib())
+			if self.canBeProcessed(subNode.lib):
+				self.addParsingLib(subNode.lib)
 				self.parseDuellLibraries(subNode)
-				self.setParsedLib(subNode.get_lib())
+				self.setParsedLib(subNode.lib)
 
 	def canBeProcessed(self,lib):
 		if lib.name in self.libraryCache.h:
@@ -6341,8 +6341,8 @@ _hx_classes["duell.objects.SemVer"] = duell_objects_SemVer
 
 class duell_objects_dependencies_DependencyConfigFile:
 	_hx_class_name = "duell.objects.dependencies.DependencyConfigFile"
-	_hx_fields = ["path", "fileName"]
-	_hx_methods = ["parse", "parseHaxeLib", "parseApp", "parseDuellLib", "getAbsolutePath", "get_applicationName", "get_duellLibs", "hasHaxeLibs", "get_haxeLibs"]
+	_hx_fields = ["path", "fileName", "applicationName", "duellLibs", "haxeLibs"]
+	_hx_methods = ["parse", "parseHaxeLib", "parseApp", "parseDuellLib", "getAbsolutePath", "hasHaxeLibs"]
 
 	def __init__(self,path,fileName):
 		self.path = None
@@ -6396,7 +6396,7 @@ class duell_objects_dependencies_DependencyConfigFile:
 			version = e.att.resolve("version")
 		else:
 			version = ""
-		_this = self.get_haxeLibs()
+		_this = self.haxeLibs
 		x = duell_objects_Haxelib.getHaxelib(name,version)
 		_this.append(x)
 
@@ -6415,36 +6415,31 @@ class duell_objects_dependencies_DependencyConfigFile:
 			version = e.att.resolve("version")
 		else:
 			version = ""
-		_this = self.get_duellLibs()
+		_this = self.duellLibs
 		x = duell_objects_DuellLib.getDuellLib(name,version)
 		_this.append(x)
 
 	def getAbsolutePath(self):
 		return haxe_io_Path.join([self.path, self.fileName])
 
-	def get_applicationName(self):
-		return self.applicationName
-
-	def get_duellLibs(self):
-		return self.duellLibs
-
 	def hasHaxeLibs(self):
-		return (len(self.get_haxeLibs()) > 0)
-
-	def get_haxeLibs(self):
-		return self.haxeLibs
+		return (len(self.haxeLibs) > 0)
 
 	@staticmethod
 	def _hx_empty_init(_hx_o):
 		_hx_o.path = None
 		_hx_o.fileName = None
+		_hx_o.applicationName = None
+		_hx_o.duellLibs = None
+		_hx_o.haxeLibs = None
 duell_objects_dependencies_DependencyConfigFile._hx_class = duell_objects_dependencies_DependencyConfigFile
 _hx_classes["duell.objects.dependencies.DependencyConfigFile"] = duell_objects_dependencies_DependencyConfigFile
 
 
 class duell_objects_dependencies_DependencyLibraryObject:
 	_hx_class_name = "duell.objects.dependencies.DependencyLibraryObject"
-	_hx_methods = ["addDependency", "get_name", "get_lib", "get_configFile", "get_libraryDependencyObjects", "toString"]
+	_hx_fields = ["name", "configFile", "lib", "libraryDependencyObjects"]
+	_hx_methods = ["addDependency", "toString"]
 
 	def __init__(self,configFile,name,version = "master"):
 		if (version is None):
@@ -6459,26 +6454,18 @@ class duell_objects_dependencies_DependencyLibraryObject:
 		self.libraryDependencyObjects = list()
 
 	def addDependency(self,libraryObject):
-		_this = self.get_libraryDependencyObjects()
+		_this = self.libraryDependencyObjects
 		_this.append(libraryObject)
 
-	def get_name(self):
-		return self.name
-
-	def get_lib(self):
-		return self.lib
-
-	def get_configFile(self):
-		return self.configFile
-
-	def get_libraryDependencyObjects(self):
-		return self.libraryDependencyObjects
-
 	def toString(self):
-		return ((("DependencyLibraryObject :: name: " + HxOverrides.stringOrNull(self.get_name())) + " dependencies: ") + Std.string(self.get_libraryDependencyObjects()))
+		return ((("DependencyLibraryObject :: name: " + HxOverrides.stringOrNull(self.name)) + " dependencies: ") + Std.string(self.libraryDependencyObjects))
 
 	@staticmethod
-	def _hx_empty_init(_hx_o):		pass
+	def _hx_empty_init(_hx_o):
+		_hx_o.name = None
+		_hx_o.configFile = None
+		_hx_o.lib = None
+		_hx_o.libraryDependencyObjects = None
 duell_objects_dependencies_DependencyLibraryObject._hx_class = duell_objects_dependencies_DependencyLibraryObject
 _hx_classes["duell.objects.dependencies.DependencyLibraryObject"] = duell_objects_dependencies_DependencyLibraryObject
 
@@ -6503,15 +6490,15 @@ class duell_objects_dependencies_DotFileContentCreator:
 		self.duellLibContent = ""
 
 	def parseDuellLibs(self,rootNode):
-		subnodes = rootNode.get_libraryDependencyObjects()
-		nodeName = rootNode.get_name()
+		subnodes = rootNode.libraryDependencyObjects
+		nodeName = rootNode.name
 		if ((len(self.duellLibContent) == 0) and ((len(subnodes) == 0))):
 			self.duellLibContent = (("null" if nodeName is None else nodeName) + ";\n    ")
 		_g = 0
 		while (_g < len(subnodes)):
 			subnode = (subnodes[_g] if _g >= 0 and _g < len(subnodes) else None)
 			_g = (_g + 1)
-			lib = subnode.get_lib()
+			lib = subnode.lib
 			label = None
 			if (lib is not None):
 				label = ((" [label=\"" + HxOverrides.stringOrNull(lib.version)) + "\", fontsize=10]")
@@ -6519,7 +6506,7 @@ class duell_objects_dependencies_DotFileContentCreator:
 				label = ""
 			_hx_local_1 = self
 			_hx_local_2 = _hx_local_1.duellLibContent
-			_hx_local_1.duellLibContent = (("null" if _hx_local_2 is None else _hx_local_2) + HxOverrides.stringOrNull(((((((("    \"" + ("null" if nodeName is None else nodeName)) + "\" -> \"") + HxOverrides.stringOrNull(subnode.get_name())) + "\"") + ("null" if label is None else label)) + ";\n"))))
+			_hx_local_1.duellLibContent = (("null" if _hx_local_2 is None else _hx_local_2) + HxOverrides.stringOrNull(((((((("    \"" + ("null" if nodeName is None else nodeName)) + "\" -> \"") + HxOverrides.stringOrNull(subnode.name)) + "\"") + ("null" if label is None else label)) + ";\n"))))
 			_hx_local_1.duellLibContent
 		_g1 = 0
 		while (_g1 < len(subnodes)):
@@ -6528,9 +6515,9 @@ class duell_objects_dependencies_DotFileContentCreator:
 			self.parseDuellLibs(subnode1)
 
 	def parseHaxeLibs(self,rootNode):
-		config = rootNode.get_configFile()
+		config = rootNode.configFile
 		if config.hasHaxeLibs():
-			haxeLibs = config.get_haxeLibs()
+			haxeLibs = config.haxeLibs
 			_g = 0
 			while (_g < len(haxeLibs)):
 				lib = (haxeLibs[_g] if _g >= 0 and _g < len(haxeLibs) else None)
@@ -6538,9 +6525,9 @@ class duell_objects_dependencies_DotFileContentCreator:
 				label = ((" [label=\"" + HxOverrides.stringOrNull(lib.version)) + "\", fontcolor=\"#999999\", fontsize=10]")
 				_hx_local_1 = self
 				_hx_local_2 = _hx_local_1.haxeLibsContent
-				_hx_local_1.haxeLibsContent = (("null" if _hx_local_2 is None else _hx_local_2) + HxOverrides.stringOrNull(((((((("   \"" + HxOverrides.stringOrNull(rootNode.get_name())) + "\" -> \"") + HxOverrides.stringOrNull(lib.name)) + "\"") + ("null" if label is None else label)) + ";\n"))))
+				_hx_local_1.haxeLibsContent = (("null" if _hx_local_2 is None else _hx_local_2) + HxOverrides.stringOrNull(((((((("   \"" + HxOverrides.stringOrNull(rootNode.name)) + "\" -> \"") + HxOverrides.stringOrNull(lib.name)) + "\"") + ("null" if label is None else label)) + ";\n"))))
 				_hx_local_1.haxeLibsContent
-		subNodes = rootNode.get_libraryDependencyObjects()
+		subNodes = rootNode.libraryDependencyObjects
 		_g1 = 0
 		while (_g1 < len(subNodes)):
 			subNode = (subNodes[_g1] if _g1 >= 0 and _g1 < len(subNodes) else None)

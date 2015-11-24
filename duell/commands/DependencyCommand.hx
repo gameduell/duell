@@ -85,8 +85,8 @@ class DependencyCommand implements IGDCommand
 	{
 		logAction("Checking library dependencies for current project");
 		var file = new DependencyConfigFile(Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME);
-		var rootNode = new DependencyLibraryObject(file, file.get_applicationName());
-		if(file.get_duellLibs().length > 0 || file.get_haxeLibs().length > 0)
+		var rootNode = new DependencyLibraryObject(file, file.applicationName);
+		if(file.duellLibs.length > 0 || file.haxeLibs.length > 0)
 		{
 			CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell", "update", "-yestoall"]);	
 		}
@@ -112,7 +112,7 @@ class DependencyCommand implements IGDCommand
 	private function parseDuellLibraries(rootNode : DependencyLibraryObject)
 	{
 		var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
-		var libs = rootNode.get_configFile().get_duellLibs();
+		var libs = rootNode.configFile.duellLibs;
 		for (l in libs)
 		{
 			var libPath = Path.join([duellConfigJSON.localLibraryPath, l.name]);
@@ -121,12 +121,12 @@ class DependencyCommand implements IGDCommand
 			var subNode = new DependencyLibraryObject(config, l.name, l.version);
 			rootNode.addDependency(subNode);
 
-			if(canBeProcessed(subNode.get_lib())){
-				addParsingLib(subNode.get_lib());
+			if(canBeProcessed(subNode.lib)){
+				addParsingLib(subNode.lib);
 
 				parseDuellLibraries(subNode);
 
-				setParsedLib(subNode.get_lib());
+				setParsedLib(subNode.lib);
 			}
 		}
 	}

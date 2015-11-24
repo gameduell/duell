@@ -14,9 +14,9 @@ class DependencyConfigFile
 	
 	private var path : String;
 	private var fileName : String;
-	private var applicationName(get, null) : String;
-	private var duellLibs(get, null) : Array<DuellLib>;
-	private var haxeLibs(get, null) : Array<Haxelib>;
+	public var applicationName(default, null) : String;
+	public var duellLibs(default, null) : Array<DuellLib>;
+	public var haxeLibs(default, null) : Array<Haxelib>;
 
 	public function new (path : String , fileName:String)
 	{
@@ -90,23 +90,8 @@ class DependencyConfigFile
 		return Path.join([path, fileName]);
 	}
 
-	public function get_applicationName() : String
-	{
-		return applicationName;
-	}
-
-	public function get_duellLibs() : Array<DuellLib>
-	{
-		return duellLibs;
-	}
-
 	public function hasHaxeLibs() : Bool
 	{
 		return haxeLibs.length > 0;
-	}
-
-	public function get_haxeLibs() : Array<Haxelib>
-	{
-		return haxeLibs;
 	}
 }

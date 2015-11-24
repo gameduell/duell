@@ -10,8 +10,8 @@ class DotFileContentCreator implements IFileContentCreator
 
 	public function parseDuellLibs(rootNode : DependencyLibraryObject)
 	{
-		var subnodes = rootNode.get_libraryDependencyObjects();
-		var nodeName = rootNode.get_name();
+		var subnodes = rootNode.libraryDependencyObjects;
+		var nodeName = rootNode.name;
 
 		if(duellLibContent.length == 0 && subnodes.length == 0) //if the inital object has no child nodes
 		{
@@ -20,9 +20,9 @@ class DotFileContentCreator implements IFileContentCreator
 
 		for (subnode in subnodes)
 		{
-			var lib = subnode.get_lib();
+			var lib = subnode.lib;
 			var label = lib != null ? ' [label="' + lib.version + '", fontsize=10]' : ''; 
-			duellLibContent += '    "' + nodeName + '" -> "' + subnode.get_name() + '"' + label + ';\n';
+			duellLibContent += '    "' + nodeName + '" -> "' + subnode.name + '"' + label + ';\n';
 		}
 
 		for (subnode in subnodes){
@@ -32,17 +32,17 @@ class DotFileContentCreator implements IFileContentCreator
 
 	public function parseHaxeLibs(rootNode : DependencyLibraryObject) : Void
 	{
-		var config = rootNode.get_configFile();
+		var config = rootNode.configFile;
 		if(config.hasHaxeLibs())
 		{
-			var haxeLibs = config.get_haxeLibs();
+			var haxeLibs = config.haxeLibs;
 			for (lib in haxeLibs){
 				var label = ' [label="' + lib.version + '", fontcolor="#999999", fontsize=10]';
-				haxeLibsContent += '   "' + rootNode.get_name() + '" -> "' + lib.name + '"' + label + ';\n';
+				haxeLibsContent += '   "' + rootNode.name + '" -> "' + lib.name + '"' + label + ';\n';
 			}
 		}
 
-		var subNodes = rootNode.get_libraryDependencyObjects();
+		var subNodes = rootNode.libraryDependencyObjects;
 		for (subNode in subNodes)
 		{
 			parseHaxeLibs(subNode);

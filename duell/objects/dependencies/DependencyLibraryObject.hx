@@ -5,10 +5,10 @@ import duell.objects.DuellLib;
 
 class DependencyLibraryObject
 {
-	private var name(get, null) : String;
-	private var configFile(get, null) : DependencyConfigFile;
-	private var lib(get, null) : DuellLib;
-	private var libraryDependencyObjects(get, null) : Array<DependencyLibraryObject>;
+	public var name(default, null) : String;
+	public var configFile(default, null) : DependencyConfigFile;
+	public var lib(default, null) : DuellLib;
+	public var libraryDependencyObjects(default, null) : Array<DependencyLibraryObject>;
 	
 	public function new(configFile : DependencyConfigFile, name : String, ?version : String = "master")
 	{
@@ -21,26 +21,6 @@ class DependencyLibraryObject
 	public function addDependency(libraryObject : DependencyLibraryObject)
 	{
 		libraryDependencyObjects.push(libraryObject);
-	}
-
-	public function get_name() : String
-	{
-		return name;
-	}
-
-	public function get_lib() : DuellLib
-	{
-		return lib;
-	}
-
-	public function get_configFile() : DependencyConfigFile
-	{
-		return configFile;
-	}
-
-	public function get_libraryDependencyObjects() : Array<DependencyLibraryObject>
-	{
-		return libraryDependencyObjects;
 	}
 
 	public function toString() : String
