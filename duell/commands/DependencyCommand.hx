@@ -23,14 +23,10 @@ import haxe.xml.Fast;
 
 class DependencyCommand implements IGDCommand
 {
-
-	private var executablePath : String;
 	private var libraryCache = new Map<String, Map<String, Bool>>();//new Map<LibraryName, Map<Version, parsed>>
 
 	public function new()
 	{
-		var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
-		executablePath = Path.join([duellConfigJSON.localLibraryPath, 'duell', 'bin', 'graphviz']);
 	}
 
 	public function execute():String
@@ -47,6 +43,9 @@ class DependencyCommand implements IGDCommand
 
 	private function buildVisualization(creator : IFileContentCreator)
 	{
+		var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+		var executablePath = Path.join([duellConfigJSON.localLibraryPath, 'duell', 'bin', 'graphviz']);
+
 		var path = Path.join([executablePath, 'dot']);
 		CommandHelper.runCommand("", "chmod", ["+x", path], {errorMessage: "setting permissions on the 'dot' executable."});
 		

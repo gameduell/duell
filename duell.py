@@ -1658,16 +1658,13 @@ _hx_classes["duell.commands.CreateCommand"] = duell_commands_CreateCommand
 
 class duell_commands_DependencyCommand:
 	_hx_class_name = "duell.commands.DependencyCommand"
-	_hx_fields = ["executablePath", "libraryCache"]
+	_hx_fields = ["libraryCache"]
 	_hx_methods = ["execute", "buildVisualization", "openVisualization", "createOuputFile", "parseProjectDependencies", "parseDuellLibraries", "canBeProcessed", "addParsingLib", "setParsedLib", "logAction", "checkRequirements", "checkIfItIsAProjectFolder"]
 	_hx_interfaces = [duell_commands_IGDCommand]
 
 	def __init__(self):
-		self.executablePath = None
 		self.libraryCache = None
 		self.libraryCache = haxe_ds_StringMap()
-		duellConfigJSON = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
-		self.executablePath = haxe_io_Path.join([duellConfigJSON.localLibraryPath, "duell", "bin", "graphviz"])
 
 	def execute(self):
 		self.checkRequirements()
@@ -1676,11 +1673,13 @@ class duell_commands_DependencyCommand:
 		return "success"
 
 	def buildVisualization(self,creator):
-		path = haxe_io_Path.join([self.executablePath, "dot"])
+		duellConfigJSON = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
+		executablePath = haxe_io_Path.join([duellConfigJSON.localLibraryPath, "duell", "bin", "graphviz"])
+		path = haxe_io_Path.join([executablePath, "dot"])
 		duell_helpers_CommandHelper.runCommand("","chmod",["+x", path],_hx_AnonObject({'errorMessage': "setting permissions on the 'dot' executable."}))
 		dotFile = haxe_io_Path.join([Sys.getCwd(), "dependencies", creator.getFilename()])
 		args = ["-Tpng", dotFile, "-o", haxe_io_Path.join([Sys.getCwd(), "dependencies", "visualization.png"])]
-		duell_helpers_CommandHelper.runCommand(self.executablePath,"dot",args,_hx_AnonObject({'systemCommand': False, 'errorMessage': "running dot command"}))
+		duell_helpers_CommandHelper.runCommand(executablePath,"dot",args,_hx_AnonObject({'systemCommand': False, 'errorMessage': "running dot command"}))
 		sys_FileSystem.deleteFile(dotFile)
 
 	def openVisualization(self):
@@ -1779,7 +1778,6 @@ class duell_commands_DependencyCommand:
 
 	@staticmethod
 	def _hx_empty_init(_hx_o):
-		_hx_o.executablePath = None
 		_hx_o.libraryCache = None
 duell_commands_DependencyCommand._hx_class = duell_commands_DependencyCommand
 _hx_classes["duell.commands.DependencyCommand"] = duell_commands_DependencyCommand
@@ -4663,8 +4661,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_head
 					nonlocal _g_val
+					nonlocal _g_head
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
