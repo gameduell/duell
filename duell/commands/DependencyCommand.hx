@@ -45,11 +45,17 @@ class DependencyCommand implements IGDCommand
 	{
 		var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 		var executablePath = Path.join([duellConfigJSON.localLibraryPath, 'duell', 'bin', 'graphviz']);
-
+		
 		var path = Path.join([executablePath, 'dot']);
 		CommandHelper.runCommand("", "chmod", ["+x", path], {errorMessage: "setting permissions on the 'dot' executable."});
 		
-		var dotFile = Path.join([Sys.getCwd(), "dependencies", creator.getFilename()]);
+		var targetFolder = Path.join([Sys.getCwd(), "dependencies"]);
+		if(!FileSystem.exists(targetFolder))
+		{
+			FileSystem.createDirectory(targetFolder);
+		}
+
+		var dotFile = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp", creator.getFilename()]);
 		var args = ["-Tpng", dotFile, "-o", Path.join([Sys.getCwd(), "dependencies", "visualization.png"])];
 		CommandHelper.runCommand(executablePath, "dot", args, {systemCommand: false, errorMessage: "running dot command"});
 
@@ -61,19 +67,14 @@ class DependencyCommand implements IGDCommand
 		CommandHelper.runCommand("", "open", [Path.join([Sys.getCwd(), "dependencies", "visualization.png"])]);
 	}
 
-	private function createOuputFile(rootNode : DependencyLibraryObject) : IFileContentCreator
+	private function createVisualizationConfigFile(rootNode : DependencyLibraryObject) : IFileContentCreator
 	{
 		var creator = new DotFileContentCreator();
 		creator.parseDuellLibs(rootNode);
 		creator.parseHaxeLibs(rootNode);
 
-		var targetFolder = Path.join([Sys.getCwd(), "dependencies"]);
-		if(!FileSystem.exists(targetFolder))
-		{
-			FileSystem.createDirectory(targetFolder);
-		}
-		
-		var outputFile = Path.join([targetFolder, creator.getFilename()]);
+		var configFolder = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"]);
+		var outputFile = Path.join([configFolder, creator.getFilename()]);
 		var fileOutput = File.write(outputFile, false);
 		fileOutput.writeString(creator.getContent());
 		fileOutput.close();
@@ -100,7 +101,7 @@ class DependencyCommand implements IGDCommand
 		
 		parseDuellLibraries(rootNode);
 
-		var creator = createOuputFile(rootNode);
+		var creator = createVisualizationConfigFile(rootNode);
 
 		buildVisualization(creator);
 
@@ -162,17 +163,7 @@ class DependencyCommand implements IGDCommand
 
 	private function logAction(action : String)
 	{
-		var line : String = "";
-		for ( i in 0...action.length )
-		{
-			line += "-";
-		}
-
-		LogHelper.info(" ");
-        LogHelper.info("\x1b[2m" + line);
-        LogHelper.info(action);
-        LogHelper.info(line + "\x1b[0m");
-        LogHelper.info(" ");
+		LogHelper.wrapInfo(LogHelper.DARK_GREEN + action, null, LogHelper.DARK_GREEN);
 	}
 
 	private function checkRequirements()

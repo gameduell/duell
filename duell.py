@@ -1659,7 +1659,7 @@ _hx_classes["duell.commands.CreateCommand"] = duell_commands_CreateCommand
 class duell_commands_DependencyCommand:
 	_hx_class_name = "duell.commands.DependencyCommand"
 	_hx_fields = ["libraryCache"]
-	_hx_methods = ["execute", "buildVisualization", "openVisualization", "createOuputFile", "parseProjectDependencies", "parseDuellLibraries", "canBeProcessed", "addParsingLib", "setParsedLib", "logAction", "checkRequirements", "checkIfItIsAProjectFolder"]
+	_hx_methods = ["execute", "buildVisualization", "openVisualization", "createVisualizationConfigFile", "parseProjectDependencies", "parseDuellLibraries", "canBeProcessed", "addParsingLib", "setParsedLib", "logAction", "checkRequirements", "checkIfItIsAProjectFolder"]
 	_hx_interfaces = [duell_commands_IGDCommand]
 
 	def __init__(self):
@@ -1677,7 +1677,10 @@ class duell_commands_DependencyCommand:
 		executablePath = haxe_io_Path.join([duellConfigJSON.localLibraryPath, "duell", "bin", "graphviz"])
 		path = haxe_io_Path.join([executablePath, "dot"])
 		duell_helpers_CommandHelper.runCommand("","chmod",["+x", path],_hx_AnonObject({'errorMessage': "setting permissions on the 'dot' executable."}))
-		dotFile = haxe_io_Path.join([Sys.getCwd(), "dependencies", creator.getFilename()])
+		targetFolder = haxe_io_Path.join([Sys.getCwd(), "dependencies"])
+		if (not sys_FileSystem.exists(targetFolder)):
+			sys_FileSystem.createDirectory(targetFolder)
+		dotFile = haxe_io_Path.join([duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp", creator.getFilename()])
 		args = ["-Tpng", dotFile, "-o", haxe_io_Path.join([Sys.getCwd(), "dependencies", "visualization.png"])]
 		duell_helpers_CommandHelper.runCommand(executablePath,"dot",args,_hx_AnonObject({'systemCommand': False, 'errorMessage': "running dot command"}))
 		sys_FileSystem.deleteFile(dotFile)
@@ -1685,14 +1688,12 @@ class duell_commands_DependencyCommand:
 	def openVisualization(self):
 		duell_helpers_CommandHelper.runCommand("","open",[haxe_io_Path.join([Sys.getCwd(), "dependencies", "visualization.png"])])
 
-	def createOuputFile(self,rootNode):
+	def createVisualizationConfigFile(self,rootNode):
 		creator = duell_objects_dependencies_DotFileContentCreator()
 		creator.parseDuellLibs(rootNode)
 		creator.parseHaxeLibs(rootNode)
-		targetFolder = haxe_io_Path.join([Sys.getCwd(), "dependencies"])
-		if (not sys_FileSystem.exists(targetFolder)):
-			sys_FileSystem.createDirectory(targetFolder)
-		outputFile = haxe_io_Path.join([targetFolder, creator.getFilename()])
+		configFolder = haxe_io_Path.join([duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"])
+		outputFile = haxe_io_Path.join([configFolder, creator.getFilename()])
 		fileOutput = sys_io_File.write(outputFile,False)
 		fileOutput.writeString(creator.getContent())
 		fileOutput.close()
@@ -1709,7 +1710,7 @@ class duell_commands_DependencyCommand:
 			Sys.exit(0)
 		self.logAction("Parsing libraries..")
 		self.parseDuellLibraries(rootNode)
-		creator = self.createOuputFile(rootNode)
+		creator = self.createVisualizationConfigFile(rootNode)
 		self.buildVisualization(creator)
 		self.openVisualization()
 		self.logAction("DONE")
@@ -1749,18 +1750,7 @@ class duell_commands_DependencyCommand:
 		versions.h[lib.version] = True
 
 	def logAction(self,action):
-		line = ""
-		_g1 = 0
-		_g = len(action)
-		while (_g1 < _g):
-			i = _g1
-			_g1 = (_g1 + 1)
-			line = (("null" if line is None else line) + "-")
-		duell_helpers_LogHelper.info(" ")
-		duell_helpers_LogHelper.info(("\x1B[2m" + ("null" if line is None else line)))
-		duell_helpers_LogHelper.info(action)
-		duell_helpers_LogHelper.info((("null" if line is None else line) + "\x1B[0m"))
-		duell_helpers_LogHelper.info(" ")
+		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + ("null" if action is None else action)),None,"\x1B[2m")
 
 	def checkRequirements(self):
 		self.logAction("Checking requirements")
@@ -4712,8 +4702,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
