@@ -13,6 +13,7 @@ import duell.helpers.DuellLibListHelper;
 import duell.helpers.DuellLibHelper;
 import duell.helpers.CommandHelper;
 import duell.helpers.DuellConfigHelper;
+import duell.helpers.PlatformHelper;
 import duell.defines.DuellDefines;
 
 import sys.io.File;
@@ -46,8 +47,10 @@ class DependencyCommand implements IGDCommand
 		var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
 		var executablePath = Path.join([duellConfigJSON.localLibraryPath, 'duell', 'bin', 'graphviz']);
 		
-		var path = Path.join([executablePath, 'dot']);
-		CommandHelper.runCommand("", "chmod", ["+x", path], {errorMessage: "setting permissions on the 'dot' executable."});
+		var executableFile = PlatformHelper.hostPlatform == Platform.WINDOWS ? 'dot.exe' : 'dot';
+
+		var path = Path.join([executablePath, executableFile]);
+		CommandHelper.runCommand("", "chmod", ["+x", path], {errorMessage: "setting permissions on the '" + executableFile + "' executable."});
 		
 		var targetFolder = Path.join([Sys.getCwd(), "dependencies"]);
 		if(!FileSystem.exists(targetFolder))
@@ -57,7 +60,7 @@ class DependencyCommand implements IGDCommand
 
 		var dotFile = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp", creator.getFilename()]);
 		var args = ["-Tpng", dotFile, "-o", Path.join([Sys.getCwd(), "dependencies", "visualization.png"])];
-		CommandHelper.runCommand(executablePath, "dot", args, {systemCommand: false, errorMessage: "running dot command"});
+		CommandHelper.runCommand(executablePath, executableFile, args, {systemCommand: false, errorMessage: "running dot command"});
 
 		FileSystem.deleteFile(dotFile);
 	}

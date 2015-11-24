@@ -1675,14 +1675,19 @@ class duell_commands_DependencyCommand:
 	def buildVisualization(self,creator):
 		duellConfigJSON = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
 		executablePath = haxe_io_Path.join([duellConfigJSON.localLibraryPath, "duell", "bin", "graphviz"])
-		path = haxe_io_Path.join([executablePath, "dot"])
-		duell_helpers_CommandHelper.runCommand("","chmod",["+x", path],_hx_AnonObject({'errorMessage': "setting permissions on the 'dot' executable."}))
+		executableFile = None
+		if (duell_helpers_PlatformHelper.get_hostPlatform() == duell_helpers_Platform.WINDOWS):
+			executableFile = "dot.exe"
+		else:
+			executableFile = "dot"
+		path = haxe_io_Path.join([executablePath, executableFile])
+		duell_helpers_CommandHelper.runCommand("","chmod",["+x", path],_hx_AnonObject({'errorMessage': (("setting permissions on the '" + ("null" if executableFile is None else executableFile)) + "' executable.")}))
 		targetFolder = haxe_io_Path.join([Sys.getCwd(), "dependencies"])
 		if (not sys_FileSystem.exists(targetFolder)):
 			sys_FileSystem.createDirectory(targetFolder)
 		dotFile = haxe_io_Path.join([duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp", creator.getFilename()])
 		args = ["-Tpng", dotFile, "-o", haxe_io_Path.join([Sys.getCwd(), "dependencies", "visualization.png"])]
-		duell_helpers_CommandHelper.runCommand(executablePath,"dot",args,_hx_AnonObject({'systemCommand': False, 'errorMessage': "running dot command"}))
+		duell_helpers_CommandHelper.runCommand(executablePath,executableFile,args,_hx_AnonObject({'systemCommand': False, 'errorMessage': "running dot command"}))
 		sys_FileSystem.deleteFile(dotFile)
 
 	def openVisualization(self):
