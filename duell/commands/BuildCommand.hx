@@ -358,11 +358,7 @@ class BuildCommand implements IGDCommand
             fileOutput.close();
         }
 
-        LogHelper.info("\n");
-        LogHelper.info("\x1b[2m--------------------");
-        LogHelper.info("Building " + platformName);
-        LogHelper.info("--------------------\x1b[0m");
-        LogHelper.info("\n");
+        LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Building " + platformName, null, LogHelper.DARK_GREEN);
 
         PythonImportHelper.runPythonFile(outputRun);
     }

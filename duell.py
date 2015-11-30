@@ -1467,11 +1467,7 @@ class duell_commands_BuildCommand:
 				fileOutput1.writeString((("sys.path.insert(0, \"" + ("null" if path is None else path)) + "\")\n"))
 			fileOutput1.writeBytes(file,0,file.length)
 			fileOutput1.close()
-		duell_helpers_LogHelper.info("\n")
-		duell_helpers_LogHelper.info("\x1B[2m--------------------")
-		duell_helpers_LogHelper.info(("Building " + HxOverrides.stringOrNull(self.platformName)))
-		duell_helpers_LogHelper.info("--------------------\x1B[0m")
-		duell_helpers_LogHelper.info("\n")
+		duell_helpers_LogHelper.wrapInfo((("\x1B[2m" + "Building ") + HxOverrides.stringOrNull(self.platformName)),None,"\x1B[2m")
 		duell_helpers_PythonImportHelper.runPythonFile(outputRun)
 
 	def runFast(self):
@@ -1658,6 +1654,128 @@ class duell_commands_CreateCommand:
 		_hx_o.setupLib = None
 duell_commands_CreateCommand._hx_class = duell_commands_CreateCommand
 _hx_classes["duell.commands.CreateCommand"] = duell_commands_CreateCommand
+
+
+class duell_commands_DependencyCommand:
+	_hx_class_name = "duell.commands.DependencyCommand"
+	_hx_fields = ["libraryCache"]
+	_hx_methods = ["execute", "buildVisualization", "openVisualization", "createVisualizationConfigFile", "parseProjectDependencies", "parseDuellLibraries", "canBeProcessed", "addParsingLib", "setParsedLib", "logAction", "checkRequirements", "checkIfItIsAProjectFolder"]
+	_hx_interfaces = [duell_commands_IGDCommand]
+
+	def __init__(self):
+		self.libraryCache = None
+		self.libraryCache = haxe_ds_StringMap()
+
+	def execute(self):
+		self.checkRequirements()
+		if duell_objects_Arguments.isSet("-project"):
+			self.parseProjectDependencies()
+		return "success"
+
+	def buildVisualization(self,creator):
+		duellConfigJSON = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
+		executablePath = haxe_io_Path.join([duellConfigJSON.localLibraryPath, "duell", "bin", "graphviz"])
+		executableFile = None
+		if (duell_helpers_PlatformHelper.get_hostPlatform() == duell_helpers_Platform.WINDOWS):
+			executableFile = "dot.exe"
+		else:
+			executableFile = "dot"
+		path = haxe_io_Path.join([executablePath, executableFile])
+		duell_helpers_CommandHelper.runCommand("","chmod",["+x", path],_hx_AnonObject({'errorMessage': (("setting permissions on the '" + ("null" if executableFile is None else executableFile)) + "' executable.")}))
+		targetFolder = haxe_io_Path.join([Sys.getCwd(), "dependencies"])
+		if (not sys_FileSystem.exists(targetFolder)):
+			sys_FileSystem.createDirectory(targetFolder)
+		dotFile = haxe_io_Path.join([duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp", creator.getFilename()])
+		args = ["-Tpng", dotFile, "-o", haxe_io_Path.join([Sys.getCwd(), "dependencies", "visualization.png"])]
+		duell_helpers_CommandHelper.runCommand(executablePath,executableFile,args,_hx_AnonObject({'systemCommand': False, 'errorMessage': "running dot command"}))
+		sys_FileSystem.deleteFile(dotFile)
+
+	def openVisualization(self):
+		duell_helpers_CommandHelper.runCommand("","open",[haxe_io_Path.join([Sys.getCwd(), "dependencies", "visualization.png"])])
+
+	def createVisualizationConfigFile(self,rootNode):
+		creator = duell_objects_dependencies_DotFileContentCreator()
+		creator.parseDuellLibs(rootNode)
+		creator.parseHaxeLibs(rootNode)
+		configFolder = haxe_io_Path.join([duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"])
+		outputFile = haxe_io_Path.join([configFolder, creator.getFilename()])
+		fileOutput = sys_io_File.write(outputFile,False)
+		fileOutput.writeString(creator.getContent())
+		fileOutput.close()
+		return creator
+
+	def parseProjectDependencies(self):
+		self.logAction("Checking library dependencies for current project")
+		file = duell_objects_dependencies_DependencyConfigFile(Sys.getCwd(), duell_defines_DuellDefines.PROJECT_CONFIG_FILENAME)
+		rootNode = duell_objects_dependencies_DependencyLibraryObject(file, file.applicationName)
+		if ((len(file.duellLibs) > 0) or ((len(file.haxeLibs) > 0))):
+			duell_helpers_CommandHelper.runHaxelib(Sys.getCwd(),["run", "duell_duell", "update", "-yestoall"])
+		else:
+			duell_helpers_LogHelper.info("No dependencies defined.")
+			Sys.exit(0)
+		self.logAction("Parsing libraries..")
+		self.parseDuellLibraries(rootNode)
+		creator = self.createVisualizationConfigFile(rootNode)
+		self.buildVisualization(creator)
+		self.openVisualization()
+		self.logAction("DONE")
+
+	def parseDuellLibraries(self,rootNode):
+		duellConfigJSON = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
+		libs = rootNode.configFile.duellLibs
+		_g = 0
+		while (_g < len(libs)):
+			l = (libs[_g] if _g >= 0 and _g < len(libs) else None)
+			_g = (_g + 1)
+			libPath = haxe_io_Path.join([duellConfigJSON.localLibraryPath, l.name])
+			libConfig = duell_defines_DuellDefines.LIB_CONFIG_FILENAME
+			config = duell_objects_dependencies_DependencyConfigFile(libPath, libConfig)
+			subNode = duell_objects_dependencies_DependencyLibraryObject(config, l.name, l.version)
+			rootNode.addDependency(subNode)
+			if self.canBeProcessed(subNode.lib):
+				self.addParsingLib(subNode.lib)
+				self.parseDuellLibraries(subNode)
+				self.setParsedLib(subNode.lib)
+
+	def canBeProcessed(self,lib):
+		if lib.name in self.libraryCache.h:
+			versions = self.libraryCache.h.get(lib.name,None)
+			return lib.version in versions.h
+		return True
+
+	def addParsingLib(self,lib):
+		if (not lib.name in self.libraryCache.h):
+			value = haxe_ds_StringMap()
+			self.libraryCache.h[lib.name] = value
+		versions = self.libraryCache.h.get(lib.name,None)
+		versions.h[lib.version] = False
+
+	def setParsedLib(self,lib):
+		versions = self.libraryCache.h.get(lib.name,None)
+		versions.h[lib.version] = True
+
+	def logAction(self,action):
+		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + ("null" if action is None else action)),None,"\x1B[2m")
+
+	def checkRequirements(self):
+		self.logAction("Checking requirements")
+		if duell_objects_Arguments.isSet("-project"):
+			self.checkIfItIsAProjectFolder()
+		else:
+			duell_helpers_LogHelper.exitWithFormattedError("Use duell dependencies -help for valid commands.")
+		duellConfig = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
+		if (len(duellConfig.repoListURLs) == 0):
+			duell_helpers_LogHelper.exitWithFormattedError("No repository urls defined!.")
+
+	def checkIfItIsAProjectFolder(self):
+		if (not sys_FileSystem.exists(duell_defines_DuellDefines.PROJECT_CONFIG_FILENAME)):
+			duell_helpers_LogHelper.exitWithFormattedError((("It's not a valid project folder! " + HxOverrides.stringOrNull(duell_defines_DuellDefines.PROJECT_CONFIG_FILENAME)) + " is missing."))
+
+	@staticmethod
+	def _hx_empty_init(_hx_o):
+		_hx_o.libraryCache = None
+duell_commands_DependencyCommand._hx_class = duell_commands_DependencyCommand
+_hx_classes["duell.commands.DependencyCommand"] = duell_commands_DependencyCommand
 
 
 class duell_commands_EnvironmentSetupCommand:
@@ -2190,36 +2308,21 @@ class duell_commands_UpdateCommand:
 		self.finalLibList = _hx_AnonObject({'duellLibs': [], 'haxelibs': []})
 
 	def execute(self):
-		duell_helpers_LogHelper.info("\n")
-		duell_helpers_LogHelper.info("\x1B[2m------------")
-		duell_helpers_LogHelper.info("Update Dependencies")
-		duell_helpers_LogHelper.info("------------\x1B[0m")
-		duell_helpers_LogHelper.info("\n")
+		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Update Dependencies"),None,"\x1B[2m")
 		self.synchronizeRemotes()
 		self.determineAndValidateDependenciesAndDefines()
-		duell_helpers_LogHelper.info("\x1B[2m------")
-		duell_helpers_LogHelper.info("\n")
-		duell_helpers_LogHelper.info("\x1B[2m-------------------------")
-		duell_helpers_LogHelper.info("Resulting dependencies update and resolution")
-		duell_helpers_LogHelper.info("--------------------------\x1B[0m")
-		duell_helpers_LogHelper.info("\n")
+		duell_helpers_LogHelper.info(("\x1B[2m" + "------"))
+		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Resulting dependencies update and resolution"),None,"\x1B[2m")
 		self.printFinalResult()
 		if (duell_commands_UpdateCommand.duellFileHasDuellNamespace() and duell_helpers_ConnectionHelper.isOnline()):
-			duell_helpers_LogHelper.info("\x1B[2m------")
-			duell_helpers_LogHelper.info("\n")
-			duell_helpers_LogHelper.info("\x1B[2m-------------------------")
-			duell_helpers_LogHelper.info("Validating XML schema")
-			duell_helpers_LogHelper.info("--------------------------\x1B[0m")
-			duell_helpers_LogHelper.info("\n")
+			duell_helpers_LogHelper.info(("\x1B[2m" + "------"))
+			duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Validating XML schema"),None,"\x1B[2m")
 			if duell_commands_UpdateCommand.userFileHasDuellNamespace():
 				duell_commands_UpdateCommand.validateUserSchemaXml()
 			duell_commands_UpdateCommand.validateSchemaXml()
 			duell_helpers_LogHelper.info("Success!")
 		self.saveUpdateExecution()
-		duell_helpers_LogHelper.println("")
-		duell_helpers_LogHelper.info("\x1B[2m------")
-		duell_helpers_LogHelper.info("end")
-		duell_helpers_LogHelper.info("------\x1B[0m")
+		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "end"),None,"\x1B[2m")
 		if self.isDifferentDuellToolVersion:
 			duell_helpers_LogHelper.info("Rerunning the update because the duell tool version changed.")
 			def _hx_local_0():
@@ -3044,7 +3147,7 @@ _hx_classes["duell.helpers.DuellLibHelper"] = duell_helpers_DuellLibHelper
 
 class duell_helpers_DuellLibListHelper:
 	_hx_class_name = "duell.helpers.DuellLibListHelper"
-	_hx_statics = ["DEPENDENCY_LIST_FILENAME", "repoListCache", "getDuellLibReferenceList", "validateAndCleanRepos", "addLibsToTheRepoCache", "getDuplicatesFromRepoLists", "createDuplicateList"]
+	_hx_statics = ["DEPENDENCY_LIST_FILENAME", "repoListCache", "getDuellLibReferenceList", "validateAndCleanRepos", "addLibsToTheRepoCache", "getDuplicatesFromRepoLists", "createDuplicateList", "libraryExists"]
 
 	@staticmethod
 	def getDuellLibReferenceList():
@@ -3154,6 +3257,18 @@ class duell_helpers_DuellLibListHelper:
 			else:
 				value = duell_objects_DuellLibReference(repo, repoInfo.git_path, repoInfo.library_path, repoInfo.destination_path)
 				source.h[repo] = value
+
+	@staticmethod
+	def libraryExists(name):
+		if (name is None):
+			return False
+		_hx_list = duell_helpers_DuellLibListHelper.getDuellLibReferenceList()
+		_hx_local_0 = _hx_list.keys()
+		while _hx_local_0.hasNext():
+			key = _hx_local_0.next()
+			if (key == name):
+				return True
+		return False
 duell_helpers_DuellLibListHelper._hx_class = duell_helpers_DuellLibListHelper
 _hx_classes["duell.helpers.DuellLibListHelper"] = duell_helpers_DuellLibListHelper
 
@@ -3449,7 +3564,7 @@ _hx_classes["duell.helpers.HXCPPConfigXMLHelper"] = duell_helpers_HXCPPConfigXML
 
 class duell_helpers_LogHelper:
 	_hx_class_name = "duell.helpers.LogHelper"
-	_hx_statics = ["enableColor", "mute", "verbose", "colorCodes", "colorSupported", "sentWarnings", "RED", "YELLOW", "NORMAL", "BOLD", "UNDERLINE", "get_enableColor", "get_mute", "get_verbose", "exitWithFormattedError", "info", "print", "println", "warn", "stripColor"]
+	_hx_statics = ["enableColor", "mute", "verbose", "colorCodes", "colorSupported", "sentWarnings", "RED", "YELLOW", "DARK_GREEN", "NORMAL", "BOLD", "UNDERLINE", "get_enableColor", "get_mute", "get_verbose", "exitWithFormattedError", "info", "print", "println", "warn", "stripColor", "wrapInfo", "cutoutMetadata"]
 	enableColor = None
 	mute = None
 	verbose = None
@@ -3539,6 +3654,36 @@ class duell_helpers_LogHelper:
 				e1 = _hx_e1
 				print("error on color replace")
 				return output
+
+	@staticmethod
+	def wrapInfo(message,msgArgs = None,lineColor = "\x1B[31;1m",wrappingSign = "-"):
+		if (lineColor is None):
+			lineColor = "\x1B[31;1m"
+		if (wrappingSign is None):
+			wrappingSign = "-"
+		if (msgArgs is not None):
+			_g1 = 0
+			_g = len(msgArgs)
+			while (_g1 < _g):
+				i = _g1
+				_g1 = (_g1 + 1)
+				_hx_str = (msgArgs[i] if i >= 0 and i < len(msgArgs) else None)
+				message = StringTools.replace(message,(("#{" + Std.string(i)) + "}"),_hx_str)
+		rawMessage = duell_helpers_LogHelper.colorCodes.replace(message,"")
+		line = ""
+		_g11 = 0
+		_g2 = len(rawMessage)
+		while (_g11 < _g2):
+			i1 = _g11
+			_g11 = (_g11 + 1)
+			line = (("null" if line is None else line) + ("null" if wrappingSign is None else wrappingSign))
+		message = (((((((((("\n" + ("null" if lineColor is None else lineColor)) + ("null" if line is None else line)) + "\x1B[0m") + "\n") + ("null" if message is None else message)) + "\n") + ("null" if lineColor is None else lineColor)) + ("null" if line is None else line)) + "\x1B[0m") + "\n")
+		duell_helpers_LogHelper.info(message)
+
+	@staticmethod
+	def cutoutMetadata(value):
+		copy = value
+		return duell_helpers_LogHelper.colorCodes.replace(copy,"")
 duell_helpers_LogHelper._hx_class = duell_helpers_LogHelper
 _hx_classes["duell.helpers.LogHelper"] = duell_helpers_LogHelper
 
@@ -4511,8 +4656,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_head
 					nonlocal _g_val
+					nonlocal _g_head
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -4562,8 +4707,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -5108,11 +5253,7 @@ class duell_objects_Arguments:
 
 	@staticmethod
 	def printGeneralHelp():
-		duell_helpers_LogHelper.info(" ")
-		duell_helpers_LogHelper.info((("\x1B[31;1m" + "--------------------------------------------") + "\x1B[0m"))
-		duell_helpers_LogHelper.info(((((((("  Help for the " + "\x1B[1m") + "Duell Tool") + "\x1B[0m") + ", Version ") + "\x1B[1m") + HxOverrides.stringOrNull(duell_Duell.VERSION)) + "\x1B[0m"))
-		duell_helpers_LogHelper.info((("\x1B[31;1m" + "--------------------------------------------") + "\x1B[0m"))
-		duell_helpers_LogHelper.info(" ")
+		duell_helpers_LogHelper.wrapInfo((((((((("  Help for the " + "\x1B[1m") + "Duell Tool") + "\x1B[0m") + ", Version ") + "\x1B[1m") + "#{0}") + "\x1B[0m") + "  "),[duell_Duell.VERSION])
 		duell_helpers_LogHelper.info((("\x1B[4m" + "Description:") + "\x1B[0m"))
 		duell_helpers_LogHelper.info(" ")
 		duell_helpers_LogHelper.info(duell_objects_Arguments.generalDocumentation)
@@ -5140,16 +5281,12 @@ class duell_objects_Arguments:
 
 	@staticmethod
 	def printCommandHelp():
-		duell_helpers_LogHelper.info(" ")
-		duell_helpers_LogHelper.info((("\x1B[31;1m" + "-----------------------------") + "\x1B[0m"))
-		duell_helpers_LogHelper.info((((("  Help for the " + "\x1B[1m") + HxOverrides.stringOrNull(duell_objects_Arguments.selectedCommand.name)) + "\x1B[0m") + " command"))
-		duell_helpers_LogHelper.info((("\x1B[31;1m" + "-----------------------------") + "\x1B[0m"))
-		duell_helpers_LogHelper.info(" ")
+		duell_helpers_LogHelper.wrapInfo((((("  Help for the " + "\x1B[1m") + "#{0}") + "\x1B[0m") + " command  "),[duell_objects_Arguments.selectedCommand.name])
 		duell_helpers_LogHelper.info((("\x1B[4m" + "Description:") + "\x1B[0m"))
 		duell_helpers_LogHelper.info(" ")
 		duell_helpers_LogHelper.info(duell_objects_Arguments.selectedCommand.documentation)
+		duell_helpers_LogHelper.info(" ")
 		if duell_objects_Arguments.selectedCommand.hasPlugin:
-			duell_helpers_LogHelper.info(" ")
 			duell_helpers_LogHelper.info((("\x1B[4m" + "Plugins:") + "\x1B[0m"))
 			duell_helpers_LogHelper.info(" ")
 			libList = duell_helpers_DuellLibListHelper.getDuellLibReferenceList()
@@ -5167,7 +5304,7 @@ class duell_objects_Arguments:
 			while _hx_local_1.hasNext():
 				arg = _hx_local_1.next()
 				duell_objects_Arguments.printArgument(arg)
-		duell_helpers_LogHelper.info(" ")
+			duell_helpers_LogHelper.info(" ")
 		if (duell_objects_Arguments.selectedCommand.configurationDocumentation is not None):
 			duell_helpers_LogHelper.info((("\x1B[4m" + "Project Configuration Documentation:") + "\x1B[0m"))
 			_hx_local_2 = duell_objects_Arguments.selectedCommand.configurationDocumentation.keys()
@@ -5177,11 +5314,7 @@ class duell_objects_Arguments:
 
 	@staticmethod
 	def printPluginHelp():
-		duell_helpers_LogHelper.info(" ")
-		duell_helpers_LogHelper.info((("\x1B[31;1m" + "----------------------------------------------------------") + "\x1B[0m"))
-		duell_helpers_LogHelper.info((((((((("  Help for the " + "\x1B[1m") + HxOverrides.stringOrNull(duell_objects_Arguments.plugin)) + "\x1B[0m") + " plugin in the ") + "\x1B[1m") + HxOverrides.stringOrNull(duell_objects_Arguments.selectedCommand.name)) + "\x1B[0m") + " command"))
-		duell_helpers_LogHelper.info((("\x1B[31;1m" + "----------------------------------------------------------") + "\x1B[0m"))
-		duell_helpers_LogHelper.info(" ")
+		duell_helpers_LogHelper.wrapInfo((((((((("  Help for the " + "\x1B[1m") + "#{0}") + "\x1B[0m") + " plugin in the ") + "\x1B[1m") + "#{1}") + "\x1B[0m") + " command  "),[duell_objects_Arguments.plugin, duell_objects_Arguments.selectedCommand.name])
 		duell_helpers_LogHelper.info((("\x1B[4m" + "Description:") + "\x1B[0m"))
 		duell_helpers_LogHelper.info(" ")
 		duell_helpers_LogHelper.info(duell_objects_Arguments.pluginDocumentation)
@@ -6199,6 +6332,231 @@ class duell_objects_SemVer:
 		_hx_o.rc = None
 duell_objects_SemVer._hx_class = duell_objects_SemVer
 _hx_classes["duell.objects.SemVer"] = duell_objects_SemVer
+
+
+class duell_objects_dependencies_DependencyConfigFile:
+	_hx_class_name = "duell.objects.dependencies.DependencyConfigFile"
+	_hx_fields = ["path", "fileName", "applicationName", "duellLibs", "haxeLibs"]
+	_hx_methods = ["parse", "parseHaxeLib", "parseApp", "parseDuellLib", "getAbsolutePath", "hasHaxeLibs"]
+
+	def __init__(self,path,fileName):
+		self.path = None
+		self.fileName = None
+		self.applicationName = None
+		self.duellLibs = None
+		self.haxeLibs = None
+		self.path = path
+		self.fileName = fileName
+		self.duellLibs = list()
+		self.haxeLibs = list()
+		self.parse()
+
+	def parse(self):
+		filePath = self.getAbsolutePath()
+		if (not sys_FileSystem.exists(filePath)):
+			return
+		fileContent = sys_io_File.getContent(filePath)
+		try:
+			fileXmlContent = Xml.parse(fileContent)
+			content = haxe_xml_Fast(fileXmlContent.firstElement())
+			_hx_local_1 = content.get_elements()
+			while _hx_local_1.hasNext():
+				element = _hx_local_1.next()
+				_g = element.get_name()
+				_hx_local_0 = len(_g)
+				if (_hx_local_0 == 3):
+					if (_g == "app"):
+						self.parseApp(element)
+				elif (_hx_local_0 == 7):
+					if (_g == "haxelib"):
+						self.parseHaxeLib(element)
+				elif (_hx_local_0 == 8):
+					if (_g == "duelllib"):
+						self.parseDuellLib(element)
+				else:
+					pass
+		except Exception as _hx_e:
+			_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
+			e = _hx_e1
+			raise _HxException((("Invalid file \"" + ("null" if filePath is None else filePath)) + "\"!"))
+
+	def parseHaxeLib(self,e):
+		name = None
+		if e.has.resolve("name"):
+			name = e.att.resolve("name")
+		else:
+			name = ""
+		version = None
+		if e.has.resolve("version"):
+			version = e.att.resolve("version")
+		else:
+			version = ""
+		_this = self.haxeLibs
+		x = duell_objects_Haxelib.getHaxelib(name,version)
+		_this.append(x)
+
+	def parseApp(self,e):
+		if (e.has.resolve("title") and e.has.resolve("company")):
+			self.applicationName = e.att.resolve("title")
+
+	def parseDuellLib(self,e):
+		name = None
+		if e.has.resolve("name"):
+			name = e.att.resolve("name")
+		else:
+			name = ""
+		version = None
+		if e.has.resolve("version"):
+			version = e.att.resolve("version")
+		else:
+			version = ""
+		_this = self.duellLibs
+		x = duell_objects_DuellLib.getDuellLib(name,version)
+		_this.append(x)
+
+	def getAbsolutePath(self):
+		return haxe_io_Path.join([self.path, self.fileName])
+
+	def hasHaxeLibs(self):
+		return (len(self.haxeLibs) > 0)
+
+	@staticmethod
+	def _hx_empty_init(_hx_o):
+		_hx_o.path = None
+		_hx_o.fileName = None
+		_hx_o.applicationName = None
+		_hx_o.duellLibs = None
+		_hx_o.haxeLibs = None
+duell_objects_dependencies_DependencyConfigFile._hx_class = duell_objects_dependencies_DependencyConfigFile
+_hx_classes["duell.objects.dependencies.DependencyConfigFile"] = duell_objects_dependencies_DependencyConfigFile
+
+
+class duell_objects_dependencies_DependencyLibraryObject:
+	_hx_class_name = "duell.objects.dependencies.DependencyLibraryObject"
+	_hx_fields = ["name", "configFile", "lib", "libraryDependencyObjects"]
+	_hx_methods = ["addDependency", "toString"]
+
+	def __init__(self,configFile,name,version = "master"):
+		if (version is None):
+			version = "master"
+		self.name = None
+		self.configFile = None
+		self.lib = None
+		self.libraryDependencyObjects = None
+		self.name = name
+		self.configFile = configFile
+		self.lib = duell_objects_DuellLib.getDuellLib(name,version)
+		self.libraryDependencyObjects = list()
+
+	def addDependency(self,libraryObject):
+		_this = self.libraryDependencyObjects
+		_this.append(libraryObject)
+
+	def toString(self):
+		return ((("DependencyLibraryObject :: name: " + HxOverrides.stringOrNull(self.name)) + " dependencies: ") + Std.string(self.libraryDependencyObjects))
+
+	@staticmethod
+	def _hx_empty_init(_hx_o):
+		_hx_o.name = None
+		_hx_o.configFile = None
+		_hx_o.lib = None
+		_hx_o.libraryDependencyObjects = None
+duell_objects_dependencies_DependencyLibraryObject._hx_class = duell_objects_dependencies_DependencyLibraryObject
+_hx_classes["duell.objects.dependencies.DependencyLibraryObject"] = duell_objects_dependencies_DependencyLibraryObject
+
+
+class duell_objects_dependencies_IFileContentCreator:
+	_hx_class_name = "duell.objects.dependencies.IFileContentCreator"
+	_hx_methods = ["parseDuellLibs", "parseHaxeLibs", "getContent", "getFilename"]
+duell_objects_dependencies_IFileContentCreator._hx_class = duell_objects_dependencies_IFileContentCreator
+_hx_classes["duell.objects.dependencies.IFileContentCreator"] = duell_objects_dependencies_IFileContentCreator
+
+
+class duell_objects_dependencies_DotFileContentCreator:
+	_hx_class_name = "duell.objects.dependencies.DotFileContentCreator"
+	_hx_fields = ["duellLibContent", "haxeLibsContent"]
+	_hx_methods = ["parseDuellLibs", "parseHaxeLibs", "getDuellLibContent", "getHaxeLibsContent", "getContent", "getFilename", "getBaseFormat", "getHaxelibsFormat"]
+	_hx_interfaces = [duell_objects_dependencies_IFileContentCreator]
+
+	def __init__(self):
+		self.duellLibContent = None
+		self.haxeLibsContent = None
+		self.haxeLibsContent = ""
+		self.duellLibContent = ""
+
+	def parseDuellLibs(self,rootNode):
+		subnodes = rootNode.libraryDependencyObjects
+		nodeName = rootNode.name
+		if ((len(self.duellLibContent) == 0) and ((len(subnodes) == 0))):
+			self.duellLibContent = (("null" if nodeName is None else nodeName) + ";\n    ")
+		_g = 0
+		while (_g < len(subnodes)):
+			subnode = (subnodes[_g] if _g >= 0 and _g < len(subnodes) else None)
+			_g = (_g + 1)
+			lib = subnode.lib
+			label = None
+			if (lib is not None):
+				label = ((" [label=\"" + HxOverrides.stringOrNull(lib.version)) + "\", fontsize=10]")
+			else:
+				label = ""
+			_hx_local_1 = self
+			_hx_local_2 = _hx_local_1.duellLibContent
+			_hx_local_1.duellLibContent = (("null" if _hx_local_2 is None else _hx_local_2) + HxOverrides.stringOrNull(((((((("    \"" + ("null" if nodeName is None else nodeName)) + "\" -> \"") + HxOverrides.stringOrNull(subnode.name)) + "\"") + ("null" if label is None else label)) + ";\n"))))
+			_hx_local_1.duellLibContent
+		_g1 = 0
+		while (_g1 < len(subnodes)):
+			subnode1 = (subnodes[_g1] if _g1 >= 0 and _g1 < len(subnodes) else None)
+			_g1 = (_g1 + 1)
+			self.parseDuellLibs(subnode1)
+
+	def parseHaxeLibs(self,rootNode):
+		config = rootNode.configFile
+		if config.hasHaxeLibs():
+			haxeLibs = config.haxeLibs
+			_g = 0
+			while (_g < len(haxeLibs)):
+				lib = (haxeLibs[_g] if _g >= 0 and _g < len(haxeLibs) else None)
+				_g = (_g + 1)
+				label = ((" [label=\"" + HxOverrides.stringOrNull(lib.version)) + "\", fontcolor=\"#999999\", fontsize=10]")
+				_hx_local_1 = self
+				_hx_local_2 = _hx_local_1.haxeLibsContent
+				_hx_local_1.haxeLibsContent = (("null" if _hx_local_2 is None else _hx_local_2) + HxOverrides.stringOrNull(((((((("   \"" + HxOverrides.stringOrNull(rootNode.name)) + "\" -> \"") + HxOverrides.stringOrNull(lib.name)) + "\"") + ("null" if label is None else label)) + ";\n"))))
+				_hx_local_1.haxeLibsContent
+		subNodes = rootNode.libraryDependencyObjects
+		_g1 = 0
+		while (_g1 < len(subNodes)):
+			subNode = (subNodes[_g1] if _g1 >= 0 and _g1 < len(subNodes) else None)
+			_g1 = (_g1 + 1)
+			self.parseHaxeLibs(subNode)
+
+	def getDuellLibContent(self):
+		if (len(self.duellLibContent) > 0):
+			return (HxOverrides.stringOrNull(self.getBaseFormat()) + HxOverrides.stringOrNull(self.duellLibContent))
+		return ""
+
+	def getHaxeLibsContent(self):
+		if (len(self.haxeLibsContent) > 0):
+			return (HxOverrides.stringOrNull(self.getHaxelibsFormat()) + HxOverrides.stringOrNull(self.haxeLibsContent))
+		return ""
+
+	def getContent(self):
+		return (((("digraph G {\n" + "    graph [size=\"10.3,5.3\", ranksep=0.5, nodesep=0.1, overlap=false, start=1]") + HxOverrides.stringOrNull(self.getDuellLibContent())) + HxOverrides.stringOrNull(self.getHaxeLibsContent())) + "}")
+
+	def getFilename(self):
+		return "dotFile.dot"
+
+	def getBaseFormat(self):
+		return (((("    node [fontname=Verdana,fontsize=12]\n" + "    node [style=filled]\n") + "    node [fillcolor=\"#FC861C44\"]\n") + "    node [color=\"#FC332244\"]\n") + "    edge [color=\"#FC861C\"]\n")
+
+	def getHaxelibsFormat(self):
+		return (((("    node [fontname=Verdana,fontsize=12, fontcolor=\"#999999\"]\n" + "    node [style=filled]\n") + "    node [fillcolor=\"#EEEEEE\"]\n") + "    node [color=\"#AAAAAA\"]\n") + "    edge [color=\"#AAAAAA\"]\n")
+
+	@staticmethod
+	def _hx_empty_init(_hx_o):
+		_hx_o.duellLibContent = None
+		_hx_o.haxeLibsContent = None
+duell_objects_dependencies_DotFileContentCreator._hx_class = duell_objects_dependencies_DotFileContentCreator
+_hx_classes["duell.objects.dependencies.DotFileContentCreator"] = duell_objects_dependencies_DotFileContentCreator
 
 class duell_versioning_VersionType(Enum):
 	_hx_class_name = "duell.versioning.VersionType"
@@ -10528,6 +10886,7 @@ duell_helpers_LogHelper.colorSupported = None
 duell_helpers_LogHelper.sentWarnings = haxe_ds_StringMap()
 duell_helpers_LogHelper.RED = "\x1B[31;1m"
 duell_helpers_LogHelper.YELLOW = "\x1B[33;1m"
+duell_helpers_LogHelper.DARK_GREEN = "\x1B[2m"
 duell_helpers_LogHelper.NORMAL = "\x1B[0m"
 duell_helpers_LogHelper.BOLD = "\x1B[1m"
 duell_helpers_LogHelper.UNDERLINE = "\x1B[4m"

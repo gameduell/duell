@@ -90,8 +90,22 @@
                 </documentation>
             </arg>
         </args>
-
     </command>
+
+    <command name="dependencies" class="DependencyCommand" hasPlugin="false">
+        <documentation>
+            This command will help you figuring out where are dependencies between libraries and configuring them, if needed.
+        </documentation>
+
+        <args>
+            <arg name="-project" type="void">
+                <documentation>
+                    Use this flag to get the configured library dependencies of your project.
+                </documentation>
+            </arg>
+        </args>
+    </command>
+
 
     <command name="repo_list" class="RepoConfigCommand" hasPlugin="false" >
         <documentation>
@@ -136,7 +150,6 @@
                 </documentation>
             </arg>
         </args>
-
     </command>
 
     <command name="build" class="BuildCommand" hasPlugin="true">
