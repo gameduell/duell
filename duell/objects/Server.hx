@@ -82,7 +82,10 @@ class Server
 	{
 		if (app != null)
 		{
-			python.urllib.Request.urlopen("http://localhost:" + port + "/killserver");
+			try {
+				python.urllib.Request.urlopen("http://localhost:" + port + "/killserver");
+			}
+			catch (e: Dynamic) {}
 		}
 	}
 
