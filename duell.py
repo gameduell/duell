@@ -2279,7 +2279,7 @@ _hx_classes["duell.commands.VersionState"] = duell_commands_VersionState
 class duell_commands_UpdateCommand:
 	_hx_class_name = "duell.commands.UpdateCommand"
 	_hx_fields = ["finalLibList", "finalPluginList", "finalToolList", "haxelibVersions", "duellLibVersions", "pluginVersions", "buildLib", "platformName", "duellToolGitVers", "duellToolRequestedVersion", "isDifferentDuellToolVersion", "currentXMLPath"]
-	_hx_methods = ["execute", "synchronizeRemotes", "determineAndValidateDependenciesAndDefines", "parseDuellUserFile", "parseProjectFile", "iterateDuellLibVersionsUntilEverythingIsParsedAndVersioned", "checkVersionsOfPlugins", "checkDuellToolVersion", "checkHaxeVersion", "printFinalResult", "createFinalLibLists", "createSchemaXml", "saveUpdateExecution", "parseDuellLibWithName", "parseXML", "handleDuellLibParsed", "handleHaxelibParsed", "handlePluginParsed", "resolvePath"]
+	_hx_methods = ["execute", "synchronizeRemotes", "determineAndValidateDependenciesAndDefines", "parseDuellUserFile", "parseProjectFile", "iterateDuellLibVersionsUntilEverythingIsParsedAndVersioned", "checkVersionsOfPlugins", "checkDuellToolVersion", "checkHaxeVersion", "printFinalResult", "createFinalLibLists", "sortDuellLibsByName", "createSchemaXml", "saveUpdateExecution", "parseDuellLibWithName", "parseXML", "handleDuellLibParsed", "handleHaxelibParsed", "handlePluginParsed", "resolvePath"]
 	_hx_statics = ["duellFileHasDuellNamespace", "userFileHasDuellNamespace", "validateSchemaXml", "validateUserSchemaXml"]
 	_hx_interfaces = [duell_commands_IGDCommand]
 
@@ -2519,18 +2519,32 @@ class duell_commands_UpdateCommand:
 			_this = self.finalLibList.duellLibs
 			x = duell_objects_DuellLib.getDuellLib(duellLibVersion.name,duellLibVersion.gitVers.currentVersion)
 			_this.append(x)
+		self.finalLibList.duellLibs.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
 		self.finalLibList.haxelibs = []
 		_hx_local_1 = self.haxelibVersions.iterator()
 		while _hx_local_1.hasNext():
 			haxelibVersion = _hx_local_1.next()
 			_this1 = self.finalLibList.haxelibs
 			_this1.append(haxelibVersion)
-		_hx_local_2 = self.pluginVersions.keys()
-		while _hx_local_2.hasNext():
-			plugin = _hx_local_2.next()
+		def _hx_local_2(a,b):
+			if (a.name > b.name):
+				return 1
+			else:
+				return -1
+		self.finalLibList.haxelibs.sort(key= python_lib_Functools.cmp_to_key(_hx_local_2))
+		_hx_local_3 = self.pluginVersions.keys()
+		while _hx_local_3.hasNext():
+			plugin = _hx_local_3.next()
 			_this2 = self.finalPluginList
 			x1 = duell_objects_DuellLib.getDuellLib(self.pluginVersions.h.get(plugin,None).lib.name,self.pluginVersions.h.get(plugin,None).gitVers.currentVersion)
 			_this2.append(x1)
+		self.finalPluginList.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
+
+	def sortDuellLibsByName(self,a,b):
+		if (a.name > b.name):
+			return 1
+		else:
+			return -1
 
 	def createSchemaXml(self):
 		def _hx_local_0():
@@ -4656,8 +4670,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_val
 					nonlocal _g_head
+					nonlocal _g_val
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val

@@ -430,16 +430,30 @@ class UpdateCommand implements IGDCommand
 			finalLibList.duellLibs.push(DuellLib.getDuellLib(duellLibVersion.name, duellLibVersion.gitVers.currentVersion));
 		}
 
+		finalLibList.duellLibs.sort( sortDuellLibsByName );
+
 		finalLibList.haxelibs = [];
 		for (haxelibVersion in haxelibVersions)
 		{
 			finalLibList.haxelibs.push(haxelibVersion);
 		}
 
+		finalLibList.haxelibs.sort(function(a:Haxelib, b:Haxelib) : Int
+		{
+			return a.name > b.name ? 1 : -1;
+		});
+
         for (plugin in pluginVersions.keys())
         {
             finalPluginList.push(DuellLib.getDuellLib(pluginVersions[plugin].lib.name,  pluginVersions[plugin].gitVers.currentVersion));
         }
+
+        finalPluginList.sort( sortDuellLibsByName );
+	}
+
+	private function sortDuellLibsByName( a:DuellLib, b:DuellLib ) : Int
+	{
+		return a.name > b.name ? 1 : -1;
 	}
 
     private function createSchemaXml()
