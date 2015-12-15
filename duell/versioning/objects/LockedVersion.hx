@@ -1,12 +1,6 @@
-package duell.objects;
+package duell.versioning.objects;
 
-Enum LibType
-{
-	HAXELIB;
-	DUELLLIB;
-}
-
-Enum LibChangeType
+enum LibChangeType
 {
 	VERSION;
 	COMMITHASH;
@@ -14,19 +8,30 @@ Enum LibChangeType
 
 typedef LockedLib = {
 	name : String,
-	type : LibType,
+	type : String,
 	version : String,
 	commitHash : String
 }
 
 typedef Update = {
 	name : LibChangeType,
-	oldValue : String;
+	oldValue : String,
 	newValue : String
 }
 
 class LockedVersion
 {
+
+	public static function getLibChangeType( value:String ) : LibChangeType
+	{
+		switch( value ){
+			case 'version' : return VERSION;
+			case 'commithash' : return COMMITHASH;
+		}
+
+		return null;
+	}
+
 	public var id(default, null) : String;
 	public var ts(default, null) : Float;
 	public var target(default, null) : String;
@@ -40,7 +45,7 @@ class LockedVersion
 		this.target = target;
 
 		usedLibs = new Map<String, LockedLib>();
-		updates = new Map<String, Array<Update>>;
+		updates = new Map<String, Array<Update>>();
 	}
 
 	public function addUsedLib( lib:LockedLib )
@@ -48,14 +53,14 @@ class LockedVersion
 		usedLibs.set( lib.name, lib );
 	}
 
-	public function addUpdatedLib( change:Update )
+	public function addUpdatedLib( libName:String, change:Update )
 	{
-		if(!updates.exists( change.name ))
+		if(!updates.exists( libName ))
 		{
-			updates.set(change.name, new Array<Update>());
+			updates.set(libName, new Array<Update>());
 		}
 
-		list = updates.get( change.name );
+		var list = updates.get( libName );
 		list.push( change );
 	}
 

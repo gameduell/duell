@@ -1,16 +1,30 @@
 package duell.helpers;
 
+import sys.FileSystem;
+import sys.io.File;
+import haxe.io.Path;
 
-import duell.objects.LockedVersion;
-
+import duell.helpers.LogHelper;
+import duell.versioning.objects.LockedVersion;
+import duell.versioning.locking.file.ILockingFileParser;
+import duell.versioning.locking.file.LockingFileXMLParser;
 
 class LockedVersionsFileHelper
 {
-	
 
-	private static var versions = new LockedVersions();
+	private static var versions : LockedVersions;
 
-	public static function do(){}
+	private static function getVersions() : LockedVersions
+	{
+		if(versions == null)
+			versions = new LockedVersions( new LockingFileXMLParser() );
+
+		return versions;
+	}
+
+	public static function doIt(){
+		getVersions();
+	}
 
 	public static function getLockedVersions( target:String ) : LockedVersion
 	{
@@ -24,27 +38,23 @@ class LockedVersionsFileHelper
 
 	public static function addLockedVersion( version:LockedVersion )
 	{
+
 	}
 }
 
 
-import sys.FileSystem;
-import sys.io.File;
-import haxe.io.Path;
-
-import duell.helpers.LogHelper;
-
 class LockedVersions 
 {
-
 	private static inline var targetFolder = 'versions';
-	private static inline var targetFile = 'publishVersions.xml'
+	private static inline var targetFile = 'publishVersions.xml';
 
 	private var lockedVersions : Array<LockedVersion>;
+	private var parser : ILockingFileParser;
 
-	public function new()
+	public function new( parser:ILockingFileParser )
 	{
 		lockedVersions = new Array<LockedVersion>();
+		this.parser = parser;
 
 		initFile();
 	}
@@ -57,20 +67,17 @@ class LockedVersions
 			FileSystem.createDirectory(targetFolder);
 		}
 
-		var targetFile = Path.join([targetFolder, targetFile]);
-		if(!FileSytem.exists(targetFile))
+		var targetFilePath = Path.join([targetFolder, targetFile]);
+		if(!FileSystem.exists(targetFilePath))
 		{
-			var fileOutput = File.write(targetFile, false);
-			fileOutput.writeString('<?xml version="1.0" encoding="utf-8"?>\n<builds>\n</builds>');
+			var fileOutput = File.write(targetFilePath, false);
+			fileOutput.writeString(parser.getInitialInput());
 			fileOutput.close();
 		}
 
-		var stringContent = File.getContent(file);
-		LogHelper.info('String-content: ' + stringContent);
-	}
+		var stringContent = File.getContent(targetFilePath);
+		lockedVersions = parser.parseFile( stringContent );
 
-	private function parse( source:XML )
-	{
-
+		LogHelper.info(parser.createFileContent(lockedVersions));
 	}
 }
