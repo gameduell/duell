@@ -7,7 +7,7 @@ import duell.versioning.objects.LockedVersion;
 /**
  * Class LockingFileXMLParser
  * 
- * File creates and parses xml files of the content listed below.
+ * File creates and parses xml files of the format listed below.
  *
  * <builds>
  * 	<build id="12345" date="123456789" target="android">
@@ -33,11 +33,6 @@ class LockingFileXMLParser implements ILockingFileParser
 	private var builds : Array<LockedVersion>;
 
 	public function new(){}
-
-	public function getInitialInput() : String 
-	{
-		return '<?xml version="1.0" encoding="utf-8"?>\n<builds>\n</builds>';
-	}
 
 	public function parseFile( stringContent:String ) : Array<LockedVersion>
 	{
@@ -71,8 +66,6 @@ class LockingFileXMLParser implements ILockingFileParser
 
 		var build = new LockedVersion( id, Std.parseFloat(ts), target );
 
-		LogHelper.info("First build: " + id + " " + ts + " " + target);
-		
 		for ( child in element.elements ){
 			switch( child.name )
 			{
@@ -140,20 +133,27 @@ class LockingFileXMLParser implements ILockingFileParser
 
 	private function getLibsContent( libs:Map<String, LockedLib> ) : String
 	{
-		var result : String = '';
+		var results = new Array<String>();
 
 		for ( key in libs.keys() )
 		{
 			var lib = libs.get( key );
-			result += '      <'+ lib.type + ' name="' + lib.name + '" version="' + lib.version + '" ' + (lib.commitHash != "" ? 'commithash="' + lib.commitHash + '" ' : '') + '/>\n';
+			results.push('      <'+ lib.type + ' name="' + lib.name + '" version="' + lib.version + '" ' + (lib.commitHash != "" ? 'commithash="' + lib.commitHash + '" ' : '') + '/>');
 		}
 
-		return result;
+		results.sort(sortStrings);
+
+		return results.length == 0 ? '' : results.join('\n') + '\n';
+	}
+
+	private function sortStrings( lib1:String, lib2:String ) : Int
+	{
+		return lib1 > lib2 ? 1 : -1;
 	}
 
 	private function getUpdatedContent( updates:Map<String, Array<Update>> ) : String
 	{
-		var result : String = '';
+		var results = new Array<String>();
 
 		for ( key in updates.keys() )
 		{
@@ -164,9 +164,11 @@ class LockingFileXMLParser implements ILockingFileParser
 				changeList += '        <' + u.name + ' oldValue="' + u.oldValue + '" newValue="' + u.newValue + '" />\n';
 			}
 
-			result += '      <update name="' + key + '">\n' + changeList + '      </update>\n';
+			results.push('      <update name="' + key + '">\n' + changeList + '      </update>');
 		}
 
-		return result;
+		results.sort(sortStrings);
+		
+		return results.length == 0 ? '' : results.join('\n') + '\n';
 	}
 }

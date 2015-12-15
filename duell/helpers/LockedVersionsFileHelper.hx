@@ -71,7 +71,7 @@ class LockedVersions
 		if(!FileSystem.exists(targetFilePath))
 		{
 			var fileOutput = File.write(targetFilePath, false);
-			fileOutput.writeString(parser.getInitialInput());
+			fileOutput.writeString('');
 			fileOutput.close();
 		}
 
