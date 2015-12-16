@@ -3,6 +3,8 @@ package duell.versioning.objects;
 enum LibChangeType
 {
 	VERSION;
+	NEW_LIB;
+	REMOVED_LIB;
 	COMMITHASH;
 }
 
@@ -26,23 +28,33 @@ class LockedVersion
 	{
 		switch( value ){
 			case 'version' : return VERSION;
-			case 'commithash' : return COMMITHASH;
+			case 'commitHash' : return COMMITHASH;
+			case 'newLib' : return NEW_LIB;
+			case 'removedLib' : return REMOVED_LIB;
 		}
 
 		return null;
 	}
 
-	public var id(default, null) : String;
+	public static function getLibChangeTypeAsString( value:LibChangeType ) : String
+	{
+		switch( value ){
+			case VERSION : return 'version';
+			case COMMITHASH : return 'commitHash';
+			case NEW_LIB : return 'newLib';
+			case REMOVED_LIB : return 'removedLib';
+		}
+
+		return null;
+	}
+
 	public var ts(default, null) : Float;
-	public var target(default, null) : String;
 	public var usedLibs : Map<String, LockedLib>;
 	public var updates : Map<String, Array<Update>>;
 
-	public function new( id:String, ts:Float, target:String )
+	public function new( ts:Float )
 	{
-		this.id = id;
 		this.ts = ts;
-		this.target = target;
 
 		usedLibs = new Map<String, LockedLib>();
 		updates = new Map<String, Array<Update>>();

@@ -10,7 +10,7 @@ import duell.versioning.objects.LockedVersion;
  * File creates and parses xml files of the format listed below.
  *
  * <builds>
- * 	<build id="12345" date="123456789" target="android">
+ * 	<build date="123456789">
  * 		<libs>
  * 			<duelllib name="NAME1" version="1.0.0" commitHash="" />
  * 			<duelllib name="NAME2" version="2.0.0" commitHash="" />
@@ -32,14 +32,17 @@ class LockingFileXMLParser implements ILockingFileParser
 	
 	private var builds : Array<LockedVersion>;
 
-	public function new(){}
+	public function new()
+	{
+		builds = new Array<LockedVersion>();
+	}
 
 	public function parseFile( stringContent:String ) : Array<LockedVersion>
 	{
 		if( stringContent == null || stringContent.length == 0 )
 			return new Array<LockedVersion>();
 
-		builds = new Array<LockedVersion>();
+		
 		var xmlContent = new Fast(Xml.parse( stringContent ).firstElement());
 		parse( xmlContent );
 
@@ -60,11 +63,8 @@ class LockingFileXMLParser implements ILockingFileParser
 
 	private function parseBuild( element:Fast )
 	{
-		var id = element.has.id ? element.att.id : '';
 		var ts = element.has.date ? element.att.date : '0';
-		var target = element.has.target ? element.att.target : 'none';
-
-		var build = new LockedVersion( id, Std.parseFloat(ts), target );
+		var build = new LockedVersion( Std.parseFloat(ts) );
 
 		for ( child in element.elements ){
 			switch( child.name )
@@ -120,7 +120,7 @@ class LockingFileXMLParser implements ILockingFileParser
 			var libs = getLibsContent( b.usedLibs );
 			var changes = getUpdatedContent( b.updates );
 
-			buildResult = '  <build id="' + b.id + '" date="' + b.ts + '" target="' + b.target + '" >\n';
+			buildResult = '  <build date="' + b.ts + '">\n';
 			buildResult += '    <libs>\n' + libs + '    </libs>\n';
 			buildResult += '    <updates>\n' + changes + '    </updates>\n';
 			buildResult += '  </build>\n';
@@ -161,7 +161,7 @@ class LockingFileXMLParser implements ILockingFileParser
 			var changeList : String = "";
 			for ( u in changes )
 			{
-				changeList += '        <' + u.name + ' oldValue="' + u.oldValue + '" newValue="' + u.newValue + '" />\n';
+				changeList += '        <' + LockedVersion.getLibChangeTypeAsString( u.name ) + ' oldValue="' + u.oldValue + '" newValue="' + u.newValue + '" />\n';
 			}
 
 			results.push('      <update name="' + key + '">\n' + changeList + '      </update>');
