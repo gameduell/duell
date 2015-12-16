@@ -23,10 +23,6 @@ class LockedVersionsHelper
 		return versions;
 	}
 
-	public static function doIt(){
-		getVersions();
-	}
-
 	public static function getLockedVersions( target:String ) : LockedVersion
 	{
 		return null;
@@ -46,6 +42,7 @@ class LockedVersionsHelper
 
 class LockedVersions 
 {
+	private static inline var NUMBER_MAX_TRACKED_VERSIONS : Int = 5;
 	private static inline var targetFolder = 'versions';
 	private static inline var targetFile = 'lockedVersions.xml';
 
@@ -111,6 +108,8 @@ class LockedVersions
 		//check differences
 		checkUpdates( lastLockedVersion, currentVersion );
 
+		checkNumberTrackedVersions();
+
 		saveFile();
 	}
 
@@ -149,6 +148,15 @@ class LockedVersions
 				var update = {name:REMOVED_LIB, oldValue:oldLib.version, newValue:'0.0.0'};
 				newVersion.addUpdatedLib( oldLib.name, update );
 			}
+		}
+	}
+
+	private function checkNumberTrackedVersions()
+	{
+		var num = lockedVersions.length - NUMBER_MAX_TRACKED_VERSIONS;
+		if( num > 0 )
+		{
+			lockedVersions.splice(0, num);
 		}
 	}
 
