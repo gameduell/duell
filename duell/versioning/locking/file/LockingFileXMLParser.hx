@@ -138,7 +138,7 @@ class LockingFileXMLParser implements ILockingFileParser
 		for ( key in libs.keys() )
 		{
 			var lib = libs.get( key );
-			results.push('      <'+ lib.type + ' name="' + lib.name + '" version="' + lib.version + '" ' + (lib.commitHash != "" ? 'commithash="' + lib.commitHash + '" ' : '') + '/>');
+			results.push('      <'+ lib.type + ' name="' + lib.name + '" version="' + lib.version + '" ' + (lib.commitHash != "" ? 'commitHash="' + lib.commitHash + '" ' : '') + '/>');
 		}
 
 		results.sort(sortStrings);

@@ -5,6 +5,7 @@ import sys.io.File;
 import haxe.io.Path;
 
 import duell.helpers.LogHelper;
+import duell.helpers.GitHelper;
 import duell.objects.Haxelib;
 import duell.objects.DuellLib;
 import duell.versioning.objects.LockedVersion;
@@ -93,7 +94,8 @@ class LockedVersions
 		//create used libs
 		for ( dLib in duell )
 		{
-			var lockedLib = {name:dLib.name, type:'duelllib', version:dLib.version, commitHash:''};
+			var currentCommit = GitHelper.getCurrentCommit( dLib.getPath() );
+			var lockedLib = {name:dLib.name, type:'duelllib', version:dLib.version, commitHash:currentCommit};
 			currentVersion.addUsedLib( lockedLib );	
 		}
 
