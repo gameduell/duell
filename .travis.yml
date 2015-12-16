@@ -32,6 +32,13 @@ addons:
       - libgd2-xpm
       - ia32-libs
       - ia32-libs-multiarch
+before_install:
+  -openssl aes-256-cbc -K $encrypted_c00a32cef101_key -iv $encrypted_c00a32cef101_iv -in travis.enc -out ~\/.ssh/travis -d
+  - chmod go-rwx travis
+  - eval `ssh-agent -s`
+  - ssh-add travis
+  - git config user.name "Travis-CI"
+  - git config user.email "noreply@travis-ci.org"
 
 install:
   # os-specific config
