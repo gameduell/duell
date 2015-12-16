@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/gameduell/duell.svg)](https://travis-ci.org/gameduell/duell)
+[![Build Status](https://travis-ci.org/gameduell/duell.svg?branch=master)](https://travis-ci.org/gameduell/duell)
 ## Description
 
 [![Join the chat at https://gitter.im/gameduell/duell](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/gameduell/duell?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
