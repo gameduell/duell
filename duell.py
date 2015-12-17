@@ -2279,7 +2279,7 @@ _hx_classes["duell.commands.VersionState"] = duell_commands_VersionState
 class duell_commands_UpdateCommand:
 	_hx_class_name = "duell.commands.UpdateCommand"
 	_hx_fields = ["finalLibList", "finalPluginList", "finalToolList", "haxelibVersions", "duellLibVersions", "pluginVersions", "buildLib", "platformName", "duellToolGitVers", "duellToolRequestedVersion", "isDifferentDuellToolVersion", "currentXMLPath"]
-	_hx_methods = ["execute", "validateArguments", "synchronizeRemotes", "useVersionFileToRecreateSpecificVersions", "recreateDuellLib", "determineAndValidateDependenciesAndDefines", "parseDuellUserFile", "parseProjectFile", "iterateDuellLibVersionsUntilEverythingIsParsedAndVersioned", "checkVersionsOfPlugins", "checkDuellToolVersion", "checkHaxeVersion", "printFinalResult", "logVersions", "createFinalLibLists", "sortDuellLibsByName", "createSchemaXml", "saveUpdateExecution", "lockBuildVersion", "parseDuellLibWithName", "parseXML", "checkDuelllibPreConditions", "handleDuellLibParsed", "handleHaxelibParsed", "handlePluginParsed", "resolvePath"]
+	_hx_methods = ["execute", "validateArguments", "synchronizeRemotes", "useVersionFileToRecreateSpecificVersions", "recreateDuellLib", "determineAndValidateDependenciesAndDefines", "parseDuellUserFile", "parseProjectFile", "iterateDuellLibVersionsUntilEverythingIsParsedAndVersioned", "checkVersionsOfPlugins", "checkDuellToolVersion", "checkHaxeVersion", "printFinalResult", "logVersions", "createFinalLibLists", "sortDuellLibsByName", "sortHaxeLibsByName", "createSchemaXml", "saveUpdateExecution", "lockBuildVersion", "parseDuellLibWithName", "parseXML", "checkDuelllibPreConditions", "handleDuellLibParsed", "handleHaxelibParsed", "handlePluginParsed", "resolvePath"]
 	_hx_statics = ["duellFileHasDuellNamespace", "userFileHasDuellNamespace", "validateSchemaXml", "validateUserSchemaXml"]
 	_hx_interfaces = [duell_commands_IGDCommand]
 
@@ -2329,6 +2329,12 @@ class duell_commands_UpdateCommand:
 			duell_helpers_LogHelper.info("Success!")
 		self.saveUpdateExecution()
 		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "end"),None,"\x1B[2m")
+		if self.isDifferentDuellToolVersion:
+			duell_helpers_LogHelper.info("Rerunning the update because the duell tool version changed.")
+			def _hx_local_0():
+				a = duell_objects_Arguments.getRawArguments()
+				return (["run", "duell_duell"] + a)
+			duell_helpers_CommandHelper.runHaxelib(Sys.getCwd(),_hx_local_0(),_hx_AnonObject({}))
 		return "success"
 
 	def validateArguments(self):
@@ -2364,21 +2370,28 @@ class duell_commands_UpdateCommand:
 		plugins = lockedVersions.plugins
 		if ((len(dLibs) == 0) and ((len(hLibs) == 0))):
 			duell_helpers_LogHelper.exitWithFormattedError("No libs to reuse.")
-		duell_helpers_LogHelper.info(("Plugin length: " + Std.string(len(plugins))))
-		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Recreating plugins"),None,"\x1B[2m")
+		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Recreating Duelllibs"),None,"\x1B[2m")
 		_g = 0
-		while (_g < len(plugins)):
-			p = (plugins[_g] if _g >= 0 and _g < len(plugins) else None)
+		while (_g < len(dLibs)):
+			d = (dLibs[_g] if _g >= 0 and _g < len(dLibs) else None)
 			_g = (_g + 1)
+			self.recreateDuellLib(d)
+		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Recreating Haxelibs"),None,"\x1B[2m")
+		_g1 = 0
+		while (_g1 < len(hLibs)):
+			h = (hLibs[_g1] if _g1 >= 0 and _g1 < len(hLibs) else None)
+			_g1 = (_g1 + 1)
+			self.handleHaxelibParsed(h)
+			h.selectVersion()
+		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Recreating plugins"),None,"\x1B[2m")
+		_g2 = 0
+		while (_g2 < len(plugins)):
+			p = (plugins[_g2] if _g2 >= 0 and _g2 < len(plugins) else None)
+			_g2 = (_g2 + 1)
 			self.recreateDuellLib(p)
 		dLibs.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
+		hLibs.sort(key= python_lib_Functools.cmp_to_key(self.sortHaxeLibsByName))
 		plugins.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
-		def _hx_local_1(a,b):
-			if (a.name > b.name):
-				return 1
-			else:
-				return -1
-		hLibs.sort(key= python_lib_Functools.cmp_to_key(_hx_local_1))
 		self.printFinalResult(dLibs,hLibs,plugins)
 
 	def recreateDuellLib(self,lib):
@@ -2400,6 +2413,7 @@ class duell_commands_UpdateCommand:
 		self.parseProjectFile()
 		self.iterateDuellLibVersionsUntilEverythingIsParsedAndVersioned()
 		self.checkVersionsOfPlugins()
+		self.checkDuellToolVersion()
 		self.checkHaxeVersion()
 		self.createFinalLibLists()
 		self.createSchemaXml()
@@ -2569,21 +2583,22 @@ class duell_commands_UpdateCommand:
 			haxelibVersion = _hx_local_1.next()
 			_this1 = self.finalLibList.haxelibs
 			_this1.append(haxelibVersion)
-		def _hx_local_2(a,b):
-			if (a.name > b.name):
-				return 1
-			else:
-				return -1
-		self.finalLibList.haxelibs.sort(key= python_lib_Functools.cmp_to_key(_hx_local_2))
-		_hx_local_3 = self.pluginVersions.keys()
-		while _hx_local_3.hasNext():
-			plugin = _hx_local_3.next()
+		self.finalLibList.haxelibs.sort(key= python_lib_Functools.cmp_to_key(self.sortHaxeLibsByName))
+		_hx_local_2 = self.pluginVersions.keys()
+		while _hx_local_2.hasNext():
+			plugin = _hx_local_2.next()
 			_this2 = self.finalPluginList
 			x1 = duell_objects_DuellLib.getDuellLib(self.pluginVersions.h.get(plugin,None).lib.name,self.pluginVersions.h.get(plugin,None).gitVers.currentVersion)
 			_this2.append(x1)
 		self.finalPluginList.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
 
 	def sortDuellLibsByName(self,a,b):
+		if (a.name > b.name):
+			return 1
+		else:
+			return -1
+
+	def sortHaxeLibsByName(self,a,b):
 		if (a.name > b.name):
 			return 1
 		else:
@@ -4719,8 +4734,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_val
 					nonlocal _g_head
+					nonlocal _g_val
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -4770,8 +4785,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1

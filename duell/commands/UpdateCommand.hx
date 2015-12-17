@@ -149,11 +149,11 @@ class UpdateCommand implements IGDCommand
 
     	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "end", null, LogHelper.DARK_GREEN);
 
-		// if (isDifferentDuellToolVersion)
-		// {
-  //           	LogHelper.info("Rerunning the update because the duell tool version changed.");
-		// 		CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell"].concat(Arguments.getRawArguments()), {});
-		// }
+		if (isDifferentDuellToolVersion)
+		{
+            	LogHelper.info("Rerunning the update because the duell tool version changed.");
+				CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell"].concat(Arguments.getRawArguments()), {});
+		}
 
 	    return "success";
     }
@@ -238,11 +238,8 @@ class UpdateCommand implements IGDCommand
     	}
 
     	dLibs.sort( sortDuellLibsByName );
+    	hLibs.sort( sortHaxeLibsByName );
     	plugins.sort( sortDuellLibsByName );
-    	hLibs.sort(function(a:Haxelib, b:Haxelib) : Int
-		{
-			return a.name > b.name ? 1 : -1;
-		});
 
     	printFinalResult( dLibs, hLibs, plugins );
     }
@@ -282,7 +279,7 @@ class UpdateCommand implements IGDCommand
 
 		checkVersionsOfPlugins();
 
-		// checkDuellToolVersion();
+		checkDuellToolVersion();
 
 		checkHaxeVersion();
 
@@ -531,10 +528,7 @@ class UpdateCommand implements IGDCommand
 			finalLibList.haxelibs.push(haxelibVersion);
 		}
 
-		finalLibList.haxelibs.sort(function(a:Haxelib, b:Haxelib) : Int
-		{
-			return a.name > b.name ? 1 : -1;
-		});
+		finalLibList.haxelibs.sort( sortHaxeLibsByName );
 
         for (plugin in pluginVersions.keys())
         {
@@ -545,6 +539,11 @@ class UpdateCommand implements IGDCommand
 	}
 
 	private function sortDuellLibsByName( a:DuellLib, b:DuellLib ) : Int
+	{
+		return a.name > b.name ? 1 : -1;
+	}
+
+	private function sortHaxeLibsByName( a:Haxelib, b:Haxelib ) : Int
 	{
 		return a.name > b.name ? 1 : -1;
 	}
