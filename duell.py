@@ -2279,7 +2279,7 @@ _hx_classes["duell.commands.VersionState"] = duell_commands_VersionState
 class duell_commands_UpdateCommand:
 	_hx_class_name = "duell.commands.UpdateCommand"
 	_hx_fields = ["finalLibList", "finalPluginList", "finalToolList", "haxelibVersions", "duellLibVersions", "pluginVersions", "buildLib", "platformName", "duellToolGitVers", "duellToolRequestedVersion", "isDifferentDuellToolVersion", "currentXMLPath"]
-	_hx_methods = ["execute", "validateArguments", "synchronizeRemotes", "useVersionFileToRecreateSpecificVersions", "determineAndValidateDependenciesAndDefines", "parseDuellUserFile", "parseProjectFile", "iterateDuellLibVersionsUntilEverythingIsParsedAndVersioned", "checkVersionsOfPlugins", "checkDuellToolVersion", "checkHaxeVersion", "printFinalResult", "logVersions", "createFinalLibLists", "sortDuellLibsByName", "createSchemaXml", "saveUpdateExecution", "lockBuildVersion", "parseDuellLibWithName", "parseXML", "checkDuelllibPreConditions", "handleDuellLibParsed", "handleHaxelibParsed", "handlePluginParsed", "resolvePath"]
+	_hx_methods = ["execute", "validateArguments", "synchronizeRemotes", "useVersionFileToRecreateSpecificVersions", "recreateDuellLib", "determineAndValidateDependenciesAndDefines", "parseDuellUserFile", "parseProjectFile", "iterateDuellLibVersionsUntilEverythingIsParsedAndVersioned", "checkVersionsOfPlugins", "checkDuellToolVersion", "checkHaxeVersion", "printFinalResult", "logVersions", "createFinalLibLists", "sortDuellLibsByName", "createSchemaXml", "saveUpdateExecution", "lockBuildVersion", "parseDuellLibWithName", "parseXML", "checkDuelllibPreConditions", "handleDuellLibParsed", "handleHaxelibParsed", "handlePluginParsed", "resolvePath"]
 	_hx_statics = ["duellFileHasDuellNamespace", "userFileHasDuellNamespace", "validateSchemaXml", "validateUserSchemaXml"]
 	_hx_interfaces = [duell_commands_IGDCommand]
 
@@ -2317,7 +2317,7 @@ class duell_commands_UpdateCommand:
 		self.determineAndValidateDependenciesAndDefines()
 		duell_helpers_LogHelper.info(("\x1B[2m" + "------"))
 		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Resulting dependencies update and resolution"),None,"\x1B[2m")
-		self.printFinalResult()
+		self.printFinalResult(self.finalLibList.duellLibs,self.finalLibList.haxelibs,self.finalPluginList)
 		if duell_objects_Arguments.isSet("-versionLog"):
 			self.logVersions()
 		if (duell_commands_UpdateCommand.duellFileHasDuellNamespace() and duell_helpers_ConnectionHelper.isOnline()):
@@ -2361,28 +2361,35 @@ class duell_commands_UpdateCommand:
 		lockedVersions = duell_versioning_locking_LockedVersionsHelper.getLastLockedVersion(path)
 		dLibs = lockedVersions.duelllibs
 		hLibs = lockedVersions.haxelibs
+		plugins = lockedVersions.plugins
 		if ((len(dLibs) == 0) and ((len(hLibs) == 0))):
 			duell_helpers_LogHelper.exitWithFormattedError("No libs to reuse.")
-		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Recreating Duelllibs"),None,"\x1B[2m")
+		duell_helpers_LogHelper.info(("Plugin length: " + Std.string(len(plugins))))
+		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Recreating plugins"),None,"\x1B[2m")
 		_g = 0
-		while (_g < len(dLibs)):
-			d = (dLibs[_g] if _g >= 0 and _g < len(dLibs) else None)
+		while (_g < len(plugins)):
+			p = (plugins[_g] if _g >= 0 and _g < len(plugins) else None)
 			_g = (_g + 1)
-			self.checkDuelllibPreConditions(d)
-			duell_helpers_GitHelper.fetch(d.getPath())
-			commit = duell_helpers_GitHelper.getCurrentCommit(d.getPath())
-			if (commit != d.commit):
-				if (not duell_helpers_GitHelper.isRepoWithoutLocalChanges(d.getPath())):
-					raise _HxException(("Can't change branch of repo because it has local changes, path: " + HxOverrides.stringOrNull(d.getPath())))
-				duell_helpers_LogHelper.info("",((("Checkout library '" + HxOverrides.stringOrNull(d.name)) + "' to commit : ") + HxOverrides.stringOrNull(d.commit)))
-				duell_helpers_GitHelper.checkoutCommit(d.getPath(),d.commit)
-		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Recreating Haxelibs"),None,"\x1B[2m")
-		_g1 = 0
-		while (_g1 < len(hLibs)):
-			h = (hLibs[_g1] if _g1 >= 0 and _g1 < len(hLibs) else None)
-			_g1 = (_g1 + 1)
-			self.handleHaxelibParsed(h)
-			h.selectVersion()
+			self.recreateDuellLib(p)
+		dLibs.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
+		plugins.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
+		def _hx_local_1(a,b):
+			if (a.name > b.name):
+				return 1
+			else:
+				return -1
+		hLibs.sort(key= python_lib_Functools.cmp_to_key(_hx_local_1))
+		self.printFinalResult(dLibs,hLibs,plugins)
+
+	def recreateDuellLib(self,lib):
+		self.checkDuelllibPreConditions(lib)
+		duell_helpers_GitHelper.fetch(lib.getPath())
+		commit = duell_helpers_GitHelper.getCurrentCommit(lib.getPath())
+		if (commit != lib.commit):
+			if (not duell_helpers_GitHelper.isRepoWithoutLocalChanges(lib.getPath())):
+				raise _HxException(("Can't change branch of repo because it has local changes, path: " + HxOverrides.stringOrNull(lib.getPath())))
+			duell_helpers_LogHelper.info("",((("Checkout library '" + HxOverrides.stringOrNull(lib.name)) + "' to commit : ") + HxOverrides.stringOrNull(lib.commit)))
+			duell_helpers_GitHelper.checkoutCommit(lib.getPath(),lib.commit)
 
 	def determineAndValidateDependenciesAndDefines(self):
 		self.handleHaxelibParsed(duell_objects_Haxelib.getHaxelib("hxcpp",duell_defines_DuellDefines.DEFAULT_HXCPP_VERSION))
@@ -2509,47 +2516,44 @@ class duell_commands_UpdateCommand:
 		_this1 = self.finalToolList
 		_this1.append(_hx_AnonObject({'name': "haxe", 'version': versionString}))
 
-	def printFinalResult(self):
+	def printFinalResult(self,duellLibs,haxelibs,plugins):
 		duell_helpers_LogHelper.info((("\x1B[1m" + "DuellLibs:") + "\x1B[0m"))
 		duell_helpers_LogHelper.info("\n")
 		_g = 0
-		_g1 = self.finalLibList.duellLibs
-		while (_g < len(_g1)):
-			lib = (_g1[_g] if _g >= 0 and _g < len(_g1) else None)
+		while (_g < len(duellLibs)):
+			lib = (duellLibs[_g] if _g >= 0 and _g < len(duellLibs) else None)
 			_g = (_g + 1)
 			duell_helpers_LogHelper.info(((("   " + HxOverrides.stringOrNull(lib.name)) + " - ") + HxOverrides.stringOrNull(lib.version)))
 		duell_helpers_LogHelper.info("\n")
 		duell_helpers_LogHelper.info((("\x1B[1m" + "HaxeLibs:") + "\x1B[0m"))
 		duell_helpers_LogHelper.info("\n")
-		_g2 = 0
-		_g11 = self.finalLibList.haxelibs
-		while (_g2 < len(_g11)):
-			lib1 = (_g11[_g2] if _g2 >= 0 and _g2 < len(_g11) else None)
-			_g2 = (_g2 + 1)
+		_g1 = 0
+		while (_g1 < len(haxelibs)):
+			lib1 = (haxelibs[_g1] if _g1 >= 0 and _g1 < len(haxelibs) else None)
+			_g1 = (_g1 + 1)
 			duell_helpers_LogHelper.info(((("   " + HxOverrides.stringOrNull(lib1.name)) + " - ") + HxOverrides.stringOrNull(lib1.version)))
-		if (len(self.finalPluginList) > 0):
+		if (len(plugins) > 0):
 			duell_helpers_LogHelper.info("\n")
 			duell_helpers_LogHelper.info((("\x1B[1m" + "Build Plugins:") + "\x1B[0m"))
 			duell_helpers_LogHelper.info("\n")
-			_g3 = 0
-			_g12 = self.finalPluginList
-			while (_g3 < len(_g12)):
-				lib2 = (_g12[_g3] if _g3 >= 0 and _g3 < len(_g12) else None)
-				_g3 = (_g3 + 1)
+			_g2 = 0
+			while (_g2 < len(plugins)):
+				lib2 = (plugins[_g2] if _g2 >= 0 and _g2 < len(plugins) else None)
+				_g2 = (_g2 + 1)
 				duell_helpers_LogHelper.info(((("   " + HxOverrides.stringOrNull(lib2.name)) + " - ") + HxOverrides.stringOrNull(lib2.version)))
 		if (len(self.finalToolList) > 0):
 			duell_helpers_LogHelper.info("\n")
 			duell_helpers_LogHelper.info((("\x1B[1m" + "Tools:") + "\x1B[0m"))
 			duell_helpers_LogHelper.info("\n")
-			_g4 = 0
-			_g13 = self.finalToolList
-			while (_g4 < len(_g13)):
-				tool = (_g13[_g4] if _g4 >= 0 and _g4 < len(_g13) else None)
-				_g4 = (_g4 + 1)
+			_g3 = 0
+			_g11 = self.finalToolList
+			while (_g3 < len(_g11)):
+				tool = (_g11[_g3] if _g3 >= 0 and _g3 < len(_g11) else None)
+				_g3 = (_g3 + 1)
 				duell_helpers_LogHelper.info(((("   " + HxOverrides.stringOrNull(tool.name)) + " - ") + HxOverrides.stringOrNull(tool.version)))
 
 	def logVersions(self):
-		duell_versioning_locking_LockedVersionsHelper.addLockedVersion(self.finalLibList.duellLibs,self.finalLibList.haxelibs)
+		duell_versioning_locking_LockedVersionsHelper.addLockedVersion(self.finalLibList.duellLibs,self.finalLibList.haxelibs,self.finalPluginList)
 
 	def createFinalLibLists(self):
 		_hx_local_0 = self.duellLibVersions.iterator()
@@ -4766,8 +4770,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -6856,20 +6860,15 @@ class duell_versioning_locking_LockedVersionsHelper:
 		return versions1.getLastLockedLibraries()
 
 	@staticmethod
-	def addLockedVersion(duelllibs,haxelibs,path = ""):
-		if (path is None):
-			path = ""
-		if (path == ""):
-			path = haxe_io_Path.join([Sys.getCwd(), "versions", "lockedVersions.xml"])
-		else:
-			path = path
+	def addLockedVersion(duelllibs,haxelibs,plugins):
+		path = haxe_io_Path.join([Sys.getCwd(), "versions", "lockedVersions.xml"])
 		if (not path in duell_versioning_locking_LockedVersionsHelper.versionMap.h):
 			versions = duell_versioning_locking_LockedVersions(duell_versioning_locking_file_LockingFileXMLParser(), path)
 			versions.setupFileSystem()
 			versions.loadAndParseFile()
 			duell_versioning_locking_LockedVersionsHelper.versionMap.h[path] = versions
 		versions1 = duell_versioning_locking_LockedVersionsHelper.versionMap.h.get(path,None)
-		versions1.addLibraries(duelllibs,haxelibs)
+		versions1.addLibraries(duelllibs,haxelibs,plugins)
 duell_versioning_locking_LockedVersionsHelper._hx_class = duell_versioning_locking_LockedVersionsHelper
 _hx_classes["duell.versioning.locking.LockedVersionsHelper"] = duell_versioning_locking_LockedVersionsHelper
 
@@ -6916,8 +6915,7 @@ class duell_versioning_locking_LockedVersions:
 				version = lv
 		return version
 
-	def addLibraries(self,duell1,haxe):
-		lastLockedVersion = self.getLastLockedVersion()
+	def addLibraries(self,duell1,haxe,plugins):
 		now = Date.now()
 		currentVersion = duell_versioning_objects_LockedVersion(Date.datetimeTimestamp(now.date,Date.EPOCH_LOCAL))
 		_g = 0
@@ -6933,8 +6931,16 @@ class duell_versioning_locking_LockedVersions:
 			_g1 = (_g1 + 1)
 			lockedLib1 = _hx_AnonObject({'name': hLib.name, 'type': "haxelib", 'version': hLib.version, 'commitHash': ""})
 			currentVersion.addUsedLib(lockedLib1)
+		_g2 = 0
+		while (_g2 < len(plugins)):
+			p = (plugins[_g2] if _g2 >= 0 and _g2 < len(plugins) else None)
+			_g2 = (_g2 + 1)
+			currentCommit1 = duell_helpers_GitHelper.getCurrentCommit(p.getPath())
+			lockedLib2 = _hx_AnonObject({'name': p.name, 'type': "plugin", 'version': p.version, 'commitHash': currentCommit1})
+			currentVersion.addPlugin(lockedLib2)
 		_this = self.lockedVersions
 		_this.append(currentVersion)
+		lastLockedVersion = self.getLastLockedVersion()
 		self.checkUpdates(lastLockedVersion,currentVersion)
 		self.checkNumberTrackedVersions()
 		self.saveFile()
@@ -6948,6 +6954,7 @@ class duell_versioning_locking_LockedVersions:
 			usedLibraries = haxe_ds_StringMap()
 		dLibs = list()
 		hLibs = list()
+		plugins = list()
 		_hx_local_1 = usedLibraries.keys()
 		while _hx_local_1.hasNext():
 			key = _hx_local_1.next()
@@ -6962,9 +6969,13 @@ class duell_versioning_locking_LockedVersions:
 				if (_g == "duelllib"):
 					x = duell_objects_DuellLib.getDuellLib(lockedLib.name,lockedLib.version,lockedLib.commitHash)
 					dLibs.append(x)
+			elif (_hx_local_0 == 6):
+				if (_g == "plugin"):
+					x2 = duell_objects_DuellLib.getDuellLib(lockedLib.name,lockedLib.version,lockedLib.commitHash)
+					plugins.append(x2)
 			else:
 				pass
-		return _hx_AnonObject({'duelllibs': dLibs, 'haxelibs': hLibs})
+		return _hx_AnonObject({'duelllibs': dLibs, 'haxelibs': hLibs, 'plugins': plugins})
 
 	def checkUpdates(self,oldVersion,newVersion):
 		if (oldVersion is None):
@@ -7008,7 +7019,6 @@ class duell_versioning_locking_LockedVersions:
 		fileOutput = sys_io_File.write(self.path,False)
 		fileOutput.writeString(content)
 		fileOutput.close()
-		duell_helpers_LogHelper.info(self.parser.createFileContent(self.lockedVersions))
 
 	@staticmethod
 	def _hx_empty_init(_hx_o):
@@ -7199,7 +7209,7 @@ _hx_classes["duell.versioning.objects.LibChangeType"] = duell_versioning_objects
 class duell_versioning_objects_LockedVersion:
 	_hx_class_name = "duell.versioning.objects.LockedVersion"
 	_hx_fields = ["ts", "usedLibs", "updates"]
-	_hx_methods = ["addUsedLib", "addUpdatedLib", "toString"]
+	_hx_methods = ["addUsedLib", "addPlugin", "addUpdatedLib", "toString"]
 	_hx_statics = ["getLibChangeType", "getLibChangeTypeAsString"]
 
 	def __init__(self,ts):
@@ -7213,6 +7223,9 @@ class duell_versioning_objects_LockedVersion:
 	def addUsedLib(self,lib):
 		self.usedLibs.h[lib.name] = lib
 
+	def addPlugin(self,plugin):
+		self.usedLibs.h[plugin.name] = plugin
+
 	def addUpdatedLib(self,libName,change):
 		if (not libName in self.updates.h):
 			value = list()
@@ -7221,7 +7234,7 @@ class duell_versioning_objects_LockedVersion:
 		_hx_list.append(change)
 
 	def toString(self):
-		return (("Class::LockedVersion:: ts:" + Std.string(self.ts)) + "\nusedLibs:\n...\nupdates:\n...")
+		return ("Class::LockedVersion:: ts:" + Std.string(self.ts))
 
 	@staticmethod
 	def getLibChangeType(value):

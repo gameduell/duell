@@ -65,6 +65,11 @@ class LockedVersion
 		usedLibs.set( lib.name, lib );
 	}
 
+	public function addPlugin( plugin:LockedLib )
+	{
+		usedLibs.set( plugin.name, plugin );
+	}
+
 	public function addUpdatedLib( libName:String, change:Update )
 	{
 		if(!updates.exists( libName ))
@@ -78,6 +83,6 @@ class LockedVersion
 
 	public function toString() : String
 	{
-		return 'Class::LockedVersion:: ts:' + ts + '\nusedLibs:\n...\nupdates:\n...';
+		return 'Class::LockedVersion:: ts:' + ts;
 	}
 }

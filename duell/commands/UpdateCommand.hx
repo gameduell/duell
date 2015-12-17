@@ -122,7 +122,7 @@ class UpdateCommand implements IGDCommand
 		
 		LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Resulting dependencies update and resolution", null, LogHelper.DARK_GREEN);
     	
-    	printFinalResult();
+    	printFinalResult( finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList );
 
     	if(Arguments.isSet('-versionLog')){
     		logVersions();
@@ -210,6 +210,7 @@ class UpdateCommand implements IGDCommand
     	var lockedVersions = LockedVersionsHelper.getLastLockedVersion( path );
     	var dLibs = lockedVersions.duelllibs;
     	var hLibs = lockedVersions.haxelibs;
+    	var plugins = lockedVersions.plugins;
 
     	if( dLibs.length == 0 && hLibs.length == 0 )
     	{
@@ -219,19 +220,7 @@ class UpdateCommand implements IGDCommand
 		LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Recreating Duelllibs", null, LogHelper.DARK_GREEN);
     	for ( d in dLibs )
     	{
-    		checkDuelllibPreConditions( d );
-
-    		GitHelper.fetch(d.getPath());
-
-    		var commit = GitHelper.getCurrentCommit(d.getPath());
-			if( commit != d.commit)
-			{
-				if (!GitHelper.isRepoWithoutLocalChanges( d.getPath() ))
-  					throw "Can't change branch of repo because it has local changes, path: " + d.getPath();
-
-				LogHelper.info("", "Checkout library '" + d.name + "' to commit : " + d.commit);
-    			GitHelper.checkoutCommit(d.getPath(), d.commit );	
-    		}
+    		recreateDuellLib( d );
     	}
 
 		LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Recreating Haxelibs", null, LogHelper.DARK_GREEN);
@@ -241,6 +230,38 @@ class UpdateCommand implements IGDCommand
 
     		h.selectVersion();
     	}
+
+    	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Recreating plugins", null, LogHelper.DARK_GREEN);
+    	for( p in plugins )
+    	{
+    		recreateDuellLib( p );
+    	}
+
+    	dLibs.sort( sortDuellLibsByName );
+    	plugins.sort( sortDuellLibsByName );
+    	hLibs.sort(function(a:Haxelib, b:Haxelib) : Int
+		{
+			return a.name > b.name ? 1 : -1;
+		});
+
+    	printFinalResult( dLibs, hLibs, plugins );
+    }
+
+    private function recreateDuellLib( lib:DuellLib )
+    {
+    	checkDuelllibPreConditions( lib );
+
+    	GitHelper.fetch(lib.getPath());
+
+    	var commit = GitHelper.getCurrentCommit( lib.getPath() );
+		if(commit != lib.commit)
+		{
+			if (!GitHelper.isRepoWithoutLocalChanges( lib.getPath() ))
+  				throw "Can't change branch of repo because it has local changes, path: " + lib.getPath();
+
+			LogHelper.info("", "Checkout library '" + lib.name + "' to commit : " + lib.commit);
+    		GitHelper.checkoutCommit( lib.getPath(), lib.commit );	
+   		}
     }
 
 	private function determineAndValidateDependenciesAndDefines()
@@ -356,7 +377,6 @@ class UpdateCommand implements IGDCommand
 				break;
 			}
 		}
-
 	}
 
 
@@ -447,12 +467,12 @@ class UpdateCommand implements IGDCommand
         finalToolList.push({name: "haxe", version: versionString});
 	}
 
-	private function printFinalResult(): Void
+	private function printFinalResult( duellLibs:Array<DuellLib>, haxelibs:Array<Haxelib>, plugins:Array<DuellLib> ): Void
 	{
     	LogHelper.info(LogHelper.BOLD + "DuellLibs:" + LogHelper.NORMAL);
     	LogHelper.info("\n");
 
-    	for (lib in finalLibList.duellLibs)
+    	for (lib in duellLibs)
     	{
     		LogHelper.info("   " + lib.name + " - " + lib.version);
     	}
@@ -461,18 +481,18 @@ class UpdateCommand implements IGDCommand
     	LogHelper.info(LogHelper.BOLD + "HaxeLibs:" + LogHelper.NORMAL);
     	LogHelper.info("\n");
 
-    	for (lib in finalLibList.haxelibs)
+    	for (lib in haxelibs)
     	{
     		LogHelper.info("   " + lib.name + " - " + lib.version);
     	}
 
-    	if (finalPluginList.length > 0)
+    	if (plugins.length > 0)
     	{
 	    	LogHelper.info("\n");
 	    	LogHelper.info(LogHelper.BOLD + "Build Plugins:" + LogHelper.NORMAL);
 	    	LogHelper.info("\n");
 
-	    	for (lib in finalPluginList)
+	    	for (lib in plugins)
 	    	{
 	    		LogHelper.info("   " + lib.name + " - " + lib.version);
 	    	}
@@ -493,7 +513,7 @@ class UpdateCommand implements IGDCommand
 
 	private function logVersions()
 	{
-		LockedVersionsHelper.addLockedVersion(finalLibList.duellLibs, finalLibList.haxelibs);
+		LockedVersionsHelper.addLockedVersion(finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList);
 	}
 
 	private function createFinalLibLists()

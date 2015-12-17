@@ -14,7 +14,8 @@ import duell.versioning.locking.file.LockingFileXMLParser;
 
 typedef LockedLibraries = {
 	duelllibs : Array<DuellLib>,
-	haxelibs : Array<Haxelib>
+	haxelibs : Array<Haxelib>,
+	plugins : Array<DuellLib>
 }
 
 class LockedVersionsHelper
@@ -41,9 +42,9 @@ class LockedVersionsHelper
 		return versions.getLastLockedLibraries();
 	}
 
-	public static function addLockedVersion( duelllibs:Array<DuellLib>, haxelibs:Array<Haxelib>, path:String='' )
+	public static function addLockedVersion( duelllibs:Array<DuellLib>, haxelibs:Array<Haxelib>, plugins:Array<DuellLib> )
 	{
-		path = path == '' ? Path.join([Sys.getCwd(), DEFAULT_FOLDER, DEFAULT_FILE]) : path;
+		var path = Path.join([Sys.getCwd(), DEFAULT_FOLDER, DEFAULT_FILE]);
 
 		if(!versionMap.exists( path ))
 		{
@@ -55,7 +56,7 @@ class LockedVersionsHelper
 		}
 
 		var versions = versionMap.get( path );
-		versions.addLibraries( duelllibs, haxelibs );
+		versions.addLibraries( duelllibs, haxelibs, plugins );
 	}
 }
 
@@ -108,9 +109,8 @@ class LockedVersions
 		return version;
 	}
 
-	public function addLibraries( duell:Array<DuellLib>, haxe:Array<Haxelib> )
+	public function addLibraries( duell:Array<DuellLib>, haxe:Array<Haxelib>, plugins:Array<DuellLib> )
 	{
-		var lastLockedVersion = getLastLockedVersion();
 		var now = Date.now();
 		var currentVersion = new LockedVersion( now.getTime() );
 
@@ -128,9 +128,17 @@ class LockedVersions
 			currentVersion.addUsedLib( lockedLib );	
 		}
 
+		for ( p in plugins )
+		{
+			var currentCommit = GitHelper.getCurrentCommit( p.getPath() );
+			var lockedLib = {name:p.name, type:'plugin', version:p.version, commitHash:currentCommit};
+			currentVersion.addPlugin( lockedLib );		
+		}
+
 		lockedVersions.push( currentVersion );
 
 		//check differences
+		var lastLockedVersion = getLastLockedVersion();
 		checkUpdates( lastLockedVersion, currentVersion );
 
 		checkNumberTrackedVersions();
@@ -145,6 +153,7 @@ class LockedVersions
 
 		var dLibs = new Array<DuellLib>();
     	var hLibs = new Array<Haxelib>();
+    	var plugins = new Array<DuellLib>();
 
     	for ( key in usedLibraries.keys() )
     	{
@@ -155,10 +164,13 @@ class LockedVersions
     				 dLibs.push(DuellLib.getDuellLib(lockedLib.name, lockedLib.version, lockedLib.commitHash)); 
     			case 'haxelib':
     				 hLibs.push(Haxelib.getHaxelib(lockedLib.name, lockedLib.version));
+    			case 'plugin':
+    				 plugins.push(DuellLib.getDuellLib(lockedLib.name, lockedLib.version, lockedLib.commitHash));
+
 			}
     	}
 
-    	return { duelllibs:dLibs, haxelibs:hLibs };
+    	return { duelllibs:dLibs, haxelibs:hLibs, plugins:plugins };
 	}
 
 	private function checkUpdates( oldVersion:LockedVersion, newVersion:LockedVersion )
@@ -215,7 +227,5 @@ class LockedVersions
 		var fileOutput = File.write(path, false);
 		fileOutput.writeString( content );
 		fileOutput.close();
-		
-		LogHelper.info(parser.createFileContent( lockedVersions ));
 	}
 }
