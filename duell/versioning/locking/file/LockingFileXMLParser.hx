@@ -12,8 +12,8 @@ import duell.versioning.objects.LockedVersion;
  * <builds>
  * 	<build date="123456789">
  * 		<libs>
- * 			<duelllib name="NAME1" version="1.0.0" commitHash="" />
- * 			<duelllib name="NAME2" version="2.0.0" commitHash="" />
+ * 			<duelllib name="NAME1" version="1.0.0" commitHash="4a5sdfa445sdf1bsdbv8sdrf8ddd88dd" />
+ * 			<duelllib name="NAME2" version="2.0.0" commitHash="4a5sdfa445sdf1bsdbv8sdrf8ddd87dd" />
  * 		</libs>
  * 		<updates>
  * 			<update name="NAME1">

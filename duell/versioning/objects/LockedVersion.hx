@@ -76,4 +76,8 @@ class LockedVersion
 		list.push( change );
 	}
 
+	public function toString() : String
+	{
+		return 'Class::LockedVersion:: ts:' + ts + '\nusedLibs:\n...\nupdates:\n...';
+	}
 }

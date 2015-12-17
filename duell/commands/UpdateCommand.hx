@@ -48,6 +48,7 @@ import duell.helpers.LogHelper;
 import duell.helpers.AskHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.DuellLibHelper;
+import duell.versioning.locking.LockedVersionsHelper;
 
 import duell.versioning.GitVers;
 
@@ -103,17 +104,29 @@ class UpdateCommand implements IGDCommand
 
     public function execute() : String
     {
+    	validateArguments();
+
     	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Update Dependencies", null, LogHelper.DARK_GREEN);
 
         synchronizeRemotes();
 
-    	determineAndValidateDependenciesAndDefines();
-
-    	LogHelper.info(LogHelper.DARK_GREEN + "------");
-
-    	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Resulting dependencies update and resolution", null, LogHelper.DARK_GREEN);
-
+        if(Arguments.isSet('-versionPath'))
+        {
+        	useVersionFileToRecreateSpecificVersions();
+        	return 'success';
+        }
+        
+		determineAndValidateDependenciesAndDefines();
+		
+		LogHelper.info(LogHelper.DARK_GREEN + "------");
+		
+		LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Resulting dependencies update and resolution", null, LogHelper.DARK_GREEN);
+    	
     	printFinalResult();
+
+    	if(Arguments.isSet('-versionLog')){
+    		logVersions();
+    	}
 
 		// schema validation requires internet connection
         if (duellFileHasDuellNamespace() && ConnectionHelper.isOnline())
@@ -136,13 +149,30 @@ class UpdateCommand implements IGDCommand
 
     	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "end", null, LogHelper.DARK_GREEN);
 
-		if (isDifferentDuellToolVersion)
-		{
-            	LogHelper.info("Rerunning the update because the duell tool version changed.");
-				CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell"].concat(Arguments.getRawArguments()), {});
-		}
+		// if (isDifferentDuellToolVersion)
+		// {
+  //           	LogHelper.info("Rerunning the update because the duell tool version changed.");
+		// 		CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell"].concat(Arguments.getRawArguments()), {});
+		// }
 
 	    return "success";
+    }
+
+    private function validateArguments()
+    {
+    	if(Arguments.isSet('-versionLog'))
+    	{
+    		if(Arguments.isSet('-versionPath'))
+    			LogHelper.exitWithFormattedError("'-versionLog' and '-versionPath' are excluding eachother.");
+    	}
+
+    	if(Arguments.isSet('-versionPath'))
+    	{
+    		var path = Arguments.get('-versionPath');
+    		if(!FileSystem.exists(path))
+    			LogHelper.exitWithFormattedError("Invalid path: '" + path + "'");		
+    	}
+    			
     }
 
     private function synchronizeRemotes()
@@ -174,6 +204,45 @@ class UpdateCommand implements IGDCommand
         }
     }
 
+    private function useVersionFileToRecreateSpecificVersions()
+    {
+    	var path = Arguments.get('-versionPath');
+    	var lockedVersions = LockedVersionsHelper.getLastLockedVersion( path );
+    	var dLibs = lockedVersions.duelllibs;
+    	var hLibs = lockedVersions.haxelibs;
+
+    	if( dLibs.length == 0 && hLibs.length == 0 )
+    	{
+    		LogHelper.exitWithFormattedError('No libs to reuse.');
+    	}
+
+		LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Recreating Duelllibs", null, LogHelper.DARK_GREEN);
+    	for ( d in dLibs )
+    	{
+    		checkDuelllibPreConditions( d );
+
+    		GitHelper.fetch(d.getPath());
+
+    		var commit = GitHelper.getCurrentCommit(d.getPath());
+			if( commit != d.commit)
+			{
+				if (!GitHelper.isRepoWithoutLocalChanges( d.getPath() ))
+  					throw "Can't change branch of repo because it has local changes, path: " + d.getPath();
+
+				LogHelper.info("", "Checkout library '" + d.name + "' to commit : " + d.commit);
+    			GitHelper.checkoutCommit(d.getPath(), d.commit );	
+    		}
+    	}
+
+		LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Recreating Haxelibs", null, LogHelper.DARK_GREEN);
+    	for( h in hLibs )
+    	{
+    		handleHaxelibParsed( h );
+
+    		h.selectVersion();
+    	}
+    }
+
 	private function determineAndValidateDependenciesAndDefines()
 	{
 		/// ADD HXCPP
@@ -192,7 +261,7 @@ class UpdateCommand implements IGDCommand
 
 		checkVersionsOfPlugins();
 
-		checkDuellToolVersion();
+		// checkDuellToolVersion();
 
 		checkHaxeVersion();
 
@@ -331,7 +400,6 @@ class UpdateCommand implements IGDCommand
 			{
 				isDifferentDuellToolVersion = true;
 			}
-
 		}
 		else
 		{
@@ -423,6 +491,11 @@ class UpdateCommand implements IGDCommand
         }
 	}
 
+	private function logVersions()
+	{
+		LockedVersionsHelper.addLockedVersion(finalLibList.duellLibs, finalLibList.haxelibs);
+	}
+
 	private function createFinalLibLists()
 	{
 		for (duellLibVersion in duellLibVersions)
@@ -467,6 +540,11 @@ class UpdateCommand implements IGDCommand
     	duellConfig.lastProjectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
     	duellConfig.lastProjectTime = Date.now().toString();
     	duellConfig.writeToConfig();
+	}
+
+	private function lockBuildVersion()
+	{
+
 	}
 
 	/// -------
@@ -625,22 +703,27 @@ class UpdateCommand implements IGDCommand
 		currentXMLPath.pop();
 	}
 
-	private function handleDuellLibParsed(newDuellLib: DuellLib)
+	private function checkDuelllibPreConditions( duellLib:DuellLib )
 	{
-		if (!DuellLibHelper.isInstalled(newDuellLib.name))
+		if (!DuellLibHelper.isInstalled( duellLib.name ))
 		{
-			var answer = AskHelper.askYesOrNo('DuellLib ${newDuellLib.name} is missing, would you like to install it?');
+			var answer = AskHelper.askYesOrNo('DuellLib ${duellLib.name} is missing, would you like to install it?');
 
 			if (answer)
-				DuellLibHelper.install(newDuellLib.name);
+				DuellLibHelper.install( duellLib.name );
 			else
 				throw 'Cannot continue with an uninstalled lib.';
 		}
 
-		if (!DuellLibHelper.isPathValid(newDuellLib.name))
+		if (!DuellLibHelper.isPathValid( duellLib.name ))
 		{
-			throw 'DuellLib ${newDuellLib.name} has an invalid path - ${DuellLibHelper.getPath(newDuellLib.name)} - check your "haxelib list"';
+			throw 'DuellLib ${duellLib.name} has an invalid path - ${DuellLibHelper.getPath(duellLib.name)} - check your "haxelib list"';
 		}
+	}
+
+	private function handleDuellLibParsed(newDuellLib: DuellLib)
+	{
+		checkDuelllibPreConditions( newDuellLib );
 
 		for (duellLibName in duellLibVersions.keys())
 		{

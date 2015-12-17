@@ -89,6 +89,18 @@
                     This argument is used in the versioning. If you specify this argument, then tags that include the RC tag, such as 2.0.0-rc, will be considered.
                 </documentation>
             </arg>
+            <arg name="-versionLog" type="void" >
+                <documentation>
+                    Will log used duell and haxe libraries after running an update to be able to recreate this version.
+                </documentation>
+            </arg>
+
+            <arg name="-versionPath" type="string" >
+                <documentation>
+                    Add a path to your versioning file to recreate a certain version. By default it will update all libraries to the last stored used build. You can override this behaviour by using '-versionBuild'
+                    argument.
+                </documentation>
+            </arg>
         </args>
     </command>
 
@@ -158,6 +170,12 @@
     	</documentation>
 
     	<args>
+            <arg name="-publish" type="void" >
+                <documentation>
+                    Works differently in each platform, but basically each platform plugin should output a releasable package. E.g. ios should sign the .app and compile in release without debugging information.
+                </documentation>
+            </arg>
+
     		<arg name="-noprebuild" type="void" >
     			<documentation>
     				Does not parse the configuration, meaning the changes to the .xml files are not processed. Also, does not process the template, meaning that files to do not get recopied, e.g. asset files. Requires that  a command for this platform with prebuild enabled was previously successful.
@@ -176,12 +194,6 @@
     			</documentation>
     		</arg>
 
-    		<arg name="-publish" type="void" >
-    			<documentation>
-    				Works differently in each platform, but basically each platform plugin should output a releasable package. E.g. ios should sign the .app and compile in release without debugging information.
-    			</documentation>
-    		</arg>
-
             <arg name="-clean" type="void" >
                 <documentation>
                     Clean up the Export folder and the native extensions. When this argument is specified, nothing else is done except cleaning up. This shouldn't be needed to do, unless you update something like hxcpp or the haxe version. If something is going wrong, you didn't do anything special and this fixed it, that issue should be reported.
@@ -193,9 +205,6 @@
     				Launches a server listening to a configured port and then runs the application. It expects that a result of the app is posted to the port, e.g. Unitest results. After the results come in, the application ends. To create a unittest project use "duell create unitTestProject".
     			</documentation>
     		</arg>
-
-
-
     	</args>
 
         <configuration>

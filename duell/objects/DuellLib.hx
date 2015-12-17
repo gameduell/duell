@@ -34,15 +34,17 @@ class DuellLib
 {
 	public var name(default, null) : String;
 	public var version(default, null) : String;
+	public var commit(default, null) : String;
 
-	private function new(name : String, version : String = "master")
+	private function new(name : String, version : String = "master", commit : String = "")
 	{
 		this.name = name;
 		this.version = version;
+		this.commit = commit;
 	}
 
 	private static var duellLibCache : Map<String, Map<String, DuellLib> > = new Map<String, Map<String, DuellLib> >();
-	public static function getDuellLib(name : String, version : String = "master") : DuellLib
+	public static function getDuellLib(name : String, version : String = "master", commit : String = "") : DuellLib
 	{
 		if (version == null || version == "")
 			throw 'Empty version is not allowed for $name library!';
@@ -52,13 +54,13 @@ class DuellLib
 			var versionMap = duellLibCache.get(name);
 			if (!versionMap.exists(version))
 			{
-				versionMap.set(version, new DuellLib(name, version));
+				versionMap.set(version, new DuellLib(name, version, commit));
 			}
 		}
 		else
 		{
 			var versionMap = new Map<String, DuellLib>();
-			versionMap.set(version, new DuellLib(name, version));
+			versionMap.set(version, new DuellLib(name, version, commit));
 			duellLibCache.set(name, versionMap);
 		}
 
