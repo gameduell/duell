@@ -111,22 +111,74 @@ class DirHashHelper
 
 
 
-	public static function getHashOfDirectoryRecursively(path: String): Int
+	public static function getHashOfDirectoryRecursively(path: String, filters: Array<EReg> = null): Int
 	{
-		var currentArrayOfHashes: Array<Int> = [];
+		var process: DuellProcess;
 
-		var hash: Int = getHashOfDirectory(path);
-
-		currentArrayOfHashes.push(hash);
-
-		var folderList = PathHelper.getRecursiveFolderListUnderFolder(path);
-		for (innerFolder in folderList)
+		if (PlatformHelper.hostPlatform == Platform.WINDOWS)
 		{
-			var hash: Int = getHashOfDirectory(Path.join([path, innerFolder]));
-			currentArrayOfHashes.push(hash);
+		    var duellLibPath: String = DuellLib.getDuellLib("duell").getPath();
+			// ls binary is bundled for windows
+			process = new DuellProcess(Path.join([duellLibPath, "bin"]), "ls.exe", ["-lpR", path],
+			{
+				systemCommand : true,
+				block : true,
+				shutdownOnError : true,
+				errorMessage: "hashing folder structure"
+			});
+		}
+		else
+		{
+			process = new DuellProcess(null, "ls", ["-lpR", path],
+			{
+				systemCommand : true,
+				block : true,
+				shutdownOnError : true,
+				errorMessage: "hashing folder structure"
+			});
 		}
 
-		return currentArrayOfHashes.getFnv32IntFromIntArray();
+		var output = process.getCompleteStdout().toString();
+
+		/// splits by newline
+		var outputSplit = output.split("\n");
+
+		/// remove total line
+		outputSplit.shift();
+
+		/// remove empty newlines
+		outputSplit = outputSplit.filter(function(s) return s != "");
+
+		/// cleanup
+		outputSplit = outputSplit.map(function(s) return s.trim());
+
+		/// remove directories
+		outputSplit = outputSplit.filter(function(s) return s.charAt(s.length - 1) != "/" || s.charAt(s.length - 1) != ":" || s.startsWith("total"));
+
+		if (filters == null)
+			filters = [];
+
+		var outputSplitFiltered:Array<String> = outputSplit.filter(function(s) {
+			for (filter in filters)
+			{
+				if (filter.match(s))
+					return false;
+			}
+			return true;
+		});
+
+		// filter the date
+		outputSplitFiltered = outputSplitFiltered.map(function(s) {
+			var fileInfoList:Array<String> = s.split(" ");
+			fileInfoList = fileInfoList.filter(function(s) return s != "");
+			// removes columns 5,6,7 presenting the modified date of a file
+			fileInfoList.splice(5,3);
+			s = fileInfoList.join(" ");
+			return s;
+		});
+
+		output = outputSplitFiltered.join("\n");
+		return output.getFnv32IntFromString();
 	}
 
 

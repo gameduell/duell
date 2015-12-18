@@ -175,7 +175,7 @@ class FileHelper
 		{
 			if (purgeDestination)
 			{
-				CommandHelper.runCommand("", "cp", ["-pR", source, destination], {systemCommand: true});
+				CommandHelper.runCommand("", "cp", ["-pR", source + "/", destination], {systemCommand: true});
 			}
 			else
 			{
