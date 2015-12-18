@@ -1,0 +1,63 @@
+language: haxe
+
+# Set the to mac for now
+os:
+  - osx
+
+# Test with Haxe 3.2.1 and Haxe development.
+haxe:
+  - "3.2.1"
+  - development
+
+matrix:
+  # Allow Haxe development to fail.
+  allow_failures:
+    - haxe: development
+
+addons:
+  # This is the preferred way to install apt packages.
+  # However, it only allow some but not all packages.
+  # Alternatively, we can use `sudo apt-get install ...` in the `install:` section.
+  # http://docs.travis-ci.com/user/apt/#Adding-APT-Packages
+  apt:
+    packages:
+      # Python
+      - python3
+      # PHP
+      - php5-cli
+      # C#
+      - mono-devel
+      - mono-mcs
+      # Flash
+      - libgd2-xpm
+      - ia32-libs
+      - ia32-libs-multiarch
+before_install:
+  - openssl aes-256-cbc -K $encrypted_c00a32cef101_key -iv $encrypted_c00a32cef101_iv -in travis.enc -out .travis -d
+  - chmod go-rwx .travis
+  - eval `ssh-agent -s`
+  - ssh-add .travis
+  - git config user.name "Travis-CI"
+  - git config user.email "noreply@travis-ci.org"
+
+install:
+  # os-specific config
+  - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
+      export DISPLAY=:99.0;
+      export AUDIODEV=null;
+    elif [ "${TRAVIS_OS_NAME}" = "osx" ]; then
+      brew update;
+      brew install mono;
+      brew install phantomjs;
+      brew install python3;
+    fi
+  # Install haxelibs
+  - haxelib install hxcpp
+  - haxelib install hxjava
+  - haxelib install hxcs
+  - haxelib list
+before_script:
+  - echo -e "Host heroku.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+  - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+script:
+  - sh ci_environment.sh
