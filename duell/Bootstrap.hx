@@ -109,6 +109,6 @@ class Bootstrap
 
 	private static function runTheTool(): Void
 	{
-		Sys.command (python, ["_duell.py"].concat(Sys.args()));
+		Sys.exit(Sys.command (python, ["_duell.py"].concat(Sys.args())));
 	}
 }
