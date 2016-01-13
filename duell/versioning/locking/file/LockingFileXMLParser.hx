@@ -1,6 +1,7 @@
 package duell.versioning.locking.file;
 
 import haxe.xml.Fast;
+import duell.commands.UpdateCommand;
 import duell.helpers.LogHelper;
 import duell.versioning.objects.LockedVersion;
 
@@ -64,7 +65,12 @@ class LockingFileXMLParser implements ILockingFileParser
 	private function parseBuild( element:Fast )
 	{
 		var ts = element.has.date ? element.att.date : '0';
-		var build = new LockedVersion( Std.parseFloat(ts) );
+		var pack = element.has.resolve("package") ? element.att.resolve("package") : "";
+		var version = element.has.version ? element.att.version : "";
+		var title = element.has.title ? element.att.title : "";
+
+		var build = new LockedVersion( ts );
+		build.addInfo( { pack:pack, version:version, title:title });
 
 		for ( child in element.elements ){
 			switch( child.name )
@@ -117,10 +123,11 @@ class LockingFileXMLParser implements ILockingFileParser
 		for ( i in 0...objects.length )
 		{
 			var b = objects[i];
+			var info = getLibsInfo( b.appInfo );
 			var libs = getLibsContent( b.usedLibs );
 			var changes = getUpdatedContent( b.updates );
 
-			buildResult = '  <build date="' + b.ts + '">\n';
+			buildResult = '  <build date="' + b.ts + '" ' + info + '>\n';
 			buildResult += '    <libs>\n' + libs + '    </libs>\n';
 			buildResult += '    <updates>\n' + changes + '    </updates>\n';
 			buildResult += '  </build>\n';
@@ -129,6 +136,11 @@ class LockingFileXMLParser implements ILockingFileParser
 		}
 
 		return '<?xml version="1.0" encoding="utf-8"?>\n<builds>\n' + result + '</builds>';
+	}
+
+	private function getLibsInfo( info:AppInfo ) : String
+	{
+		return 'title="' + info.title + '" package="' + info.pack + '" version="' + info.version + '"';
 	}
 
 	private function getLibsContent( libs:Map<String, LockedLib> ) : String

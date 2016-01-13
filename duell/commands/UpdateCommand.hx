@@ -80,8 +80,11 @@ typedef PluginVersion = { lib: DuellLib, gitVers: GitVers};
 
 typedef ToolVersion = { name: String, version: String};
 
+typedef AppInfo = { pack: String, version: String, title: String};
+
 class UpdateCommand implements IGDCommand
 {
+    var appInfo : AppInfo = null;
 	var finalLibList: LibList = { duellLibs : [], haxelibs : [] };
 	var finalPluginList: Array<DuellLib> = [];
     var finalToolList: Array<ToolVersion> = [];
@@ -128,6 +131,7 @@ class UpdateCommand implements IGDCommand
     		logVersions();
     	}
 
+        // TODO: REACTIVATE
 		// schema validation requires internet connection
   //       if (duellFileHasDuellNamespace() && ConnectionHelper.isOnline())
   //       {
@@ -279,7 +283,8 @@ class UpdateCommand implements IGDCommand
 
 		checkVersionsOfPlugins();
 
-		checkDuellToolVersion();
+        // TODO: REACTIVATE
+		// checkDuellToolVersion();
 
 		checkHaxeVersion();
 
@@ -510,7 +515,10 @@ class UpdateCommand implements IGDCommand
 
 	private function logVersions()
 	{
-		LockedVersionsHelper.addLockedVersion(finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList);
+        // collect additional project infos
+
+
+		LockedVersionsHelper.addLockedVersion( appInfo, finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList);
 	}
 
 	private function createFinalLibLists()
@@ -715,6 +723,13 @@ class UpdateCommand implements IGDCommand
 
 						parseXML(includePath);
 					}
+
+                case 'app':
+                    var pack = element.has.resolve("package") ? element.att.resolve("package") : "";
+                    var version = element.has.version ? element.att.version : "";
+                    var title = element.has.title ? element.att.title : "";
+                    appInfo = { pack:pack, version:version, title:title };
+
 
 			}
 		}

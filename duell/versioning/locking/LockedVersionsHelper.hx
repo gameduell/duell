@@ -8,6 +8,7 @@ import duell.helpers.LogHelper;
 import duell.helpers.GitHelper;
 import duell.objects.Haxelib;
 import duell.objects.DuellLib;
+import duell.commands.UpdateCommand;
 import duell.versioning.objects.LockedVersion;
 import duell.versioning.locking.file.ILockingFileParser;
 import duell.versioning.locking.file.LockingFileXMLParser;
@@ -42,7 +43,7 @@ class LockedVersionsHelper
 		return versions.getLastLockedLibraries();
 	}
 
-	public static function addLockedVersion( duelllibs:Array<DuellLib>, haxelibs:Array<Haxelib>, plugins:Array<DuellLib> )
+	public static function addLockedVersion( appInfo:AppInfo, duelllibs:Array<DuellLib>, haxelibs:Array<Haxelib>, plugins:Array<DuellLib> )
 	{
 		var path = Path.join([Sys.getCwd(), DEFAULT_FOLDER, DEFAULT_FILE]);
 
@@ -56,7 +57,7 @@ class LockedVersionsHelper
 		}
 
 		var versions = versionMap.get( path );
-		versions.addLibraries( duelllibs, haxelibs, plugins );
+		versions.addLibraries( appInfo, duelllibs, haxelibs, plugins );
 	}
 }
 
@@ -101,16 +102,27 @@ class LockedVersions
 		var version : LockedVersion = null;
 		for ( lv in lockedVersions )
 		{
-			version = version != null ? lv.ts > version.ts ? lv : version : lv;
+			if( version != null )
+			{
+				var lvTime = Date.fromString( lv.ts );
+				var vTime = Date.fromString( version.ts );
+
+				version = lvTime.getTime() > vTime.getTime() ? lv : version;
+			}
+			else
+			{
+				version = lv;
+			}
 		}
 
 		return version;
 	}
 
-	public function addLibraries( duell:Array<DuellLib>, haxe:Array<Haxelib>, plugins:Array<DuellLib> )
+	public function addLibraries( info:AppInfo, duell:Array<DuellLib>, haxe:Array<Haxelib>, plugins:Array<DuellLib> )
 	{
-		var now = Date.now();
-		var currentVersion = new LockedVersion( now.getTime() );
+		var now = Date.now().toString();
+		var currentVersion = new LockedVersion( now );
+		currentVersion.addInfo( info );
 
 		//create used libs
 		for ( dLib in duell )
@@ -133,10 +145,11 @@ class LockedVersions
 			currentVersion.addPlugin( lockedLib );		
 		}
 
+		var lastLockedVersion = getLastLockedVersion();
+
 		lockedVersions.push( currentVersion );
 
 		//check differences
-		var lastLockedVersion = getLastLockedVersion();
 		checkUpdates( lastLockedVersion, currentVersion );
 
 		checkNumberTrackedVersions();

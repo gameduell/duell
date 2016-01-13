@@ -1,5 +1,7 @@
 package duell.versioning.objects;
 
+import duell.commands.UpdateCommand;
+
 enum LibChangeType
 {
 	VERSION;
@@ -48,16 +50,22 @@ class LockedVersion
 		return null;
 	}
 
-	public var ts(default, null) : Float;
+	public var ts(default, null) : String;
+	public var appInfo : AppInfo = { pack:"", title:"", version:"" };
 	public var usedLibs : Map<String, LockedLib>;
 	public var updates : Map<String, Array<Update>>;
 
-	public function new( ts:Float )
+	public function new( time:String )
 	{
-		this.ts = ts;
+		this.ts = time;
 
 		usedLibs = new Map<String, LockedLib>();
 		updates = new Map<String, Array<Update>>();
+	}
+
+	public function addInfo( info:AppInfo )
+	{
+		appInfo = info != null ? info : appInfo;
 	}
 
 	public function addUsedLib( lib:LockedLib )
