@@ -1,7 +1,10 @@
 [![Build Status](https://travis-ci.org/gameduell/duell.svg?branch=master)](https://travis-ci.org/gameduell/duell)
+[![Join the chat at https://gitter.im/gameduell/duell](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/gameduell/duell?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+<p align="center"><img src="duell_tool_logo.png"/></p>
+
 ## Description
 
-[![Join the chat at https://gitter.im/gameduell/duell](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/gameduell/duell?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 The Duell Tool is a command line tool written in [haxe](http://haxe.org/) for setting up, building and running applications on any platform.
 It can also be used for other general tasks within app development. It is made in a modular way via plugins,
