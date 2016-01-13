@@ -2320,21 +2320,6 @@ class duell_commands_UpdateCommand:
 		self.printFinalResult(self.finalLibList.duellLibs,self.finalLibList.haxelibs,self.finalPluginList)
 		if duell_objects_Arguments.isSet("-versionLog"):
 			self.logVersions()
-		if (duell_commands_UpdateCommand.duellFileHasDuellNamespace() and duell_helpers_ConnectionHelper.isOnline()):
-			duell_helpers_LogHelper.info(("\x1B[2m" + "------"))
-			duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Validating XML schema"),None,"\x1B[2m")
-			if duell_commands_UpdateCommand.userFileHasDuellNamespace():
-				duell_commands_UpdateCommand.validateUserSchemaXml()
-			duell_commands_UpdateCommand.validateSchemaXml()
-			duell_helpers_LogHelper.info("Success!")
-		self.saveUpdateExecution()
-		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "end"),None,"\x1B[2m")
-		if self.isDifferentDuellToolVersion:
-			duell_helpers_LogHelper.info("Rerunning the update because the duell tool version changed.")
-			def _hx_local_0():
-				a = duell_objects_Arguments.getRawArguments()
-				return (["run", "duell_duell"] + a)
-			duell_helpers_CommandHelper.runHaxelib(Sys.getCwd(),_hx_local_0(),_hx_AnonObject({}))
 		return "success"
 
 	def validateArguments(self):
@@ -4734,8 +4719,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_head
 					nonlocal _g_val
+					nonlocal _g_head
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
