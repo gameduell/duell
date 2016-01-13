@@ -6908,11 +6908,10 @@ class duell_versioning_locking_LockedVersions:
 			sys_FileSystem.createDirectory(dir)
 
 	def loadAndParseFile(self):
+		stringContent = ""
 		if sys_FileSystem.exists(self.path):
 			stringContent = sys_io_File.getContent(self.path)
-			self.lockedVersions = self.parser.parseFile(stringContent)
-		else:
-			duell_helpers_LogHelper.exitWithFormattedError((("File does not exist: '" + HxOverrides.stringOrNull(self.path)) + "'"))
+		self.lockedVersions = self.parser.parseFile(stringContent)
 
 	def getLastLockedVersion(self):
 		version = None

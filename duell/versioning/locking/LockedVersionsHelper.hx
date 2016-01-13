@@ -87,15 +87,13 @@ class LockedVersions
 
 	public function loadAndParseFile()
 	{
+		var stringContent = "";
 		if(FileSystem.exists( path ))
 		{
-			var stringContent = File.getContent( path );
-			lockedVersions = parser.parseFile( stringContent );
+			stringContent = File.getContent( path );
 		}
-		else
-		{
-			LogHelper.exitWithFormattedError("File does not exist: '" + path + "'");
-		}
+
+		lockedVersions = parser.parseFile( stringContent );
 	}
 
 	public function getLastLockedVersion() : LockedVersion
