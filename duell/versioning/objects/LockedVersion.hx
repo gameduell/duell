@@ -51,9 +51,8 @@ class LockedVersion
 	}
 
 	public var ts(default, null) : String;
-	public var appInfo : AppInfo = { pack:"", title:"", version:"" };
-	public var usedLibs : Map<String, LockedLib>;
-	public var updates : Map<String, Array<Update>>;
+	public var usedLibs(default, null) : Map<String, LockedLib>;
+	public var updates(default, null) : Map<String, Array<Update>>;
 
 	public function new( time:String )
 	{
@@ -61,11 +60,6 @@ class LockedVersion
 
 		usedLibs = new Map<String, LockedLib>();
 		updates = new Map<String, Array<Update>>();
-	}
-
-	public function addInfo( info:AppInfo )
-	{
-		appInfo = info != null ? info : appInfo;
 	}
 
 	public function addUsedLib( lib:LockedLib )

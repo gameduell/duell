@@ -80,11 +80,8 @@ typedef PluginVersion = { lib: DuellLib, gitVers: GitVers};
 
 typedef ToolVersion = { name: String, version: String};
 
-typedef AppInfo = { pack: String, version: String, title: String};
-
 class UpdateCommand implements IGDCommand
 {
-    var appInfo : AppInfo = null;
 	var finalLibList: LibList = { duellLibs : [], haxelibs : [] };
 	var finalPluginList: Array<DuellLib> = [];
     var finalToolList: Array<ToolVersion> = [];
@@ -113,7 +110,7 @@ class UpdateCommand implements IGDCommand
 
         synchronizeRemotes();
 
-        if(Arguments.isSet('-versionPath'))
+        if(Arguments.isSet('-logFile'))
         {
         	useVersionFileToRecreateSpecificVersions();
         	return 'success';
@@ -127,7 +124,7 @@ class UpdateCommand implements IGDCommand
     	
     	printFinalResult( finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList );
 
-    	if(Arguments.isSet('-versionLog')){
+    	if(Arguments.isSet('-log')){
     		logVersions();
     	}
 
@@ -164,19 +161,18 @@ class UpdateCommand implements IGDCommand
 
     private function validateArguments()
     {
-    	if(Arguments.isSet('-versionLog'))
+    	if(Arguments.isSet('-log'))
     	{
-    		if(Arguments.isSet('-versionPath'))
+    		if(Arguments.isSet('-logFile'))
     			LogHelper.exitWithFormattedError("'-versionLog' and '-versionPath' are excluding eachother.");
     	}
 
-    	if(Arguments.isSet('-versionPath'))
+    	if(Arguments.isSet('-logFile'))
     	{
-    		var path = Arguments.get('-versionPath');
+    		var path = Arguments.get('-logFile');
     		if(!FileSystem.exists(path))
-    			LogHelper.exitWithFormattedError("Invalid path: '" + path + "'");		
+    			LogHelper.exitWithFormattedError("Invalid path: '" + path + "'");
     	}
-    			
     }
 
     private function synchronizeRemotes()
@@ -515,10 +511,7 @@ class UpdateCommand implements IGDCommand
 
 	private function logVersions()
 	{
-        // collect additional project infos
-
-
-		LockedVersionsHelper.addLockedVersion( appInfo, finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList);
+		LockedVersionsHelper.addLockedVersion( finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList);
 	}
 
 	private function createFinalLibLists()
@@ -723,14 +716,6 @@ class UpdateCommand implements IGDCommand
 
 						parseXML(includePath);
 					}
-
-                case 'app':
-                    var pack = element.has.resolve("package") ? element.att.resolve("package") : "";
-                    var version = element.has.version ? element.att.version : "";
-                    var title = element.has.title ? element.att.title : "";
-                    appInfo = { pack:pack, version:version, title:title };
-
-
 			}
 		}
 

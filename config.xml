@@ -89,16 +89,15 @@
                     This argument is used in the versioning. If you specify this argument, then tags that include the RC tag, such as 2.0.0-rc, will be considered.
                 </documentation>
             </arg>
-            <arg name="-versionLog" type="void" >
+            <arg name="-log" type="void" >
                 <documentation>
                     Will log used duell and haxe libraries after running an update to be able to recreate this version.
                 </documentation>
             </arg>
 
-            <arg name="-versionPath" type="string" >
+            <arg name="-logFile" type="string" >
                 <documentation>
-                    Add a path to your versioning file to recreate a certain version. By default it will update all libraries to the last stored used build. You can override this behaviour by using '-versionBuild'
-                    argument.
+                    Add a path to your log file to recreate the last logged version.
                 </documentation>
             </arg>
         </args>
