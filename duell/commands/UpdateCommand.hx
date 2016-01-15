@@ -126,6 +126,7 @@ class UpdateCommand implements IGDCommand
 
     	if(Arguments.isSet('-log')){
     		logVersions();
+            printVersionDiffs();
     	}
 
         // TODO: REACTIVATE
@@ -164,7 +165,7 @@ class UpdateCommand implements IGDCommand
     	if(Arguments.isSet('-log'))
     	{
     		if(Arguments.isSet('-logFile'))
-    			LogHelper.exitWithFormattedError("'-versionLog' and '-versionPath' are excluding eachother.");
+    			LogHelper.exitWithFormattedError("'-log' and '-logFile' are excluding eachother.");
     	}
 
     	if(Arguments.isSet('-logFile'))
@@ -206,7 +207,7 @@ class UpdateCommand implements IGDCommand
 
     private function useVersionFileToRecreateSpecificVersions()
     {
-    	var path = Arguments.get('-versionPath');
+    	var path = Arguments.get('-logFile');
     	var lockedVersions = LockedVersionsHelper.getLastLockedVersion( path );
     	var dLibs = lockedVersions.duelllibs;
     	var hLibs = lockedVersions.haxelibs;
@@ -508,6 +509,44 @@ class UpdateCommand implements IGDCommand
             }
         }
 	}
+
+    private function printVersionDiffs()
+    {
+        LogHelper.info("\n");
+        LogHelper.info(LogHelper.BOLD + "Updates to previous version:" + LogHelper.NORMAL);
+        LogHelper.info("\n");
+
+        var outputFilter = new Map<String, Array<LibraryDiff>>();
+        var lockedDiffs = LockedVersionsHelper.getLastVersionDiffs( '' );
+        if ( lockedDiffs != null && lockedDiffs.length != 0 )
+        {
+            for ( lockedDiff in lockedDiffs )
+            {
+                if( !outputFilter.exists( lockedDiff.typeReadable ))
+                {
+                    outputFilter.set( lockedDiff.typeReadable, new Array<LibraryDiff>() );
+                }
+
+                outputFilter.get( lockedDiff.typeReadable ).push( lockedDiff );
+            }
+
+            for ( key in outputFilter.keys() )
+            {
+                LogHelper.info(LogHelper.BOLD + "   " + key + ":" + LogHelper.NORMAL);
+                var diffs = outputFilter.get( key );
+                for( diff in  diffs )
+                {
+                    LogHelper.info("   " + diff.name + " - old:" + diff.oldVal + " - new:" + diff.newVal);
+                }
+            }
+        }
+        else
+        {
+            LogHelper.info("   None    ");
+        }
+
+        LogHelper.info("\n");
+    }
 
 	private function logVersions()
 	{

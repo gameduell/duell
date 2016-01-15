@@ -50,6 +50,18 @@ class LockedVersion
 		return null;
 	}
 
+	public static function getLibChangeTypeReadable( value:LibChangeType ) : String
+	{
+		switch( value ){
+			case VERSION : return 'Versions';
+			case COMMITHASH : return 'Commithashes';
+			case NEW_LIB : return 'New libraries';
+			case REMOVED_LIB : return 'Removed libraries';
+		}
+
+		return null;
+	}
+
 	public var ts(default, null) : String;
 	public var usedLibs(default, null) : Map<String, LockedLib>;
 	public var updates(default, null) : Map<String, Array<Update>>;

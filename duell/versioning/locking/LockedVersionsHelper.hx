@@ -18,33 +18,38 @@ typedef LockedLibraries = {
 	plugins : Array<DuellLib>
 }
 
+typedef LibraryDiff = {
+	name : String,
+	type : String,
+	typeReadable : String,
+	oldVal : String,
+	newVal : String
+}
+
 class LockedVersionsHelper
 {
 	private static inline var DEFAULT_FOLDER = 'versions';
-	private static inline var DEFAULT_FILE = 'lockedVersions.xml';
+	private static inline var DEFAULT_FILE = 'log.xml';
 
 	private static var versionMap = new Map<String, LockedVersions>();
 
 	public static function getLastLockedVersion( path:String ) : LockedLibraries 
 	{
-		path = path == '' ? Path.join([Sys.getCwd(), DEFAULT_FOLDER, DEFAULT_FILE]) : path;
-
-		if(!versionMap.exists( path ))
-		{
-			var versions = new LockedVersions(new LockingFileXMLParser(), path);
-			versions.loadAndParseFile();
-
-			versionMap.set( path, versions );
-		}
-
-		var versions = versionMap.get( path );
+		var versions = getVersions( path );
 
 		return versions.getLastLockedLibraries();
 	}
 
-	public static function addLockedVersion( duelllibs:Array<DuellLib>, haxelibs:Array<Haxelib>, plugins:Array<DuellLib> )
+	public static function getLastVersionDiffs( path:String ) : Array<LibraryDiff>
 	{
-		var path = Path.join([Sys.getCwd(), DEFAULT_FOLDER, DEFAULT_FILE]);
+		var versions = getVersions( path );
+
+		return versions.getLastVersionDiffs();
+	}
+
+	private static function getVersions( path:String ) : LockedVersions
+	{
+		path = path == '' ? Path.join([Sys.getCwd(), DEFAULT_FOLDER, DEFAULT_FILE]) : path;
 
 		if(!versionMap.exists( path ))
 		{
@@ -52,10 +57,16 @@ class LockedVersionsHelper
 			versions.setupFileSystem();
 			versions.loadAndParseFile();
 
-			versionMap.set(path, versions);
+			versionMap.set( path, versions );
 		}
 
-		var versions = versionMap.get( path );
+		return versionMap.get( path );
+	}
+
+	public static function addLockedVersion( duelllibs:Array<DuellLib>, haxelibs:Array<Haxelib>, plugins:Array<DuellLib> )
+	{
+		var versions = getVersions('');
+
 		versions.addLibraries( duelllibs, haxelibs, plugins );
 	}
 }
@@ -179,6 +190,23 @@ class LockedVersions
     	}
 
     	return { duelllibs:dLibs, haxelibs:hLibs, plugins:plugins };
+	}
+
+	public function getLastVersionDiffs() : Array<LibraryDiff>
+	{
+		var version = getLastLockedVersion();
+		var updates = version != null ? version.updates : new Map<String, Array<Update>>();
+		var diffs = new Array<LibraryDiff>();
+		for ( key in updates.keys() )
+		{
+			var updates = updates.get( key );
+			for ( u in updates )
+			{
+				diffs.push({ name:key, type:LockedVersion.getLibChangeTypeAsString( u.name ), typeReadable:LockedVersion.getLibChangeTypeReadable( u.name ), oldVal:u.oldValue, newVal:u.newValue });
+			}
+		}
+
+		return diffs;
 	}
 
 	private function checkUpdates( oldVersion:LockedVersion, newVersion:LockedVersion )
