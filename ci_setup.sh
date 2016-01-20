@@ -4,8 +4,9 @@ set -e
 trap onexit 1 2 3 15 ERR
 
 function onexit() {
-    echo "Problem occured during setup, exit code: $?"
-    exit $exit_status
+    error=$?
+    echo "Problem occured during setup, exit code: ${error}"
+    exit $error
 }
 
 rm -rf test
