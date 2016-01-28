@@ -1441,10 +1441,19 @@ class duell_commands_BuildCommand:
 		buildArguments.append("-D")
 		buildArguments.append(("platform_" + HxOverrides.stringOrNull(self.platformName)))
 		buildArguments.append("-D")
+		x4 = None
+		def _hx_local_1():
+			_this = None
+			e = duell_helpers_PlatformHelper.get_hostPlatform()
+			_this = e.tag
+			return _this.lower()
+		x4 = ("host_" + HxOverrides.stringOrNull(_hx_local_1()))
+		buildArguments.append(x4)
+		buildArguments.append("-D")
 		buildArguments.append(("duell_api_level=" + Std.string(duell_defines_DuellDefines.DUELL_API_LEVEL)))
 		buildArguments.append("-resource")
-		x4 = (HxOverrides.stringOrNull(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath("duell"), "config.xml"])) + "@generalArguments")
-		buildArguments.append(x4)
+		x5 = (HxOverrides.stringOrNull(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath("duell"), "config.xml"])) + "@generalArguments")
+		buildArguments.append(x5)
 		duell_helpers_PathHelper.mkdir(outputFolder)
 		duell_helpers_CommandHelper.runHaxe("",buildArguments,_hx_AnonObject({'errorMessage': "building the plugin"}))
 		runArguments = [outputRun]
@@ -4707,8 +4716,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1

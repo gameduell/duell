@@ -30,6 +30,7 @@ import duell.helpers.ConnectionHelper;
 import duell.helpers.SchemaHelper;
 import duell.helpers.DuellConfigHelper;
 import duell.helpers.CommandHelper;
+import duell.helpers.PlatformHelper;
 import haxe.CallStack;
 import duell.helpers.PythonImportHelper;
 import Sys;
@@ -320,6 +321,10 @@ class BuildCommand implements IGDCommand
 
         buildArguments.push("-D");
         buildArguments.push("platform_" + platformName);
+
+        buildArguments.push("-D");
+
+        buildArguments.push("host_" + PlatformHelper.hostPlatform.getName().toLowerCase());
 
         buildArguments.push("-D");
         buildArguments.push("duell_api_level=" + DuellDefines.DUELL_API_LEVEL);
