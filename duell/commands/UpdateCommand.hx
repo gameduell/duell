@@ -129,33 +129,32 @@ class UpdateCommand implements IGDCommand
             printVersionDiffs();
     	}
 
-        // TODO: REACTIVATE
-		// schema validation requires internet connection
-  //       if (duellFileHasDuellNamespace() && ConnectionHelper.isOnline())
-  //       {
-  //           LogHelper.info(LogHelper.DARK_GREEN + "------");
+		//schema validation requires internet connection
+        if (duellFileHasDuellNamespace() && ConnectionHelper.isOnline())
+        {
+            LogHelper.info(LogHelper.DARK_GREEN + "------");
 
-  //           LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Validating XML schema", null, LogHelper.DARK_GREEN);
+            LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Validating XML schema", null, LogHelper.DARK_GREEN);
             
-		// 	if (userFileHasDuellNamespace())
-		// 	{
-		// 		validateUserSchemaXml();
-		// 	}
+			if (userFileHasDuellNamespace())
+			{
+				validateUserSchemaXml();
+			}
 
-  //           validateSchemaXml();
+            validateSchemaXml();
 
-  //           LogHelper.info("Success!");
-  //       }
+            LogHelper.info("Success!");
+        }
 
-  //   	saveUpdateExecution();
+    	saveUpdateExecution();
 
-  //   	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "end", null, LogHelper.DARK_GREEN);
+    	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "end", null, LogHelper.DARK_GREEN);
 
-		// if (isDifferentDuellToolVersion)
-		// {
-  //           	LogHelper.info("Rerunning the update because the duell tool version changed.");
-		// 		CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell"].concat(Arguments.getRawArguments()), {});
-		// }
+		if (isDifferentDuellToolVersion)
+		{
+            	LogHelper.info("Rerunning the update because the duell tool version changed.");
+				CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell"].concat(Arguments.getRawArguments()), {});
+		}
 
 	    return "success";
     }
@@ -280,8 +279,7 @@ class UpdateCommand implements IGDCommand
 
 		checkVersionsOfPlugins();
 
-        // TODO: REACTIVATE
-		// checkDuellToolVersion();
+		checkDuellToolVersion();
 
 		checkHaxeVersion();
 
