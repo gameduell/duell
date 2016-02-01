@@ -48,6 +48,7 @@ import duell.helpers.LogHelper;
 import duell.helpers.AskHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.DuellLibHelper;
+import duell.versioning.locking.LockedVersionsHelper;
 
 import duell.versioning.GitVers;
 
@@ -103,19 +104,32 @@ class UpdateCommand implements IGDCommand
 
     public function execute() : String
     {
+    	validateArguments();
+
     	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Update Dependencies", null, LogHelper.DARK_GREEN);
 
         synchronizeRemotes();
 
-    	determineAndValidateDependenciesAndDefines();
+        if(Arguments.isSet('-logFile'))
+        {
+        	useVersionFileToRecreateSpecificVersions();
+        	return 'success';
+        }
+        
+		determineAndValidateDependenciesAndDefines();
+		
+		LogHelper.info(LogHelper.DARK_GREEN + "------");
+		
+		LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Resulting dependencies update and resolution", null, LogHelper.DARK_GREEN);
+    	
+    	printFinalResult( finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList );
 
-    	LogHelper.info(LogHelper.DARK_GREEN + "------");
+    	if(Arguments.isSet('-log')){
+    		logVersions();
+            printVersionDiffs();
+    	}
 
-    	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Resulting dependencies update and resolution", null, LogHelper.DARK_GREEN);
-
-    	printFinalResult();
-
-		// schema validation requires internet connection
+		//schema validation requires internet connection
         if (duellFileHasDuellNamespace() && ConnectionHelper.isOnline())
         {
             LogHelper.info(LogHelper.DARK_GREEN + "------");
@@ -145,6 +159,22 @@ class UpdateCommand implements IGDCommand
 	    return "success";
     }
 
+    private function validateArguments()
+    {
+    	if(Arguments.isSet('-log'))
+    	{
+    		if(Arguments.isSet('-logFile'))
+    			LogHelper.exitWithFormattedError("'-log' and '-logFile' are excluding eachother.");
+    	}
+
+    	if(Arguments.isSet('-logFile'))
+    	{
+    		var path = Arguments.get('-logFile');
+    		if(!FileSystem.exists(path))
+    			LogHelper.exitWithFormattedError("Invalid path: '" + path + "'");
+    	}
+    }
+
     private function synchronizeRemotes()
     {
         var reflist: Map<String, DuellLibReference> = DuellLibListHelper.getDuellLibReferenceList();
@@ -172,6 +202,63 @@ class UpdateCommand implements IGDCommand
                 }
             }
         }
+    }
+
+    private function useVersionFileToRecreateSpecificVersions()
+    {
+    	var path = Arguments.get('-logFile');
+    	var lockedVersions = LockedVersionsHelper.getLastLockedVersion( path );
+    	var dLibs = lockedVersions.duelllibs;
+    	var hLibs = lockedVersions.haxelibs;
+    	var plugins = lockedVersions.plugins;
+
+    	if( dLibs.length == 0 && hLibs.length == 0 )
+    	{
+    		LogHelper.exitWithFormattedError('No libs to reuse.');
+    	}
+
+		LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Recreating Duelllibs", null, LogHelper.DARK_GREEN);
+    	for ( d in dLibs )
+    	{
+    		recreateDuellLib( d );
+    	}
+
+		LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Recreating Haxelibs", null, LogHelper.DARK_GREEN);
+    	for( h in hLibs )
+    	{
+    		handleHaxelibParsed( h );
+
+    		h.selectVersion();
+    	}
+
+    	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Recreating plugins", null, LogHelper.DARK_GREEN);
+    	for( p in plugins )
+    	{
+    		recreateDuellLib( p );
+    	}
+
+    	dLibs.sort( sortDuellLibsByName );
+    	hLibs.sort( sortHaxeLibsByName );
+    	plugins.sort( sortDuellLibsByName );
+
+    	printFinalResult( dLibs, hLibs, plugins );
+    }
+
+    private function recreateDuellLib( lib:DuellLib )
+    {
+    	checkDuelllibPreConditions( lib );
+
+    	GitHelper.fetch(lib.getPath());
+
+    	var commit = GitHelper.getCurrentCommit( lib.getPath() );
+		if(commit != lib.commit)
+		{
+			if (!GitHelper.isRepoWithoutLocalChanges( lib.getPath() ))
+  				throw "Can't change branch of repo because it has local changes, path: " + lib.getPath();
+
+			LogHelper.info("", "Checkout library '" + lib.name + "' to commit : " + lib.commit);
+    		GitHelper.checkoutCommit( lib.getPath(), lib.commit );	
+   		}
     }
 
 	private function determineAndValidateDependenciesAndDefines()
@@ -287,7 +374,6 @@ class UpdateCommand implements IGDCommand
 				break;
 			}
 		}
-
 	}
 
 
@@ -331,7 +417,6 @@ class UpdateCommand implements IGDCommand
 			{
 				isDifferentDuellToolVersion = true;
 			}
-
 		}
 		else
 		{
@@ -379,12 +464,12 @@ class UpdateCommand implements IGDCommand
         finalToolList.push({name: "haxe", version: versionString});
 	}
 
-	private function printFinalResult(): Void
+	private function printFinalResult( duellLibs:Array<DuellLib>, haxelibs:Array<Haxelib>, plugins:Array<DuellLib> ): Void
 	{
     	LogHelper.info(LogHelper.BOLD + "DuellLibs:" + LogHelper.NORMAL);
     	LogHelper.info("\n");
 
-    	for (lib in finalLibList.duellLibs)
+    	for (lib in duellLibs)
     	{
     		LogHelper.info("   " + lib.name + " - " + lib.version);
     	}
@@ -393,18 +478,18 @@ class UpdateCommand implements IGDCommand
     	LogHelper.info(LogHelper.BOLD + "HaxeLibs:" + LogHelper.NORMAL);
     	LogHelper.info("\n");
 
-    	for (lib in finalLibList.haxelibs)
+    	for (lib in haxelibs)
     	{
     		LogHelper.info("   " + lib.name + " - " + lib.version);
     	}
 
-    	if (finalPluginList.length > 0)
+    	if (plugins.length > 0)
     	{
 	    	LogHelper.info("\n");
 	    	LogHelper.info(LogHelper.BOLD + "Build Plugins:" + LogHelper.NORMAL);
 	    	LogHelper.info("\n");
 
-	    	for (lib in finalPluginList)
+	    	for (lib in plugins)
 	    	{
 	    		LogHelper.info("   " + lib.name + " - " + lib.version);
 	    	}
@@ -423,6 +508,49 @@ class UpdateCommand implements IGDCommand
         }
 	}
 
+    private function printVersionDiffs()
+    {
+        LogHelper.info("\n");
+        LogHelper.info(LogHelper.BOLD + "Updates to previous version:" + LogHelper.NORMAL);
+        LogHelper.info("\n");
+
+        var outputFilter = new Map<String, Array<LibraryDiff>>();
+        var lockedDiffs = LockedVersionsHelper.getLastVersionDiffs( '' );
+        if ( lockedDiffs != null && lockedDiffs.length != 0 )
+        {
+            for ( lockedDiff in lockedDiffs )
+            {
+                if( !outputFilter.exists( lockedDiff.typeReadable ))
+                {
+                    outputFilter.set( lockedDiff.typeReadable, new Array<LibraryDiff>() );
+                }
+
+                outputFilter.get( lockedDiff.typeReadable ).push( lockedDiff );
+            }
+
+            for ( key in outputFilter.keys() )
+            {
+                LogHelper.info(LogHelper.BOLD + "   " + key + ":" + LogHelper.NORMAL);
+                var diffs = outputFilter.get( key );
+                for( diff in  diffs )
+                {
+                    LogHelper.info("   " + diff.name + " - old:" + diff.oldVal + " - new:" + diff.newVal);
+                }
+            }
+        }
+        else
+        {
+            LogHelper.info("   None    ");
+        }
+
+        LogHelper.info("\n");
+    }
+
+	private function logVersions()
+	{
+		LockedVersionsHelper.addLockedVersion( finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList);
+	}
+
 	private function createFinalLibLists()
 	{
 		for (duellLibVersion in duellLibVersions)
@@ -430,16 +558,32 @@ class UpdateCommand implements IGDCommand
 			finalLibList.duellLibs.push(DuellLib.getDuellLib(duellLibVersion.name, duellLibVersion.gitVers.currentVersion));
 		}
 
+		finalLibList.duellLibs.sort( sortDuellLibsByName );
+
 		finalLibList.haxelibs = [];
 		for (haxelibVersion in haxelibVersions)
 		{
 			finalLibList.haxelibs.push(haxelibVersion);
 		}
 
+		finalLibList.haxelibs.sort( sortHaxeLibsByName );
+
         for (plugin in pluginVersions.keys())
         {
             finalPluginList.push(DuellLib.getDuellLib(pluginVersions[plugin].lib.name,  pluginVersions[plugin].gitVers.currentVersion));
         }
+
+        finalPluginList.sort( sortDuellLibsByName );
+	}
+
+	private function sortDuellLibsByName( a:DuellLib, b:DuellLib ) : Int
+	{
+		return a.name > b.name ? 1 : -1;
+	}
+
+	private function sortHaxeLibsByName( a:Haxelib, b:Haxelib ) : Int
+	{
+		return a.name > b.name ? 1 : -1;
 	}
 
     private function createSchemaXml()
@@ -453,6 +597,11 @@ class UpdateCommand implements IGDCommand
     	duellConfig.lastProjectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
     	duellConfig.lastProjectTime = Date.now().toString();
     	duellConfig.writeToConfig();
+	}
+
+	private function lockBuildVersion()
+	{
+
 	}
 
 	/// -------
@@ -604,29 +753,33 @@ class UpdateCommand implements IGDCommand
 
 						parseXML(includePath);
 					}
-
 			}
 		}
 
 		currentXMLPath.pop();
 	}
 
-	private function handleDuellLibParsed(newDuellLib: DuellLib)
+	private function checkDuelllibPreConditions( duellLib:DuellLib )
 	{
-		if (!DuellLibHelper.isInstalled(newDuellLib.name))
+		if (!DuellLibHelper.isInstalled( duellLib.name ))
 		{
-			var answer = AskHelper.askYesOrNo('DuellLib ${newDuellLib.name} is missing, would you like to install it?');
+			var answer = AskHelper.askYesOrNo('DuellLib ${duellLib.name} is missing, would you like to install it?');
 
 			if (answer)
-				DuellLibHelper.install(newDuellLib.name);
+				DuellLibHelper.install( duellLib.name );
 			else
 				throw 'Cannot continue with an uninstalled lib.';
 		}
 
-		if (!DuellLibHelper.isPathValid(newDuellLib.name))
+		if (!DuellLibHelper.isPathValid( duellLib.name ))
 		{
-			throw 'DuellLib ${newDuellLib.name} has an invalid path - ${DuellLibHelper.getPath(newDuellLib.name)} - check your "haxelib list"';
+			throw 'DuellLib ${duellLib.name} has an invalid path - ${DuellLibHelper.getPath(duellLib.name)} - check your "haxelib list"';
 		}
+	}
+
+	private function handleDuellLibParsed(newDuellLib: DuellLib)
+	{
+		checkDuelllibPreConditions( newDuellLib );
 
 		for (duellLibName in duellLibVersions.keys())
 		{
