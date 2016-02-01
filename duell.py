@@ -3485,7 +3485,7 @@ class duell_helpers_FileHelper:
 				purgeArg = "/E"
 			duell_helpers_CommandHelper.runCommand("","robocopy",["/COPY:DAT", "/NJH", "/NJS", purgeArg, source, destination],_hx_AnonObject({'systemCommand': True, 'nonErrorExitCodes': [0, 1, 2, 3, 5]}))
 		elif purgeDestination:
-			duell_helpers_CommandHelper.runCommand("","cp",["-pR", source, destination],_hx_AnonObject({'systemCommand': True}))
+			duell_helpers_CommandHelper.runCommand("","cp",["-pR", (("null" if source is None else source) + "/"), destination],_hx_AnonObject({'systemCommand': True}))
 		else:
 			files = None
 			try:
