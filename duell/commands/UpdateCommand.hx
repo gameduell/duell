@@ -74,9 +74,11 @@ enum VersionState
 	ParsedVersionChanged;
 }
 
-typedef DuellLibVersion = { name: String, gitVers: GitVers, versionRequested: String, /*helper var*/ versionState: VersionState};
+typedef DuellLibVersion = { name: String, gitVers: GitVers, versionRequested: String, /*helper var*/ versionState: VersionState, dependTo:String };
 
-typedef PluginVersion = { lib: DuellLib, gitVers: GitVers};
+typedef PluginVersion = { lib: DuellLib, gitVers: GitVers, dependTo:String };
+
+typedef DuellToolVersion = { version:String, dependTo:String };
 
 typedef ToolVersion = { name: String, version: String};
 
@@ -94,7 +96,7 @@ class UpdateCommand implements IGDCommand
 	var platformName: String;
 
 	var duellToolGitVers: GitVers;
-	var duellToolRequestedVersion: String = null;
+	var duellToolRequestedVersion: DuellToolVersion = null;
 
 	var isDifferentDuellToolVersion: Bool = false;
 
@@ -404,7 +406,7 @@ class UpdateCommand implements IGDCommand
 
 		LogHelper.info("\n");
 		LogHelper.info("checking version of " + LogHelper.BOLD + "duell tool" + LogHelper.NORMAL);
-		var resolvedVersion = duellToolGitVers.solveVersion(duellToolRequestedVersion, Arguments.isSet("-rc"), Arguments.get("-overridebranch"));
+		var resolvedVersion = duellToolGitVers.solveVersion(duellToolRequestedVersion.version, Arguments.isSet("-rc"), Arguments.get("-overridebranch"));
 
 		if (duellToolGitVers.needsToChangeVersion(resolvedVersion))
 		{
@@ -618,12 +620,12 @@ class UpdateCommand implements IGDCommand
 		{
 			var path = DuellLibHelper.getPath(name) + '/' + DuellDefines.LIB_CONFIG_FILENAME;
 
-			parseXML(path);
+			parseXML(path, name);
 		}
 	}
 
 	private var currentXMLPath : Array<String> = []; /// used to resolve paths. Is used by all XML parsers (library and platform)
-	private function parseXML(path : String):Void
+	private function parseXML(path : String, ?sourceLibrary:String='project'):Void
 	{
 		var xml = new Fast(Xml.parse(File.getContent(path)).firstElement());
 		currentXMLPath.push(Path.directory(path));
@@ -633,16 +635,13 @@ class UpdateCommand implements IGDCommand
 			switch element.name
 			{
 				case 'haxelib':
-
 					var name = element.att.name;
-
 					if (name == '')
 					{
 						continue;
 					}
 
 					var version = null;
-
 					if (!element.has.version || element.att.version == "")
 					{
 						LogHelper.info("WARNING: Haxelib dependencies must always specify a version. This will become an error in future releases. File: " + path);
@@ -654,56 +653,44 @@ class UpdateCommand implements IGDCommand
 					}
 
 					var haxelib = Haxelib.getHaxelib(name, version);
-
 					handleHaxelibParsed(haxelib);
-
 					LogHelper.info("      depends on haxelib " + LogHelper.BOLD + haxelib.name + LogHelper.NORMAL + " " + haxelib.version);
 
 				case 'duelllib':
-
 					var name = null;
 					var version = null;
-
 					if (!element.has.version || element.att.version == "")
 					{
 						throw "DuellLib dependencies must always specify a version. File: " + path;
 					}
 
 					name = element.att.name;
-
 					version = element.att.version;
-
 					if (name == null || name == '')
 					{
 						continue;
 					}
 					var newDuellLib = DuellLib.getDuellLib(name, version);
-
 					LogHelper.info("      depends on " + LogHelper.BOLD + newDuellLib.name + LogHelper.NORMAL + " " + newDuellLib.version);
-
-					handleDuellLibParsed(newDuellLib);
+					handleDuellLibParsed(newDuellLib, sourceLibrary);
 
 				case 'supported-build-plugin':
-
 					var name = null;
 					var version = null;
-
 					if (!element.has.version || element.att.version == "")
 					{
 						throw "Supported builds must always specify a version. File: " + path;
 					}
 
 					name = element.att.name;
-
 					version = element.att.version;
 
 			    	var buildLib = DuellLib.getDuellLib("duellbuild" + name, version);
-
 					LogHelper.info("      supports build plugin " + LogHelper.BOLD + name + LogHelper.NORMAL + " " + version);
 
 			    	if (DuellLibHelper.isInstalled(buildLib.name))
 			    	{
-			    		handlePluginParsed(buildLib);
+			    		handlePluginParsed(buildLib, sourceLibrary);
 			    	}
 			    	else
 			    	{
@@ -712,7 +699,7 @@ class UpdateCommand implements IGDCommand
 			    		if (answer)
 			    		{
 			    			DuellLibHelper.install(buildLib.name);
-					    	handlePluginParsed(buildLib);
+					    	handlePluginParsed(buildLib, sourceLibrary);
 						}
 						else
 						{
@@ -721,27 +708,24 @@ class UpdateCommand implements IGDCommand
 			    	}
 
 				case 'supported-duell-tool':
-
 					var version = null;
-
 					version = element.att.version;
-
 					LogHelper.info("      supports " + LogHelper.BOLD + "duell tool " + LogHelper.NORMAL + " " + version);
 
 					if (duellToolRequestedVersion == null)
 					{
-						duellToolRequestedVersion = version;
+						duellToolRequestedVersion = { version:version, dependTo:sourceLibrary };
 					}
 					else
 					{
-						if (version != duellToolRequestedVersion)
+						if (version != duellToolRequestedVersion.version)
 						{
 							try {
-								duellToolRequestedVersion = duellToolGitVers.resolveVersionConflict([version, duellToolRequestedVersion], Arguments.get("-overridebranch"));
+								duellToolRequestedVersion.version = duellToolGitVers.resolveVersionConflict([version, duellToolRequestedVersion.version], Arguments.get("-overridebranch"), ["duell tool", sourceLibrary, duellToolRequestedVersion.dependTo]);
 							}
 							catch (e: String)
 							{
-								throw('Duell tool version conflict: ' + e);
+								throw(e);
 							}
 						}
 					}
@@ -777,7 +761,7 @@ class UpdateCommand implements IGDCommand
 		}
 	}
 
-	private function handleDuellLibParsed(newDuellLib: DuellLib)
+	private function handleDuellLibParsed(newDuellLib: DuellLib, sourceLibrary:String)
 	{
 		checkDuelllibPreConditions( newDuellLib );
 
@@ -793,7 +777,7 @@ class UpdateCommand implements IGDCommand
 			if (prevVersion == newDuellLib.version)
 				return;
 
-			var newVersion = duellLibVersion.gitVers.resolveVersionConflict([duellLibVersion.versionRequested, newDuellLib.version], Arguments.get("-overridebranch"));
+			var newVersion = duellLibVersion.gitVers.resolveVersionConflict([duellLibVersion.versionRequested, newDuellLib.version], Arguments.get("-overridebranch"), [newDuellLib.name, duellLibVersion.dependTo, sourceLibrary]);
 
 			if (prevVersion != newVersion)
 			{
@@ -813,7 +797,7 @@ class UpdateCommand implements IGDCommand
         var gitVers: GitVers = new GitVers(newDuellLib.getPath());
         var newVersion: String = gitVers.resolveVersionConflict([newDuellLib.version], Arguments.get("-overridebranch"));
 
-		duellLibVersions[newDuellLib.name] = {name: newDuellLib.name, gitVers: gitVers, versionRequested: newVersion, versionState:VersionState.Unparsed};
+		duellLibVersions[newDuellLib.name] = {name: newDuellLib.name, gitVers: gitVers, versionRequested: newVersion, versionState:VersionState.Unparsed, dependTo:sourceLibrary};
     }
 
 	private function handleHaxelibParsed(haxelib: Haxelib)
@@ -855,12 +839,12 @@ class UpdateCommand implements IGDCommand
 
 	}
 
-	private function handlePluginParsed(buildLib: DuellLib)
+	private function handlePluginParsed(buildLib: DuellLib, sourceLibrary:String=null)
 	{
 		if (!pluginVersions.exists(buildLib.name))
 		{
 			var gitvers = new GitVers(buildLib.getPath());
-			pluginVersions.set(buildLib.name, {lib: buildLib, gitVers: gitvers});
+			pluginVersions.set(buildLib.name, {lib: buildLib, gitVers: gitvers, dependTo:sourceLibrary});
 		}
 		else
 		{
@@ -872,7 +856,7 @@ class UpdateCommand implements IGDCommand
 			if (prevVersion != newVersion)
 			{
 				try {
-					var solvedVersion = plugin.gitVers.resolveVersionConflict([prevVersion, newVersion], Arguments.get("-overridebranch"));
+					var solvedVersion = plugin.gitVers.resolveVersionConflict([prevVersion, newVersion], Arguments.get("-overridebranch"), [buildLib.name, plugin.dependTo, sourceLibrary]);
 
 					if (solvedVersion != prevVersion)
 					{
@@ -881,7 +865,7 @@ class UpdateCommand implements IGDCommand
 				}
 				catch (e: String)
 				{
-					throw 'Plugin ${buildLib.name} version conflict: ' + e;
+					throw e;
 				}
 			}
 		}

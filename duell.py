@@ -2504,7 +2504,7 @@ class duell_commands_UpdateCommand:
 			return
 		duell_helpers_LogHelper.info("\n")
 		duell_helpers_LogHelper.info(((("checking version of " + "\x1B[1m") + "duell tool") + "\x1B[0m"))
-		resolvedVersion = self.duellToolGitVers.solveVersion(self.duellToolRequestedVersion,duell_objects_Arguments.isSet("-rc"),duell_objects_Arguments.get("-overridebranch"))
+		resolvedVersion = self.duellToolGitVers.solveVersion(self.duellToolRequestedVersion.version,duell_objects_Arguments.isSet("-rc"),duell_objects_Arguments.get("-overridebranch"))
 		if self.duellToolGitVers.needsToChangeVersion(resolvedVersion):
 			duell_helpers_LogHelper.info(((("  - changing to version " + "\x1B[1m") + ("null" if resolvedVersion is None else resolvedVersion)) + "\x1B[0m"))
 			duellToolPreviousVersion = self.duellToolGitVers.currentVersion
@@ -2679,9 +2679,11 @@ class duell_commands_UpdateCommand:
 			duell_helpers_LogHelper.println(((("" + ("null" if name is None else name)) + " does not have a ") + HxOverrides.stringOrNull(duell_defines_DuellDefines.LIB_CONFIG_FILENAME)))
 		else:
 			path = ((HxOverrides.stringOrNull(duell_helpers_DuellLibHelper.getPath(name)) + "/") + HxOverrides.stringOrNull(duell_defines_DuellDefines.LIB_CONFIG_FILENAME))
-			self.parseXML(path)
+			self.parseXML(path,name)
 
-	def parseXML(self,path):
+	def parseXML(self,path,sourceLibrary = "project"):
+		if (sourceLibrary is None):
+			sourceLibrary = "project"
 		xml = haxe_xml_Fast(Xml.parse(sys_io_File.getContent(path)).firstElement())
 		_this = self.currentXMLPath
 		x = haxe_io_Path.directory(path)
@@ -2702,12 +2704,12 @@ class duell_commands_UpdateCommand:
 					buildLib = duell_objects_DuellLib.getDuellLib(("duellbuild" + ("null" if name2 is None else name2)),version2)
 					duell_helpers_LogHelper.info(((((("      supports build plugin " + "\x1B[1m") + ("null" if name2 is None else name2)) + "\x1B[0m") + " ") + ("null" if version2 is None else version2)))
 					if duell_helpers_DuellLibHelper.isInstalled(buildLib.name):
-						self.handlePluginParsed(buildLib)
+						self.handlePluginParsed(buildLib,sourceLibrary)
 					else:
 						answer = duell_helpers_AskHelper.askYesOrNo((("A library for building " + ("null" if name2 is None else name2)) + " is not currently installed. Would you like to try to install it?"))
 						if answer:
 							duell_helpers_DuellLibHelper.install(buildLib.name)
-							self.handlePluginParsed(buildLib)
+							self.handlePluginParsed(buildLib,sourceLibrary)
 						else:
 							pass
 			elif (_hx_local_0 == 7):
@@ -2740,22 +2742,22 @@ class duell_commands_UpdateCommand:
 						continue
 					newDuellLib = duell_objects_DuellLib.getDuellLib(name1,version1)
 					duell_helpers_LogHelper.info(((((("      depends on " + "\x1B[1m") + HxOverrides.stringOrNull(newDuellLib.name)) + "\x1B[0m") + " ") + HxOverrides.stringOrNull(newDuellLib.version)))
-					self.handleDuellLibParsed(newDuellLib)
+					self.handleDuellLibParsed(newDuellLib,sourceLibrary)
 			elif (_hx_local_0 == 20):
 				if (_g == "supported-duell-tool"):
 					version3 = None
 					version3 = element.att.resolve("version")
 					duell_helpers_LogHelper.info(((((("      supports " + "\x1B[1m") + "duell tool ") + "\x1B[0m") + " ") + ("null" if version3 is None else version3)))
 					if (self.duellToolRequestedVersion is None):
-						self.duellToolRequestedVersion = version3
-					elif (version3 != self.duellToolRequestedVersion):
+						self.duellToolRequestedVersion = _hx_AnonObject({'version': version3, 'dependTo': sourceLibrary})
+					elif (version3 != self.duellToolRequestedVersion.version):
 						try:
-							self.duellToolRequestedVersion = self.duellToolGitVers.resolveVersionConflict([version3, self.duellToolRequestedVersion],duell_objects_Arguments.get("-overridebranch"))
+							self.duellToolRequestedVersion.version = self.duellToolGitVers.resolveVersionConflict([version3, self.duellToolRequestedVersion.version],duell_objects_Arguments.get("-overridebranch"),None,["duell tool", sourceLibrary, self.duellToolRequestedVersion.dependTo])
 						except Exception as _hx_e:
 							_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
 							if isinstance(_hx_e1, str):
 								e = _hx_e1
-								raise _HxException(("Duell tool version conflict: " + ("null" if e is None else e)))
+								raise _HxException(e)
 							else:
 								raise _hx_e
 			else:
@@ -2776,7 +2778,7 @@ class duell_commands_UpdateCommand:
 		if (not duell_helpers_DuellLibHelper.isPathValid(duellLib.name)):
 			raise _HxException((((("DuellLib " + HxOverrides.stringOrNull(duellLib.name)) + " has an invalid path - ") + HxOverrides.stringOrNull(duell_helpers_DuellLibHelper.getPath(duellLib.name))) + " - check your \"haxelib list\""))
 
-	def handleDuellLibParsed(self,newDuellLib):
+	def handleDuellLibParsed(self,newDuellLib,sourceLibrary):
 		self.checkDuelllibPreConditions(newDuellLib)
 		_hx_local_0 = self.duellLibVersions.keys()
 		while _hx_local_0.hasNext():
@@ -2787,7 +2789,7 @@ class duell_commands_UpdateCommand:
 			prevVersion = duellLibVersion.versionRequested
 			if (prevVersion == newDuellLib.version):
 				return
-			newVersion = duellLibVersion.gitVers.resolveVersionConflict([duellLibVersion.versionRequested, newDuellLib.version],duell_objects_Arguments.get("-overridebranch"))
+			newVersion = duellLibVersion.gitVers.resolveVersionConflict([duellLibVersion.versionRequested, newDuellLib.version],duell_objects_Arguments.get("-overridebranch"),None,[newDuellLib.name, duellLibVersion.dependTo, sourceLibrary])
 			if (prevVersion != newVersion):
 				_g = duellLibVersion.versionState
 				if ((_g.index) == 1):
@@ -2798,7 +2800,7 @@ class duell_commands_UpdateCommand:
 			return
 		gitVers = duell_versioning_GitVers(newDuellLib.getPath())
 		newVersion1 = gitVers.resolveVersionConflict([newDuellLib.version],duell_objects_Arguments.get("-overridebranch"))
-		v = _hx_AnonObject({'name': newDuellLib.name, 'gitVers': gitVers, 'versionRequested': newVersion1, 'versionState': duell_commands_VersionState.Unparsed})
+		v = _hx_AnonObject({'name': newDuellLib.name, 'gitVers': gitVers, 'versionRequested': newVersion1, 'versionState': duell_commands_VersionState.Unparsed, 'dependTo': sourceLibrary})
 		self.duellLibVersions.h[newDuellLib.name] = v
 		v
 
@@ -2823,24 +2825,24 @@ class duell_commands_UpdateCommand:
 				solvedlib.selectVersion()
 			self.haxelibVersions.h[haxelib.name] = solvedlib
 
-	def handlePluginParsed(self,buildLib):
+	def handlePluginParsed(self,buildLib,sourceLibrary = None):
 		if (not buildLib.name in self.pluginVersions.h):
 			gitvers = duell_versioning_GitVers(buildLib.getPath())
-			self.pluginVersions.h[buildLib.name] = _hx_AnonObject({'lib': buildLib, 'gitVers': gitvers})
+			self.pluginVersions.h[buildLib.name] = _hx_AnonObject({'lib': buildLib, 'gitVers': gitvers, 'dependTo': sourceLibrary})
 		else:
 			plugin = self.pluginVersions.h.get(buildLib.name,None)
 			prevVersion = plugin.lib.version
 			newVersion = buildLib.version
 			if (prevVersion != newVersion):
 				try:
-					solvedVersion = plugin.gitVers.resolveVersionConflict([prevVersion, newVersion],duell_objects_Arguments.get("-overridebranch"))
+					solvedVersion = plugin.gitVers.resolveVersionConflict([prevVersion, newVersion],duell_objects_Arguments.get("-overridebranch"),None,[buildLib.name, plugin.dependTo, sourceLibrary])
 					if (solvedVersion != prevVersion):
 						plugin.lib = duell_objects_DuellLib.getDuellLib(buildLib.name,solvedVersion)
 				except Exception as _hx_e:
 					_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
 					if isinstance(_hx_e1, str):
 						e = _hx_e1
-						raise _HxException(((("Plugin " + HxOverrides.stringOrNull(buildLib.name)) + " version conflict: ") + ("null" if e is None else e)))
+						raise _HxException(e)
 					else:
 						raise _hx_e
 
@@ -4774,8 +4776,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_val
 					nonlocal _g_head
+					nonlocal _g_val
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -6728,7 +6730,7 @@ class duell_versioning_GitVers:
 					return tag
 		return currentBranch
 
-	def resolveVersionConflict(self,requestedVersions,rc = False,overrideVersion = None):
+	def resolveVersionConflict(self,requestedVersions,rc = False,overrideVersion = None,libs = None):
 		if (rc is None):
 			rc = False
 		if (overrideVersion is not None):
@@ -6751,7 +6753,12 @@ class duell_versioning_GitVers:
 			semVer = (requestedSemanticVersions[_g] if _g >= 0 and _g < len(requestedSemanticVersions) else None)
 			_g = (_g + 1)
 			if (not duell_objects_SemVer.areCompatible(firstSemVer,semVer)):
-				raise _HxException(((((("Cannot solve version conflict because the versions are incompatible. Version " + HxOverrides.stringOrNull(semVer.toString())) + " and ") + HxOverrides.stringOrNull(firstSemVer.toString())) + ". For path ") + HxOverrides.stringOrNull(self.dir)))
+				msg = None
+				if (libs is None):
+					msg = (((((("Version conflict for " + HxOverrides.stringOrNull(self.dir)) + ". Versions ") + HxOverrides.stringOrNull(semVer.toString())) + " and ") + HxOverrides.stringOrNull(firstSemVer.toString())) + " are incompatible!")
+				else:
+					msg = (((((("Version conflict for '" + HxOverrides.stringOrNull((libs[0] if 0 < len(libs) else None))) + "' (") + HxOverrides.stringOrNull(self.dir)) + ")\n") + HxOverrides.stringOrNull(((((((("'" + HxOverrides.stringOrNull((libs[1] if 1 < len(libs) else None))) + "' depends on '") + HxOverrides.stringOrNull((libs[0] if 0 < len(libs) else None))) + "' ") + HxOverrides.stringOrNull(firstSemVer.toString())) + "\n")))) + HxOverrides.stringOrNull((((((("'" + HxOverrides.stringOrNull((libs[2] if 2 < len(libs) else None))) + "' depends on '") + HxOverrides.stringOrNull((libs[0] if 0 < len(libs) else None))) + "' ") + HxOverrides.stringOrNull(semVer.toString())))))
+				raise _HxException(msg)
 		def _hx_local_1(s):
 			return s.rc
 		rcVersions = list(filter(_hx_local_1,requestedSemanticVersions))

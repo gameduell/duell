@@ -77,10 +77,18 @@ class GitVers
     	return currentBranch;
 	}
 
-	/// override version is for basically checking first that version, and then everything else
-	/// its useful for when you want to get all branches of a given name in multiple repos, for developing
-	/// a feature that is done across multiple libraries
-	public function resolveVersionConflict(requestedVersions: Array<String>, rc: Bool = false, overrideVersion: String = null): String
+    /**
+        function resolveVersionConflict
+        @param requestedVersions Array<String> [previous version, new version]
+        @param rc Bool
+        @param overrideVersion String Override version is for basically checking first that version, and then everything else
+        its useful for when you want to get all branches of a given name in multiple repos, for developing
+        a feature that is done across multiple libraries
+        @param libs Array<String> Used for error message. If set it should contain [current lib name, previous depending library, name of current depending library]
+
+        @return String Returns best version
+    */
+	public function resolveVersionConflict(requestedVersions: Array<String>, rc: Bool = false, overrideVersion: String = null, libs:Array<String>=null ): String
 	{
         /// check override
         if (overrideVersion != null)
@@ -127,7 +135,12 @@ class GitVers
         {
         	if (!SemVer.areCompatible(firstSemVer, semVer))
         	{
-        		throw 'Cannot solve version conflict because the versions are incompatible. Version ${semVer.toString()} and ${firstSemVer.toString()}. For path $dir';
+                var msg = libs == null ?
+                        'Version conflict for $dir. Versions ${semVer.toString()} and ${firstSemVer.toString()} are incompatible!' :
+                        'Version conflict for \'${libs[0]}\' ($dir)\n' +
+                        '\'${libs[1]}\' depends on \'${libs[0]}\' ${firstSemVer.toString()}\n' + 
+                        '\'${libs[2]}\' depends on \'${libs[0]}\' ${semVer.toString()}';
+        		throw msg;
         	}
         }
 
