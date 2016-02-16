@@ -4776,8 +4776,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_head
 					nonlocal _g_val
+					nonlocal _g_head
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -4827,8 +4827,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -6118,7 +6118,7 @@ _hx_classes["duell.objects.HXCPPConfigXML"] = duell_objects_HXCPPConfigXML
 class duell_objects_Haxelib:
 	_hx_class_name = "duell.objects.Haxelib"
 	_hx_fields = ["name", "version", "path"]
-	_hx_methods = ["setPath", "exists", "isHaxelibInstalled", "getPath", "getHaxelibPathOutput", "selectVersion", "uninstall", "install", "isGitVersion", "toString"]
+	_hx_methods = ["setPath", "exists", "isHaxelibInstalled", "getPath", "isValidLibPath", "getHaxelibPathOutput", "selectVersion", "uninstall", "install", "isGitVersion", "toString"]
 	_hx_statics = ["haxelibCache", "getHaxelib", "solveConflict"]
 
 	def __init__(self,name,version = ""):
@@ -6177,7 +6177,10 @@ class duell_objects_Haxelib:
 			i = _g1
 			_g1 = (_g1 + 1)
 			if StringTools.startsWith(StringTools.trim((lines[i] if i >= 0 and i < len(lines) else None)),"-D"):
-				self.path = StringTools.trim(python_internal_ArrayImpl._get(lines, (i - 1)))
+				pathLine = python_internal_ArrayImpl._get(lines, (i - 1))
+				StringTools.trim(pathLine)
+				if self.isValidLibPath(pathLine,self.name):
+					self.path = pathLine
 		if (self.path == ""):
 			try:
 				_g2 = 0
@@ -6185,13 +6188,16 @@ class duell_objects_Haxelib:
 					line = (lines[_g2] if _g2 >= 0 and _g2 < len(lines) else None)
 					_g2 = (_g2 + 1)
 					if ((line != "") and ((HxString.substr(line,0,1) != "-"))):
-						if sys_FileSystem.exists(line):
+						if self.isValidLibPath(line,self.name):
 							self.path = line
 							break
 			except Exception as _hx_e:
 				_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
 				pass
 		return self.path
+
+	def isValidLibPath(self,path,libName):
+		return (sys_FileSystem.exists(path) and ((path.find(libName) != -1)))
 
 	def getHaxelibPathOutput(self):
 		nameToTry = self.name
