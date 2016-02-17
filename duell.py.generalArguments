@@ -100,6 +100,12 @@
                     Add a path to your log file to recreate the last logged version.
                 </documentation>
             </arg>
+
+            <arg name="-target" type="string" >
+                <documentation>
+                    Target a specific platform you want to run the updates for. If not setted, the tool will update all dependend libraries.
+                </documentation>
+            </arg>
         </args>
     </command>
 

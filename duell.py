@@ -1374,6 +1374,9 @@ class duell_commands_BuildCommand:
 			def _hx_local_0(argument):
 				return duell_objects_Arguments.isGeneralArgument(argument)
 			updateArguments = list(filter(_hx_local_0,_this))
+			selectedPlugin = duell_objects_Arguments.getSelectedPlugin()
+			updateArguments.append("-target")
+			updateArguments.append(selectedPlugin)
 			duell_helpers_CommandHelper.runHaxelib(Sys.getCwd(),(["run", "duell_duell", "update"] + updateArguments),_hx_AnonObject({}))
 			def _hx_local_1():
 				a = duell_objects_Arguments.getRawArguments()
@@ -2287,7 +2290,7 @@ _hx_classes["duell.commands.VersionState"] = duell_commands_VersionState
 
 class duell_commands_UpdateCommand:
 	_hx_class_name = "duell.commands.UpdateCommand"
-	_hx_fields = ["finalLibList", "finalPluginList", "finalToolList", "haxelibVersions", "duellLibVersions", "pluginVersions", "buildLib", "platformName", "duellToolGitVers", "duellToolRequestedVersion", "isDifferentDuellToolVersion", "currentXMLPath"]
+	_hx_fields = ["finalLibList", "finalPluginList", "finalToolList", "haxelibVersions", "duellLibVersions", "pluginVersions", "buildLib", "platformName", "duellToolGitVers", "duellToolRequestedVersion", "isDifferentDuellToolVersion", "targetPlatform", "currentXMLPath"]
 	_hx_methods = ["execute", "validateArguments", "synchronizeRemotes", "useVersionFileToRecreateSpecificVersions", "recreateDuellLib", "determineAndValidateDependenciesAndDefines", "parseDuellUserFile", "parseProjectFile", "iterateDuellLibVersionsUntilEverythingIsParsedAndVersioned", "checkVersionsOfPlugins", "checkDuellToolVersion", "checkHaxeVersion", "printFinalResult", "printVersionDiffs", "logVersions", "createFinalLibLists", "sortDuellLibsByName", "sortHaxeLibsByName", "createSchemaXml", "saveUpdateExecution", "lockBuildVersion", "parseDuellLibWithName", "parseXML", "checkDuelllibPreConditions", "handleDuellLibParsed", "handleHaxelibParsed", "handlePluginParsed", "resolvePath"]
 	_hx_statics = ["duellFileHasDuellNamespace", "userFileHasDuellNamespace", "validateSchemaXml", "validateUserSchemaXml"]
 	_hx_interfaces = [duell_commands_IGDCommand]
@@ -2304,8 +2307,10 @@ class duell_commands_UpdateCommand:
 		self.duellToolGitVers = None
 		self.duellToolRequestedVersion = None
 		self.isDifferentDuellToolVersion = None
+		self.targetPlatform = None
 		self.currentXMLPath = None
 		self.currentXMLPath = []
+		self.targetPlatform = None
 		self.isDifferentDuellToolVersion = False
 		self.duellToolRequestedVersion = None
 		self.buildLib = None
@@ -2318,6 +2323,10 @@ class duell_commands_UpdateCommand:
 
 	def execute(self):
 		self.validateArguments()
+		if duell_objects_Arguments.isSet("-target"):
+			self.targetPlatform = duell_objects_Arguments.get("-target")
+		else:
+			self.targetPlatform = None
 		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Update Dependencies"),None,"\x1B[2m")
 		self.synchronizeRemotes()
 		if duell_objects_Arguments.isSet("-logFile"):
@@ -2691,6 +2700,8 @@ class duell_commands_UpdateCommand:
 		_hx_local_1 = xml.get_elements()
 		while _hx_local_1.hasNext():
 			element = _hx_local_1.next()
+			if ((self.targetPlatform is not None) and (not duell_helpers_XMLHelper.isValidElement(element,[self.targetPlatform]))):
+				continue
 			_g = element.get_name()
 			_hx_local_0 = len(_g)
 			if (_hx_local_0 == 22):
@@ -2894,6 +2905,7 @@ class duell_commands_UpdateCommand:
 		_hx_o.duellToolGitVers = None
 		_hx_o.duellToolRequestedVersion = None
 		_hx_o.isDifferentDuellToolVersion = None
+		_hx_o.targetPlatform = None
 		_hx_o.currentXMLPath = None
 duell_commands_UpdateCommand._hx_class = duell_commands_UpdateCommand
 _hx_classes["duell.commands.UpdateCommand"] = duell_commands_UpdateCommand
@@ -4827,8 +4839,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -4945,6 +4957,86 @@ class duell_helpers_ThreadHelper:
 		return duell_helpers_Threading.Lock()
 duell_helpers_ThreadHelper._hx_class = duell_helpers_ThreadHelper
 _hx_classes["duell.helpers.ThreadHelper"] = duell_helpers_ThreadHelper
+
+
+class duell_helpers_XMLHelper:
+	_hx_class_name = "duell.helpers.XMLHelper"
+	_hx_statics = ["isValidElement"]
+
+	@staticmethod
+	def isValidElement(element,validatingConditions):
+		def _hx_local_7(value):
+			andDefines = value.split("[and]")
+			optionalDefines = None
+			if (value.find("||") != -1):
+				optionalDefines = value.split("||")
+			else:
+				optionalDefines = value.split("[or]")
+			def _hx_local_0(_hx_str):
+				return StringTools.trim(_hx_str)
+			list(map(_hx_local_0,andDefines))
+			def _hx_local_1(str1):
+				return (str1 != "")
+			andDefines = list(filter(_hx_local_1,andDefines))
+			def _hx_local_2(str2):
+				return StringTools.trim(str2)
+			list(map(_hx_local_2,optionalDefines))
+			def _hx_local_3(str3):
+				return (str3 != "")
+			optionalDefines = list(filter(_hx_local_3,optionalDefines))
+			if ((len(optionalDefines) > 1) and ((len(andDefines) > 1))):
+				raise _HxException((("Chaining of [and] and [or] defines is not supported in element: \"" + ("null" if value is None else value)) + "\""))
+			result = []
+			if (len(andDefines) > 1):
+				result.append(andDefines)
+			else:
+				_g = 0
+				while (_g < len(optionalDefines)):
+					requiredDefinesString = (optionalDefines[_g] if _g >= 0 and _g < len(optionalDefines) else None)
+					_g = (_g + 1)
+					requiredDefines = requiredDefinesString.split(" ")
+					def _hx_local_5(str4):
+						return StringTools.trim(str4)
+					list(map(_hx_local_5,requiredDefines))
+					def _hx_local_6(str5):
+						return (str5 != "")
+					requiredDefines = list(filter(_hx_local_6,requiredDefines))
+					if (len(requiredDefines) != 0):
+						result.append(requiredDefines)
+			return result
+		processValue = _hx_local_7
+		def _hx_local_10(optionalDefines1):
+			matchOptional = False
+			_g1 = 0
+			while (_g1 < len(optionalDefines1)):
+				requiredDefines1 = (optionalDefines1[_g1] if _g1 >= 0 and _g1 < len(optionalDefines1) else None)
+				_g1 = (_g1 + 1)
+				matchRequired = True
+				_g11 = 0
+				while (_g11 < len(requiredDefines1)):
+					required = (requiredDefines1[_g11] if _g11 >= 0 and _g11 < len(requiredDefines1) else None)
+					_g11 = (_g11 + 1)
+					if (python_internal_ArrayImpl.indexOf(validatingConditions,required,None) == -1):
+						matchRequired = False
+						break
+				if matchRequired:
+					matchOptional = True
+					break
+			return matchOptional
+		evaluateValue = _hx_local_10
+		unlessValid = True
+		ifValid = True
+		if element.has.resolve("if"):
+			ifValueProcessed = processValue(element.att.resolve("if"))
+			if (len(ifValueProcessed) != 0):
+				ifValid = evaluateValue(ifValueProcessed)
+		if element.has.resolve("unless"):
+			unlessValueProcessed = processValue(element.att.resolve("unless"))
+			if (len(unlessValueProcessed) != 0):
+				unlessValid = (not evaluateValue(unlessValueProcessed))
+		return (ifValid and unlessValid)
+duell_helpers_XMLHelper._hx_class = duell_helpers_XMLHelper
+_hx_classes["duell.helpers.XMLHelper"] = duell_helpers_XMLHelper
 
 
 class duell_objects_ArgumentSpec_Int:

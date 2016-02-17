@@ -212,6 +212,10 @@ class BuildCommand implements IGDCommand
                 return Arguments.isGeneralArgument(argument);
             });
 
+            var selectedPlugin = Arguments.getSelectedPlugin();
+            updateArguments.push("-target");
+            updateArguments.push(selectedPlugin);
+
             CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell", "update"].concat(updateArguments), {});
 
             CommandHelper.runHaxelib(Sys.getCwd(), ["run", "duell_duell"].concat(Arguments.getRawArguments()), {});

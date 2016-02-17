@@ -302,8 +302,6 @@ class Arguments
 		var xml: Fast;
 		xml = new Fast(Xml.parse(haxe.Resource.getString("generalArguments")).firstElement());
 
-
-
 		for (element in xml.elements)
 		{
 			switch element.name

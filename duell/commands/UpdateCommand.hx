@@ -44,6 +44,7 @@ import duell.objects.SemVer;
 import duell.objects.DuellProcess;
 import duell.objects.DuellConfigJSON;
 
+import duell.helpers.XMLHelper;
 import duell.helpers.LogHelper;
 import duell.helpers.AskHelper;
 import duell.helpers.PathHelper;
@@ -100,6 +101,8 @@ class UpdateCommand implements IGDCommand
 
 	var isDifferentDuellToolVersion: Bool = false;
 
+    var targetPlatform : String = null;
+
     public function new()
     {
     }
@@ -107,6 +110,8 @@ class UpdateCommand implements IGDCommand
     public function execute() : String
     {
     	validateArguments();
+
+        targetPlatform = Arguments.isSet("-target") ? Arguments.get("-target") : null;
 
     	LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Update Dependencies", null, LogHelper.DARK_GREEN);
 
@@ -632,6 +637,11 @@ class UpdateCommand implements IGDCommand
 
 		for (element in xml.elements)
 		{
+            if(targetPlatform != null && !XMLHelper.isValidElement(element, [targetPlatform]))
+            {
+                continue;
+            }
+
 			switch element.name
 			{
 				case 'haxelib':
