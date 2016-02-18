@@ -144,13 +144,7 @@ class Haxelib
 
 			if (lines[i].trim().startsWith('-D'))
 			{
-				var pathLine = lines[i - 1];
-				pathLine.trim();
-
-				if (isValidLibPath(pathLine, name))
-				{
-					path = pathLine;
-				}
+				path = lines[i - 1].trim();
 			}
 
 		}
@@ -162,7 +156,7 @@ class Haxelib
 				{
 					if (line != "" && line.substr(0, 1) != "-")
 					{
-						if (isValidLibPath(line, name))
+						if (FileSystem.exists(line))
 						{
 							path = line;
 							break;
@@ -174,12 +168,6 @@ class Haxelib
 		}
 
 		return path;
-	}
-
-	private function isValidLibPath(path:String, libName:String):Bool
-	{
-		// check if path exists and path contains libName
-		return FileSystem.exists(path) && path.indexOf(libName) != -1;
 	}
 
 	private function getHaxelibPathOutput(): String
