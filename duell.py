@@ -6263,8 +6263,6 @@ class duell_objects_Haxelib:
 				raise _HxException((("Could not find haxelib \"" + HxOverrides.stringOrNull(self.name)) + "\", does it need to be installed?"))
 		output = self.getHaxelibPathOutput()
 		lines = output.split("\n")
-		duell_helpers_LogHelper.info("---------------- ")
-		duell_helpers_LogHelper.info(("name: " + HxOverrides.stringOrNull(self.name)))
 		_g1 = 1
 		_g = len(lines)
 		while (_g1 < _g):
@@ -6272,11 +6270,8 @@ class duell_objects_Haxelib:
 			_g1 = (_g1 + 1)
 			if StringTools.startsWith(StringTools.trim((lines[i] if i >= 0 and i < len(lines) else None)),"-D"):
 				self.path = StringTools.trim(python_internal_ArrayImpl._get(lines, (i - 1)))
-				duell_helpers_LogHelper.info(("path after trim: " + HxOverrides.stringOrNull(self.path)))
 				if self.isValidLibPath(self.path,self.name):
 					break
-		duell_helpers_LogHelper.info(("path after loop: " + HxOverrides.stringOrNull(self.path)))
-		duell_helpers_LogHelper.info("---------------- ")
 		if (self.path == ""):
 			try:
 				_g2 = 0

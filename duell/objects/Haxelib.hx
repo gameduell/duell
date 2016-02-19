@@ -140,27 +140,19 @@ class Haxelib
 
 		var lines = output.split ("\n");
 
-		LogHelper.info("---------------- ");
-		LogHelper.info("name: " + name);
-		
 		for (i in 1...lines.length) {
 
 			if (lines[i].trim().startsWith('-D'))
 			{
 				path = lines[i - 1].trim();
-				LogHelper.info("path after trim: " + path);
-				
+
 				if (isValidLibPath(path, name)) {
 					break;
 				}
 			}
 
 		}
-		
-		
-		LogHelper.info("path after loop: " + path);
-		LogHelper.info("---------------- ");
-		
+
 		if (path == "")
 		{
 			try {
