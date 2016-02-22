@@ -95,15 +95,6 @@ class DirHashHelper
 			return true;
 		});
 
-		// filter the date
-		outputSplitFiltered = outputSplitFiltered.map(function(s) {
-			var fileInfoList:Array<String> = s.split(" ");
-			fileInfoList = fileInfoList.filter(function(s) return s != "");
-			// removes columns 6,7,8 presenting the modified date of a file
-			fileInfoList.splice(6,3);
-			s = fileInfoList.join(" ");
-			return s;
-		});
 		output = outputSplitFiltered.join("\n");
 
 		return output.getFnv32IntFromString();
@@ -164,17 +155,7 @@ class DirHashHelper
 			}
 			return true;
 		});
-
-		// filter the date
-		outputSplitFiltered = outputSplitFiltered.map(function(s) {
-			var fileInfoList:Array<String> = s.split(" ");
-			fileInfoList = fileInfoList.filter(function(s) return s != "");
-			// removes columns 5,6,7 presenting the modified date of a file
-			fileInfoList.splice(5,3);
-			s = fileInfoList.join(" ");
-			return s;
-		});
-
+        
 		output = outputSplitFiltered.join("\n");
 		return output.getFnv32IntFromString();
 	}
