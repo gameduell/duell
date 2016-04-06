@@ -2209,10 +2209,15 @@ class duell_commands_ToolSetupCommand:
 				haxePath = "/usr/lib/haxe"
 			installedCommand = False
 			answer = None
+			destinationPath = None
 			answer = duell_helpers_AskHelper.askYesOrNo("Do you want to install the \"duell\" command?")
+			if ((duell_helpers_PlatformHelper.get_hostPlatform() == duell_helpers_Platform.MAC) and ((duell_helpers_PlatformHelper.get_macVersion().minor >= 11))):
+				destinationPath = "/usr/local/bin/duell"
+			else:
+				destinationPath = "/usr/bin/duell"
 			if answer:
-				duell_helpers_CommandHelper.runCommand("","sudo",["cp", "-f", (HxOverrides.stringOrNull(duell_helpers_DuellLibHelper.getPath("duell")) + "/bin/duell.sh"), "/usr/bin/duell"],_hx_AnonObject({'errorMessage': "copying duell executable to the path"}))
-				duell_helpers_CommandHelper.runCommand("","sudo",["chmod", "755", "/usr/bin/duell"],_hx_AnonObject({'errorMessage': "setting permissions on the duell executable"}))
+				duell_helpers_CommandHelper.runCommand("","sudo",["cp", "-f", (HxOverrides.stringOrNull(duell_helpers_DuellLibHelper.getPath("duell")) + "/bin/duell.sh"), destinationPath],_hx_AnonObject({'errorMessage': "copying duell executable to the path"}))
+				duell_helpers_CommandHelper.runCommand("","sudo",["chmod", "755", destinationPath],_hx_AnonObject({'errorMessage': "setting permissions on the duell executable"}))
 				installedCommand = True
 			if (not installedCommand):
 				duell_helpers_LogHelper.println("")
@@ -2221,8 +2226,8 @@ class duell_commands_ToolSetupCommand:
 				duell_helpers_LogHelper.println(" a) Manually add an alias called \"duell\" to run \"haxelib run duell\"")
 				duell_helpers_LogHelper.println(" b) Run the following commands:")
 				duell_helpers_LogHelper.println("")
-				duell_helpers_LogHelper.println((("sudo cp \"" + HxOverrides.stringOrNull(duell_objects_Haxelib.getHaxelib("duell_duell").getPath())) + "/bin/duell.sh\" /usr/bin/duell"))
-				duell_helpers_LogHelper.println("sudo chmod 755 /usr/bin/duell")
+				duell_helpers_LogHelper.println((("sudo cp \"" + HxOverrides.stringOrNull(duell_objects_Haxelib.getHaxelib("duell_duell").getPath())) + HxOverrides.stringOrNull((("/bin/duell.sh\" " + ("null" if destinationPath is None else destinationPath))))))
+				duell_helpers_LogHelper.println(("sudo chmod 755 " + ("null" if destinationPath is None else destinationPath)))
 				duell_helpers_LogHelper.println("")
 
 	def setupHXCPP(self):
@@ -4044,11 +4049,13 @@ _hx_classes["duell.helpers.Architecture"] = duell_helpers_Architecture
 
 class duell_helpers_PlatformHelper:
 	_hx_class_name = "duell.helpers.PlatformHelper"
-	_hx_statics = ["hostArchitecture", "hostPlatform", "_hostArchitecture", "_hostPlatform", "get_hostArchitecture", "get_hostPlatform"]
+	_hx_statics = ["hostArchitecture", "hostPlatform", "macVersion", "_hostArchitecture", "_hostPlatform", "_macVersion", "get_hostArchitecture", "get_hostPlatform", "get_macVersion"]
 	hostArchitecture = None
 	hostPlatform = None
+	macVersion = None
 	_hostArchitecture = None
 	_hostPlatform = None
+	_macVersion = None
 
 	@staticmethod
 	def get_hostArchitecture():
@@ -4101,6 +4108,23 @@ class duell_helpers_PlatformHelper:
 			platformName = duell_helpers_StringHelper.formatEnum(duell_helpers_PlatformHelper._hostPlatform)
 			duell_helpers_LogHelper.info("",(" - \x1B[1mDetected host platform:\x1B[0m " + ("null" if platformName is None else platformName)))
 		return duell_helpers_PlatformHelper._hostPlatform
+
+	@staticmethod
+	def get_macVersion():
+		if (duell_helpers_PlatformHelper.get_hostPlatform() != duell_helpers_Platform.MAC):
+			duell_helpers_LogHelper.exitWithFormattedError("PlatformHelper.macVersion called and the host platform is not MAC")
+			return None
+		if (duell_helpers_PlatformHelper._macVersion is None):
+			process = sys_io_Process("sw_vers", ["-productVersion"])
+			output = process.stdout.readAll().toString()
+			process.exitCode()
+			versions = None
+			_this = output.split(".")
+			def _hx_local_0(s):
+				return Std.parseInt(s)
+			versions = list(map(_hx_local_0,_this))
+			duell_helpers_PlatformHelper._macVersion = duell_objects_SemVer((versions[0] if 0 < len(versions) else None), (versions[1] if 1 < len(versions) else None), (versions[2] if 2 < len(versions) else None), False, False)
+		return duell_helpers_PlatformHelper._macVersion
 duell_helpers_PlatformHelper._hx_class = duell_helpers_PlatformHelper
 _hx_classes["duell.helpers.PlatformHelper"] = duell_helpers_PlatformHelper
 
@@ -11248,7 +11272,7 @@ class sys_io_FileOutput(haxe_io_Output):
 		self.impl = impl
 
 	def set_bigEndian(self,b):
-		return self.impl.set_bigEndian(b)
+		return Reflect.field(self.impl,"set_bigEndian")(b)
 
 	def writeByte(self,c):
 		self.impl.writeByte(c)

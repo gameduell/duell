@@ -262,13 +262,24 @@ class ToolSetupCommand implements IGDCommand
 
 			var installedCommand = false;
 			var answer = null;
+			var destinationPath: String;
 
 			answer = AskHelper.askYesOrNo("Do you want to install the \"duell\" command?");
 
+			// El Capitan security measures
+			if (PlatformHelper.hostPlatform == Platform.MAC && PlatformHelper.macVersion.minor >= 11)
+			{
+				destinationPath = "/usr/local/bin/duell";
+			}
+			else
+			{
+				destinationPath = "/usr/bin/duell";
+			}
+
 			if (answer)
 			{
-				CommandHelper.runCommand("", "sudo", ["cp", "-f", DuellLibHelper.getPath("duell") + "/bin/duell.sh", "/usr/bin/duell"], {errorMessage: "copying duell executable to the path"});
-				CommandHelper.runCommand("", "sudo", ["chmod", "755", "/usr/bin/duell"], {errorMessage: "setting permissions on the duell executable"});
+				CommandHelper.runCommand("", "sudo", ["cp", "-f", DuellLibHelper.getPath("duell") + "/bin/duell.sh", destinationPath], {errorMessage: "copying duell executable to the path"});
+				CommandHelper.runCommand("", "sudo", ["chmod", "755", destinationPath], {errorMessage: "setting permissions on the duell executable"});
 				installedCommand = true;
 			}
 
@@ -280,8 +291,8 @@ class ToolSetupCommand implements IGDCommand
 				LogHelper.println(" a) Manually add an alias called \"duell\" to run \"haxelib run duell\"");
 				LogHelper.println(" b) Run the following commands:");
 				LogHelper.println("");
-				LogHelper.println("sudo cp \"" + Haxelib.getHaxelib("duell_duell").getPath() + "/bin/duell.sh\" /usr/bin/duell");
-				LogHelper.println("sudo chmod 755 /usr/bin/duell");
+				LogHelper.println("sudo cp \"" + Haxelib.getHaxelib("duell_duell").getPath() + '/bin/duell.sh\" $destinationPath');
+				LogHelper.println('sudo chmod 755 $destinationPath');
 				LogHelper.println("");
 			}
 		}
