@@ -26,6 +26,7 @@
 
 package duell.helpers;
 
+import duell.objects.SemVer;
 import duell.helpers.PlatformHelper;
 
 import sys.io.Process;
@@ -61,8 +62,12 @@ class PlatformHelper
 	public static var hostArchitecture(get_hostArchitecture, null) : Architecture;
 	public static var hostPlatform(get_hostPlatform, null) : Platform;
 
+    /** Check will only work when the platform is Mac OS X */
+    public static var macVersion(get_macVersion, null) : SemVer;
+
 	private static var _hostArchitecture : Architecture;
 	private static var _hostPlatform : Platform;
+    private static var _macVersion : SemVer;
 
 	private static function get_hostArchitecture() : Architecture
 	{
@@ -129,7 +134,7 @@ class PlatformHelper
 			}
 			else if (new EReg("mac", "i").match(systemName))
 			{
-				_hostPlatform = Platform.MAC;
+                _hostPlatform = Platform.MAC;
 			}
 
 			var platformName : String = StringHelper.formatEnum(_hostPlatform);
@@ -139,5 +144,24 @@ class PlatformHelper
 		return _hostPlatform;
 	}
 
+    private static function get_macVersion() : SemVer
+    {
+        if (hostPlatform != Platform.MAC)
+        {
+            LogHelper.exitWithFormattedError("PlatformHelper.macVersion called and the host platform is not MAC");
+            return null;
+        }
 
+        if (_macVersion == null)
+        {
+            var process = new Process("sw_vers", [ "-productVersion" ]);
+            var output = process.stdout.readAll().toString();
+            process.exitCode();
+
+            var versions: Array<Int> = output.split(".").map(function(s) { return Std.parseInt(s); });
+            _macVersion = new SemVer(versions[0], versions[1], versions[2], false, false);
+        }
+
+        return _macVersion;
+    }
 }
