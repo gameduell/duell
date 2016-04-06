@@ -5718,10 +5718,13 @@ class duell_objects_DuellLibReference:
 		path = haxe_io_Path.join([duellConfigJSON.localLibraryPath, self.destinationPath])
 		duell_helpers_LogHelper.println((("Checking out library in directory : [" + HxOverrides.stringOrNull(self.destinationPath)) + "]"))
 		if sys_FileSystem.exists(path):
-			if (duell_helpers_GitHelper.pull(path) != 0):
-				raise _HxException(("Can't Install library " + HxOverrides.stringOrNull(self.name)))
-		elif (duell_helpers_GitHelper.clone(self.gitPath,path) != 0):
-			raise _HxException(("Can't Install library " + HxOverrides.stringOrNull(self.name)))
+			result = duell_helpers_GitHelper.pull(path)
+			if (result != 0):
+				raise _HxException(((("Pulling repo failed (error:" + Std.string(result)) + ")! Can't Install library ") + HxOverrides.stringOrNull(self.name)))
+		else:
+			result1 = duell_helpers_GitHelper.clone(self.gitPath,path)
+			if (result1 != 0):
+				raise _HxException(((("Clone repo failed (error:" + Std.string(result1)) + ")! Can't Install library ") + HxOverrides.stringOrNull(self.name)))
 		duell_helpers_LogHelper.println("Setting repo as haxelib dev")
 		duell_helpers_CommandHelper.runHaxelib("",["dev", ("duell_" + HxOverrides.stringOrNull(self.name)), ((HxOverrides.stringOrNull(duellConfigJSON.localLibraryPath) + "/") + HxOverrides.stringOrNull(self.libPath))],_hx_AnonObject({'errorMessage': "configuring 'haxelib dev' on the downloaded library"}))
 		duell_helpers_LogHelper.info((("Done Installing lib " + HxOverrides.stringOrNull(self.name)) + " =========================================="))

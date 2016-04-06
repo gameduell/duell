@@ -63,16 +63,18 @@ class DuellLibReference
         /// checkout
         if (FileSystem.exists(path))
         {
-            if (GitHelper.pull(path) != 0 )
+            var result = GitHelper.pull(path);
+            if ( result != 0 )
             {
-                throw "Can't Install library " + name;
+                throw "Pulling repo failed (error:" + result + ")! Can't Install library " + name;
             }
         }
         else
         {
-            if(GitHelper.clone(gitPath, path) != 0 )
+            var result = GitHelper.clone(gitPath, path);
+            if( result != 0 )
             {
-                throw "Can't Install library " + name;
+                throw "Clone repo failed (error:" + result + ")! Can't Install library " + name;
             }
         }
 
