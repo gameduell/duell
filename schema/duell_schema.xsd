@@ -98,23 +98,23 @@
         <xs:sequence>
             <xs:element name="library-config" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
-                    <xs:all>
+                    <xs:choice minOccurs="0" maxOccurs="unbounded">
                         ::foreach LIBRARIES_WITH_SCHEMA::
-                        <xs:element name="::name::" minOccurs="0" type="d:::name::"/>::end::
+                        <xs:element name="::name::" type="d:::name::"/>::end::
                         ::foreach LIBRARIES_WITHOUT_SCHEMA::
-                        <xs:element name="::__current__::" minOccurs="0" type="d:IgnoreContents"/>::end::
-                    </xs:all>
+                        <xs:element name="::__current__::" type="d:IgnoreContents"/>::end::
+                    </xs:choice>
                 </xs:complexType>
             </xs:element>
 
             <xs:element name="platform-config" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
-                    <xs:all>
+                    <xs:choice minOccurs="0" maxOccurs="unbounded">
                         ::foreach PLUGINS_WITH_SCHEMA::
-                        <xs:element name="::name::" minOccurs="0" type="d:::name::"/>::end::
+                        <xs:element name="::name::" type="d:::name::"/>::end::
                         ::foreach PLUGINS_WITHOUT_SCHEMA::
-                        <xs:element name="::__current__::" minOccurs="0" type="d:IgnoreContents"/>::end::
-                    </xs:all>
+                        <xs:element name="::__current__::" type="d:IgnoreContents"/>::end::
+                    </xs:choice>
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
