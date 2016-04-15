@@ -95,15 +95,10 @@ class DirHashHelper
 			return true;
 		});
 
-		// filter the date
-		outputSplitFiltered = outputSplitFiltered.map(function(s) {
-			var fileInfoList:Array<String> = s.split(" ");
-			fileInfoList = fileInfoList.filter(function(s) return s != "");
-			// removes columns 6,7,8 presenting the modified date of a file
-			fileInfoList.splice(6,3);
-			s = fileInfoList.join(" ");
-			return s;
-		});
+		/// extract parts that matter
+		outputSplitFiltered = outputSplitFiltered.map(
+					extractSizeModificationDateAndFileName);
+
 		output = outputSplitFiltered.join("\n");
 
 		return output.getFnv32IntFromString();
@@ -165,20 +160,60 @@ class DirHashHelper
 			return true;
 		});
 
-		// filter the date
-		outputSplitFiltered = outputSplitFiltered.map(function(s) {
-			var fileInfoList:Array<String> = s.split(" ");
-			fileInfoList = fileInfoList.filter(function(s) return s != "");
-			// removes columns 5,6,7 presenting the modified date of a file
-			fileInfoList.splice(5,3);
-			s = fileInfoList.join(" ");
-			return s;
-		});
+		/// extract parts that matter
+		outputSplitFiltered = outputSplitFiltered.map(
+					extractSizeModificationDateAndFileName);
 
 		output = outputSplitFiltered.join("\n");
 		return output.getFnv32IntFromString();
 	}
 
+	/// cache start range as ls output should have the same structure on the same machine
+	private static var startRangeForCuttingOutput: Null<Int> = null;
+	private static function extractSizeModificationDateAndFileName(lsOutputLine: String): String
+	{
+		/*
+		 *	This code tries to extract only the size, date of modification and
+		 *  filename from the ls output.
+		 *  Since the ls output is not very reliable, we attempt to find the
+		 *  hour of modification section, and then check if there is a filesize
+		 *  3 columns behind. This is a very rough solution, but it should work..
+		 *  If it doesn't work, we will just list the filenames and request the size
+		 *  and modification date manually.
+		 */
+
+		var findDateRegex = ~/^[0-9][0-9]:[0-9][0-9]$/i;
+		var findSizeRegex = ~/^[0-9]+$/i;
+
+		var fileInfoList:Array<String> = lsOutputLine.split(" ");
+
+		fileInfoList = fileInfoList.filter(function(s) return s != "");
+
+		/// try to find the date column
+		if (startRangeForCuttingOutput == null)
+		{
+			if (fileInfoList.length > 3) /// highly unlikely to not be
+			{
+				for (i in (3...fileInfoList.length))
+				{
+					if (findDateRegex.match(fileInfoList[i]) && 	/// check if this is the date
+						findSizeRegex.match(fileInfoList[i - 3]))	/// check if 2 behind looked like a size
+					{
+						startRangeForCuttingOutput = i - 3;
+						break;
+					}
+				}
+			}
+		}
+
+		/// if we couldn't find the range, then don't split at all.
+		if (startRangeForCuttingOutput != null)
+		{
+			fileInfoList = fileInfoList.splice(startRangeForCuttingOutput, fileInfoList.length - startRangeForCuttingOutput);
+		}
+
+		return fileInfoList.join(" ");
+	}
 
 	public static function getCachedHash(hashPath:String): Int
 	{
