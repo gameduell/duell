@@ -47,7 +47,7 @@ class DirHashHelper
 		{
 		    var duellLibPath: String = DuellLib.getDuellLib("duell").getPath();
 			// ls binary is bundled for windows
-			process = new DuellProcess(Path.join([duellLibPath, "bin"]), "ls.exe", ["-lp", path],
+			process = new DuellProcess(Path.join([duellLibPath, "bin"]), "ls.exe", ["-onp", "--full-time", path],
 			{
 				systemCommand : true,
 				block : true,
@@ -57,7 +57,7 @@ class DirHashHelper
 		}
 		else
 		{
-			process = new DuellProcess(null, "ls", ["-lp", path],
+			process = new DuellProcess(null, "ls", ["-onpT", path],
 			{
 				systemCommand : true,
 				block : true,
@@ -95,11 +95,9 @@ class DirHashHelper
 			return true;
 		});
 
-		/// extract parts that matter
-		outputSplitFiltered = outputSplitFiltered.map(
-					extractSizeModificationDateAndFileName);
+		outputSplitFiltered = outputSplitFiltered.map(extractHashRelevantString);
 
-		output = outputSplitFiltered.join("\n");
+		output = outputSplitFiltered.join("");
 
 		return output.getFnv32IntFromString();
 	}
@@ -112,7 +110,7 @@ class DirHashHelper
 		{
 		    var duellLibPath: String = DuellLib.getDuellLib("duell").getPath();
 			// ls binary is bundled for windows
-			process = new DuellProcess(Path.join([duellLibPath, "bin"]), "ls.exe", ["-lpR", path],
+			process = new DuellProcess(Path.join([duellLibPath, "bin"]), "ls.exe", ["-onpR", "--full-time", path],
 			{
 				systemCommand : true,
 				block : true,
@@ -122,7 +120,7 @@ class DirHashHelper
 		}
 		else
 		{
-			process = new DuellProcess(null, "ls", ["-lpR", path],
+			process = new DuellProcess(null, "ls", ["-onpTR", path],
 			{
 				systemCommand : true,
 				block : true,
@@ -160,60 +158,13 @@ class DirHashHelper
 			return true;
 		});
 
-		/// extract parts that matter
-		outputSplitFiltered = outputSplitFiltered.map(
-					extractSizeModificationDateAndFileName);
+		outputSplitFiltered = outputSplitFiltered.map(extractHashRelevantString);
 
-		output = outputSplitFiltered.join("\n");
+		output = outputSplitFiltered.join("");
+
 		return output.getFnv32IntFromString();
 	}
 
-	/// cache start range as ls output should have the same structure on the same machine
-	private static var startRangeForCuttingOutput: Null<Int> = null;
-	private static function extractSizeModificationDateAndFileName(lsOutputLine: String): String
-	{
-		/*
-		 *	This code tries to extract only the size, date of modification and
-		 *  filename from the ls output.
-		 *  Since the ls output is not very reliable, we attempt to find the
-		 *  hour of modification section, and then check if there is a filesize
-		 *  3 columns behind. This is a very rough solution, but it should work..
-		 *  If it doesn't work, we will just list the filenames and request the size
-		 *  and modification date manually.
-		 */
-
-		var findDateRegex = ~/^[0-9][0-9]:[0-9][0-9]$/i;
-		var findSizeRegex = ~/^[0-9]+$/i;
-
-		var fileInfoList:Array<String> = lsOutputLine.split(" ");
-
-		fileInfoList = fileInfoList.filter(function(s) return s != "");
-
-		/// try to find the date column
-		if (startRangeForCuttingOutput == null)
-		{
-			if (fileInfoList.length > 3) /// highly unlikely to not be
-			{
-				for (i in (3...fileInfoList.length))
-				{
-					if (findDateRegex.match(fileInfoList[i]) && 	/// check if this is the date
-						findSizeRegex.match(fileInfoList[i - 3]))	/// check if 2 behind looked like a size
-					{
-						startRangeForCuttingOutput = i - 3;
-						break;
-					}
-				}
-			}
-		}
-
-		/// if we couldn't find the range, then don't split at all.
-		if (startRangeForCuttingOutput != null)
-		{
-			fileInfoList = fileInfoList.splice(startRangeForCuttingOutput, fileInfoList.length - startRangeForCuttingOutput);
-		}
-
-		return fileInfoList.join(" ");
-	}
 
 	public static function getCachedHash(hashPath:String): Int
 	{
@@ -236,6 +187,19 @@ class DirHashHelper
 		File.saveContent(hashPath, Std.string(hash));
 	}
 
+	private static function extractHashRelevantString(lsOutputLine: String): String
+	{
+		/*
+			This regex attempts to extract size, date and file name part from the ls output string:
 
+			-rw-r--r--  1 1267943818   2670 Apr  8 19:01:56 2016 FileName.cs
+			                       -->|#####################################|<-- this part
+
+			If it fails it returns complete string (better anything than nothing).
+		 */
+
+		var regex = ~/(^\S+\s+\d+\s+\d+\s+)/;
+		return regex.match(lsOutputLine) ? regex.matchedRight() : lsOutputLine;
+	}
 
 }
