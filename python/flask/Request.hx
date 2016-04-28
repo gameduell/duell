@@ -35,4 +35,5 @@ extern class Request {
     public static var method: String;
     public static var json: Dynamic;
     public static var environ: Dict<Dynamic, Dynamic>;
+    public static var args: Dict<Dynamic, Dynamic>;
 }

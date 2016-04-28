@@ -45,6 +45,7 @@ import python.flask.Logging;
 import duell.objects.TimeoutChecker;
 import haxe.Constraints.Function;
 
+using haxe.io.Path;
 
 class Server
 {
@@ -134,7 +135,15 @@ class Server
     public function GETFILE(filename: String)
     {
         if (timeoutChecker != null) timeoutChecker.tick();
-        return noCache(FlaskLib.send_from_directory(path, filename));
+
+		if (Request.args.hasKey('hash'))
+		{
+        	return FlaskLib.send_from_directory(path, filename);
+		}
+		else
+		{
+			return noCache(FlaskLib.send_from_directory(path, filename));
+		}
     }
 
     public function INDEXHTML()
