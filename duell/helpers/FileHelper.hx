@@ -106,7 +106,7 @@ class FileHelper
 		{
 			return;
 		}
-
+		
 		PathHelper.mkdir(Path.directory(destination));
 
 		LogHelper.info ("", " - \x1b[1mCopying file:\x1b[0m " + source + " \x1b[3;37m->\x1b[0m " + destination);
@@ -150,7 +150,7 @@ class FileHelper
 
 				if (FileSystem.isDirectory(itemSource))
 				{
-					getAllFilesInDir(itemSource);
+					retFiles = retFiles.concat(getAllFilesInDir(itemSource));
 				}
 				else
 				{
