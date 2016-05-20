@@ -150,7 +150,7 @@ class FileHelper
 
 				if (FileSystem.isDirectory(itemSource))
 				{
-					getAllFilesInDir(itemSource);
+					retFiles = retFiles.concat(getAllFilesInDir(itemSource));
 				}
 				else
 				{

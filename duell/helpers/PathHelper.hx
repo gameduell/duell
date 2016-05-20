@@ -41,6 +41,9 @@ class PathHelper
 {
 	public static function mkdir(directory : String) : Void
 	{
+		if (FileSystem.exists(directory))
+			return;
+			
 		directory = StringTools.replace(directory, "\\", "/");
 		var total = "";
 
