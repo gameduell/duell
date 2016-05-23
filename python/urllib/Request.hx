@@ -27,6 +27,8 @@
 package python.urllib;
 
 import python.KwArgs;
+import python.urllib.HTTPBasicAuthHandler;
+import python.urllib.OpenerDirector;
 
 typedef URLOpenArgs =
 {
@@ -38,4 +40,6 @@ extern class Request
 {
     public static function urlopen(url: String, ?kwArgs: KwArgs<URLOpenArgs>): Void;
     public static function urlretrieve(url: String, ?filename: String, ?progress: Dynamic) : Void;
+	public static function build_opener(handler: HTTPBasicAuthHandler): OpenerDirector;
+	public static function install_opener(opener: OpenerDirector): Void;
 }

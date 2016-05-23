@@ -34,6 +34,9 @@ import haxe.io.Path;
 import haxe.Http;
 
 import python.urllib.Request;
+import python.urllib.HTTPPasswordMgrWithDefaultRealm;
+import python.urllib.HTTPBasicAuthHandler;
+import python.urllib.OpenerDirector;
 
 class DownloadHelper
 {
@@ -63,5 +66,15 @@ class DownloadHelper
 			var current = blocknr*blocksize;
 			Sys.print(Std.string(current)+"/"+Std.string(size)+" ("+Std.int((current*100.0)/size)+"%)\r");
 		});
+	}
+
+	public static function setUsernameAndPassword(toplevelURL: String, username: String, password: String): Void
+	{
+		var password_mgr = new HTTPPasswordMgrWithDefaultRealm();
+		password_mgr.add_password(null, toplevelURL, username, password);
+		var handler = new HTTPBasicAuthHandler(password_mgr);
+		var opener: OpenerDirector = Request.build_opener(handler);
+		opener.open(toplevelURL);
+		Request.install_opener(opener);
 	}
 }
