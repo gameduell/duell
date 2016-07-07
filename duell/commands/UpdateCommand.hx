@@ -120,6 +120,7 @@ class UpdateCommand implements IGDCommand
         if(Arguments.isSet('-logFile'))
         {
         	useVersionFileToRecreateSpecificVersions();
+			saveUpdateExecution();
         	return 'success';
         }
         
