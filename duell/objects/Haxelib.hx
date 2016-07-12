@@ -33,6 +33,8 @@ import duell.helpers.FileHelper;
 import duell.helpers.ConnectionHelper;
 import duell.helpers.LogHelper;
 import duell.objects.DuellProcess;
+import duell.helpers.GitHelper;
+import duell.helpers.DuellConfigHelper;
 
 import sys.FileSystem;
 
@@ -81,43 +83,68 @@ class Haxelib
 		this.path = path;
 	}
 
-    // Checks the existence of the wanted version
+	// Checks the existence of the wanted version
 	public function exists()
 	{
-        if (isHaxelibInstalled())
-        {
-            if (version == "") return true;
+		if (isHaxelibInstalled())
+		{
+			if (version == "") return true;
 
-            var compareVersion = version.replace(".", ",");
-            var versionPath = getPath().split(name)[0] + name;
-            var versionArray: Array<String> = PathHelper.getFolderListUnderFolder(versionPath);
+			var haxelibListOutput = getHaxelibListOutput();
 
-            if (versionArray.indexOf(compareVersion) != -1)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else
-        {
-            return false;
-        }
+			var haxelibListOutputSplit = haxelibListOutput.split("\n");
+			var haxelibLine = null;
+			for (line in haxelibListOutputSplit)
+			{
+				if (line.startsWith(name))
+				{
+					haxelibLine = line;
+				}
+			}
+
+			if (haxelibLine == null)
+			{
+				throw "Incorrect haxelib list state, couldn't find lib " + name + ".";
+			}
+
+			var splitLine = haxelibLine.split(" ");
+
+			if (isGitVersion())
+			{
+				for (element in splitLine)
+				{
+					if (element.indexOf("dev") != -1)
+					{
+						return true;
+					}
+				}
+			}
+			else
+			{
+				for (element in splitLine)
+				{
+					if (element.indexOf(version) != -1)
+					{
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
-    private function isHaxelibInstalled()
-    {
-        var output = getHaxelibPathOutput();
+	private function isHaxelibInstalled()
+	{
+		var output = getHaxelibPathOutput();
 
-        if(output.indexOf("is not installed") != -1)
-            return false;
-        else
-        {
-            return true;
-        }
-    }
+		if(output.indexOf("is not installed") != -1)
+			return false;
+		else
+		{
+			return true;
+		}
+	}
 
 	public function getPath() : String
 	{
@@ -173,10 +200,10 @@ class Haxelib
 
 		return path;
 	}
-	
+
 	private function isValidLibPath(libPath:String, libName:String):Bool
 	{
-			return FileSystem.exists(libPath) && libPath.indexOf(libName) != -1;
+		return FileSystem.exists(libPath) && libPath.indexOf(libName) != -1;
 	}
 
 
@@ -184,8 +211,8 @@ class Haxelib
 	{
 		var nameToTry = name;
 
-    	var haxePath = Sys.getEnv("HAXEPATH");
-    	var systemCommand = haxePath != null && haxePath != "" ? false : true;
+		var haxePath = Sys.getEnv("HAXEPATH");
+		var systemCommand = haxePath != null && haxePath != "" ? false : true;
 		var proc = new DuellProcess(haxePath, "haxelib", ["path", nameToTry], {block: true, systemCommand: true, errorMessage: "getting path of library"});
 
 		var output = proc.getCompleteStdout();
@@ -193,103 +220,169 @@ class Haxelib
 		return output.toString();
 	}
 
-    public function selectVersion()
-    {
-    	if (version == null || version == "")
-    		return;
+	private function getHaxelibListOutput(): String
+	{
+		var haxePath = Sys.getEnv("HAXEPATH");
+		var systemCommand = haxePath != null && haxePath != "" ? false : true;
+		var proc = new DuellProcess(haxePath, "haxelib", ["list"], {block: true, systemCommand: true, errorMessage: "getting list of haxelibs"});
 
-	    var arguments = [];
-    	if (isGitVersion())
-    	{
-	    	arguments.push("git");
+		var output = proc.getCompleteStdout();
+
+		return output.toString();
+	}
+
+	public function selectVersion()
+	{
+		if (version == null || version == "")
+			return;
+
+		var arguments = [];
+		if (isGitVersion())
+		{
+			var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+			var path = Path.join([duellConfigJSON.localLibraryPath, "haxelib_" + name]);
+
+			if (!FileSystem.exists(path))
+			{
+				installGitVersion();
+			}
+
+			var versionSplit = version.split(" ");
+			versionSplit = versionSplit.filter(function (s) return s != null && s != "");
+
+			if (versionSplit.length < 2 )
+			{
+				throw 'Invalid version string "$version" on haxelib "$name". Please specify something like "git <url> <branch> <subfolder>"';
+			}
+
+			var url = versionSplit[0];
+			var branch = versionSplit.length > 1 ? versionSplit[1] : "master";
+			var specialPath = versionSplit.length > 2 ? "/" + versionSplit[2] : "";
+
+			GitHelper.setRemoteURL(path, "origin", url);
+			if (GitHelper.getCurrentBranch(path) != branch)
+			{
+				GitHelper.checkoutBranch(path, branch);
+			}
+			GitHelper.pull(path);
+
+			arguments.push("dev");
 	   		arguments.push(name);
-	    	arguments = arguments.concat(version.split(" "));
-    	}
-    	else
-    	{
-	    	arguments.push("set");
+			arguments.push(path + specialPath);
+		}
+		else
+		{
+			arguments.push("set");
 	   		arguments.push(name);
-	    	arguments.push(version);
-    	}
+			arguments.push(version);
+		}
 
-	    var haxePath = Sys.getEnv("HAXEPATH");
-	    var systemCommand = haxePath != null && haxePath != "" ? false : true;
+		var haxePath = Sys.getEnv("HAXEPATH");
+		var systemCommand = haxePath != null && haxePath != "" ? false : true;
 
-        var process = new DuellProcess(haxePath, "haxelib", arguments, {systemCommand: systemCommand, errorMessage: "set haxelib version"});
+		var process = new DuellProcess(haxePath, "haxelib", arguments, {systemCommand: systemCommand, errorMessage: "set haxelib version"});
 
 		process.stdin.writeString("y\n");
 
-        process.blockUntilFinished();
-    }
+		process.blockUntilFinished();
+	}
 
-    public function uninstall()
-    {
-        var args = ["remove", name];
+	public function uninstall()
+	{
+		var args = ["remove", name];
 
-        var haxePath = Sys.getEnv("HAXEPATH");
-        var systemCommand = haxePath != null && haxePath != "" ? false : true;
-        var process = new DuellProcess(haxePath, "haxelib", args, {systemCommand: systemCommand, errorMessage: 'uninstalling the library "$name"', mute: true});
+		var haxePath = Sys.getEnv("HAXEPATH");
+		var systemCommand = haxePath != null && haxePath != "" ? false : true;
+		var process = new DuellProcess(haxePath, "haxelib", args, {systemCommand: systemCommand, errorMessage: 'uninstalling the library "$name"', mute: true});
 
-        process.blockUntilFinished();
-    }
+		process.blockUntilFinished();
+	}
 
-    public function install()
-    {
-    	if (isGitVersion())
-    	{
-    		selectVersion();
-    	}
-    	else if (ConnectionHelper.isOnline())
-    	{
-	    	var args = ["install", name];
-	    	if (version != "")
-	    		args.push(version);
+	public function install()
+	{
+		if (!ConnectionHelper.isOnline())
+			return;
 
-		    var haxePath = Sys.getEnv("HAXEPATH");
-		    var systemCommand = haxePath != null && haxePath != "" ? false : true;
-	        var process = new DuellProcess(haxePath, "haxelib", args, {systemCommand: systemCommand, errorMessage: 'installing the library "$name"', mute: true});
+		if (isGitVersion())
+		{
+			selectVersion();
+		}
+		else
+		{
+			var args = ["install", name];
+			if (version != "")
+				args.push(version);
+
+			var haxePath = Sys.getEnv("HAXEPATH");
+			var systemCommand = haxePath != null && haxePath != "" ? false : true;
+			var process = new DuellProcess(haxePath, "haxelib", args, {systemCommand: systemCommand, errorMessage: 'installing the library "$name"', mute: true});
 
 			process.stdin.writeString("y\n");
 
-	        process.blockUntilFinished();
-    	}
-    }
+			process.blockUntilFinished();
+		}
+	}
 
-    public static function solveConflict(left: Haxelib, right: Haxelib): Haxelib
-    {
-    	if (left.isGitVersion() && right.isGitVersion())
-    	{
-    		if (left.version != right.version)
-    			return null;
+	public static function solveConflict(left: Haxelib, right: Haxelib): Haxelib
+	{
+		if (left.isGitVersion() && right.isGitVersion())
+		{
+			if (left.version != right.version)
+				return null;
 
-    		return left;
-    	}
+			return left;
+		}
 
-    	if (left.isGitVersion())
-    		return left;
+		if (left.isGitVersion())
+			return left;
 
-    	if (right.isGitVersion())
-    		return right;
+		if (right.isGitVersion())
+			return right;
 
-    	if (left.version == null || left.version == "")
-    		return right;
+		if (left.version == null || left.version == "")
+			return right;
 
-    	if (right.version == null || right.version == "")
-    		return left;
+		if (right.version == null || right.version == "")
+			return left;
 
-    	if (left.version == right.version)
-    		return left;
+		if (left.version == right.version)
+			return left;
 
-    	return null;
-    }
+		return null;
+	}
 
-    public function isGitVersion(): Bool
-    {
-    	return version != null && (version.startsWith("ssh") || version.startsWith("http"));
-    }
+	public function isGitVersion(): Bool
+	{
+		return version != null && (version.startsWith("ssh") || version.startsWith("http"));
+	}
 
-    public function toString(): String
-    {
-    	return "haxelib " + name + " version " + version;
-    }
+	private function installGitVersion(): Void
+	{
+		var duellConfigJSON = DuellConfigJSON.getConfig(DuellConfigHelper.getDuellConfigFileLocation());
+
+		var path = Path.join([duellConfigJSON.localLibraryPath, "haxelib_" + name]);
+
+		if (FileSystem.exists(path))
+		{
+			throw 'Invalid state, folder named haxelib_$name already exists';
+		}
+
+		PathHelper.mkdir(path);
+
+		var versionSplit = version.split(" ");
+		versionSplit = versionSplit.filter(function (s) return s != null && s != "");
+
+		if (versionSplit.length < 2 )
+		{
+			throw 'Invalid version string "$version" on haxelib "$name". Please specify something like "git <url> <branch> <subfolder>"';
+		}
+
+		var url = versionSplit[0];
+		GitHelper.clone(url, path);
+	}
+
+	public function toString(): String
+	{
+		return "haxelib " + name + " version " + version;
+	}
 }

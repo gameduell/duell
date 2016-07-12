@@ -72,17 +72,22 @@ class GitHelper
         return gitProcess.exitCode();
     }
 
-    static public function pull(destination : String) : Int
+    static public function pull(destination : String, parameters: Array<String> = null) : Int
     {
         if (!ConnectionHelper.isOnline())
         {
             return 0;
         }
 
+		if (parameters == null)
+		{
+			parameters = [];
+		}
+
         var gitProcess = new DuellProcess(
                                         destination,
                                         "git",
-                                        ["pull"],
+                                        ["pull"].concat(parameters),
                                         {
                                             systemCommand : true,
                                             loggingPrefix : "[Git]",
