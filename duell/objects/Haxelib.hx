@@ -90,6 +90,8 @@ class Haxelib
 		{
 			if (version == "") return true;
 
+			if (isGitVersion()) return true;
+
 			var haxelibListOutput = getHaxelibListOutput();
 
 			var haxelibListOutputSplit = haxelibListOutput.split("\n");
@@ -109,24 +111,11 @@ class Haxelib
 
 			var splitLine = haxelibLine.split(" ");
 
-			if (isGitVersion())
+			for (element in splitLine)
 			{
-				for (element in splitLine)
+				if (element.indexOf(version) != -1)
 				{
-					if (element.indexOf("dev") != -1)
-					{
-						return true;
-					}
-				}
-			}
-			else
-			{
-				for (element in splitLine)
-				{
-					if (element.indexOf(version) != -1)
-					{
-						return true;
-					}
+					return true;
 				}
 			}
 		}
