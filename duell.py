@@ -4869,8 +4869,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -6265,6 +6265,8 @@ class duell_objects_Haxelib:
 		if self.isHaxelibInstalled():
 			if (self.version == ""):
 				return True
+			if self.isGitVersion():
+				return True
 			haxelibListOutput = self.getHaxelibListOutput()
 			haxelibListOutputSplit = haxelibListOutput.split("\n")
 			haxelibLine = None
@@ -6277,23 +6279,15 @@ class duell_objects_Haxelib:
 			if (haxelibLine is None):
 				raise _HxException((("Incorrect haxelib list state, couldn't find lib " + HxOverrides.stringOrNull(self.name)) + "."))
 			splitLine = haxelibLine.split(" ")
-			if self.isGitVersion():
-				_g1 = 0
-				while (_g1 < len(splitLine)):
-					element = (splitLine[_g1] if _g1 >= 0 and _g1 < len(splitLine) else None)
-					_g1 = (_g1 + 1)
-					if (element.find("dev") != -1):
-						return True
-			else:
-				_g2 = 0
-				while (_g2 < len(splitLine)):
-					element1 = (splitLine[_g2] if _g2 >= 0 and _g2 < len(splitLine) else None)
-					_g2 = (_g2 + 1)
-					def _hx_local_3():
-						_hx_str = self.version
-						return element1.find(_hx_str)
-					if (_hx_local_3() != -1):
-						return True
+			_g1 = 0
+			while (_g1 < len(splitLine)):
+				element = (splitLine[_g1] if _g1 >= 0 and _g1 < len(splitLine) else None)
+				_g1 = (_g1 + 1)
+				def _hx_local_2():
+					_hx_str = self.version
+					return element.find(_hx_str)
+				if (_hx_local_2() != -1):
+					return True
 		return False
 
 	def isHaxelibInstalled(self):
