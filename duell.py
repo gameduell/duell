@@ -3551,10 +3551,12 @@ class duell_helpers_GitHelper:
 		return gitProcess.exitCode()
 
 	@staticmethod
-	def pull(destination):
+	def pull(destination,parameters = None):
 		if (not duell_helpers_ConnectionHelper.isOnline()):
 			return 0
-		gitProcess = duell_objects_DuellProcess(destination, "git", ["pull"], _hx_AnonObject({'systemCommand': True, 'loggingPrefix': "[Git]", 'block': True, 'errorMessage': "pulling git"}))
+		if (parameters is None):
+			parameters = []
+		gitProcess = duell_objects_DuellProcess(destination, "git", (["pull"] + parameters), _hx_AnonObject({'systemCommand': True, 'loggingPrefix': "[Git]", 'block': True, 'errorMessage': "pulling git"}))
 		gitProcess.blockUntilFinished()
 		return gitProcess.exitCode()
 
@@ -6262,7 +6264,7 @@ _hx_classes["duell.objects.HXCPPConfigXML"] = duell_objects_HXCPPConfigXML
 class duell_objects_Haxelib:
 	_hx_class_name = "duell.objects.Haxelib"
 	_hx_fields = ["name", "version", "path"]
-	_hx_methods = ["setPath", "exists", "isHaxelibInstalled", "getPath", "isValidLibPath", "getHaxelibPathOutput", "selectVersion", "uninstall", "install", "isGitVersion", "toString"]
+	_hx_methods = ["setPath", "exists", "isHaxelibInstalled", "getPath", "isValidLibPath", "getHaxelibPathOutput", "getHaxelibListOutput", "selectVersion", "uninstall", "install", "isGitVersion", "installGitVersion", "toString"]
 	_hx_statics = ["haxelibCache", "getHaxelib", "solveConflict"]
 
 	def __init__(self,name,version = ""):
@@ -6284,19 +6286,30 @@ class duell_objects_Haxelib:
 		if self.isHaxelibInstalled():
 			if (self.version == ""):
 				return True
-			compareVersion = StringTools.replace(self.version,".",",")
-			def _hx_local_0():
-				_this = self.getPath()
-				delimiter = self.name
-				return (list(_this) if ((delimiter == "")) else _this.split(delimiter))
-			versionPath = (HxOverrides.stringOrNull(python_internal_ArrayImpl._get((_hx_local_0()), 0)) + HxOverrides.stringOrNull(self.name))
-			versionArray = duell_helpers_PathHelper.getFolderListUnderFolder(versionPath)
-			if (python_internal_ArrayImpl.indexOf(versionArray,compareVersion,None) != -1):
+			if self.isGitVersion():
 				return True
-			else:
-				return False
-		else:
-			return False
+			haxelibListOutput = self.getHaxelibListOutput()
+			haxelibListOutputSplit = haxelibListOutput.split("\n")
+			haxelibLine = None
+			_g = 0
+			while (_g < len(haxelibListOutputSplit)):
+				line = (haxelibListOutputSplit[_g] if _g >= 0 and _g < len(haxelibListOutputSplit) else None)
+				_g = (_g + 1)
+				if StringTools.startsWith(line,self.name):
+					haxelibLine = line
+			if (haxelibLine is None):
+				raise _HxException((("Incorrect haxelib list state, couldn't find lib " + HxOverrides.stringOrNull(self.name)) + "."))
+			splitLine = haxelibLine.split(" ")
+			_g1 = 0
+			while (_g1 < len(splitLine)):
+				element = (splitLine[_g1] if _g1 >= 0 and _g1 < len(splitLine) else None)
+				_g1 = (_g1 + 1)
+				def _hx_local_2():
+					_hx_str = self.version
+					return element.find(_hx_str)
+				if (_hx_local_2() != -1):
+					return True
+		return False
 
 	def isHaxelibInstalled(self):
 		output = self.getHaxelibPathOutput()
@@ -6354,17 +6367,52 @@ class duell_objects_Haxelib:
 		output = proc.getCompleteStdout()
 		return output.toString()
 
+	def getHaxelibListOutput(self):
+		haxePath = Sys.getEnv("HAXEPATH")
+		systemCommand = None
+		if ((haxePath is not None) and ((haxePath != ""))):
+			systemCommand = False
+		else:
+			systemCommand = True
+		proc = duell_objects_DuellProcess(haxePath, "haxelib", ["list"], _hx_AnonObject({'block': True, 'systemCommand': True, 'errorMessage': "getting list of haxelibs"}))
+		output = proc.getCompleteStdout()
+		return output.toString()
+
 	def selectVersion(self):
 		if ((self.version is None) or ((self.version == ""))):
 			return
 		arguments = []
 		if self.isGitVersion():
-			arguments.append("git")
-			arguments.append(self.name)
-			a = None
+			duellConfigJSON = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
+			path = haxe_io_Path.join([duellConfigJSON.localLibraryPath, ("haxelib_" + HxOverrides.stringOrNull(self.name))])
+			if (not sys_FileSystem.exists(path)):
+				self.installGitVersion()
+			versionSplit = None
 			_this = self.version
-			a = _this.split(" ")
-			arguments = (arguments + a)
+			versionSplit = _this.split(" ")
+			def _hx_local_0(s):
+				return ((s is not None) and ((s != "")))
+			versionSplit = list(filter(_hx_local_0,versionSplit))
+			if (len(versionSplit) < 2):
+				raise _HxException((((("Invalid version string \"" + HxOverrides.stringOrNull(self.version)) + "\" on haxelib \"") + HxOverrides.stringOrNull(self.name)) + "\". Please specify something like \"git <url> <branch> <subfolder>\""))
+			url = (versionSplit[0] if 0 < len(versionSplit) else None)
+			branch = None
+			if (len(versionSplit) > 1):
+				branch = (versionSplit[1] if 1 < len(versionSplit) else None)
+			else:
+				branch = "master"
+			specialPath = None
+			if (len(versionSplit) > 2):
+				specialPath = ("/" + HxOverrides.stringOrNull((versionSplit[2] if 2 < len(versionSplit) else None)))
+			else:
+				specialPath = ""
+			duell_helpers_GitHelper.setRemoteURL(path,"origin",url)
+			if (duell_helpers_GitHelper.getCurrentBranch(path) != branch):
+				duell_helpers_GitHelper.checkoutBranch(path,branch)
+			duell_helpers_GitHelper.pull(path)
+			arguments.append("dev")
+			arguments.append(self.name)
+			arguments.append((("null" if path is None else path) + ("null" if specialPath is None else specialPath)))
 		else:
 			arguments.append("set")
 			arguments.append(self.name)
@@ -6391,9 +6439,11 @@ class duell_objects_Haxelib:
 		process.blockUntilFinished()
 
 	def install(self):
+		if (not duell_helpers_ConnectionHelper.isOnline()):
+			return
 		if self.isGitVersion():
 			self.selectVersion()
-		elif duell_helpers_ConnectionHelper.isOnline():
+		else:
 			args = ["install", self.name]
 			if (self.version != ""):
 				args.append(self.version)
@@ -6409,6 +6459,23 @@ class duell_objects_Haxelib:
 
 	def isGitVersion(self):
 		return ((self.version is not None) and ((StringTools.startsWith(self.version,"ssh") or StringTools.startsWith(self.version,"http"))))
+
+	def installGitVersion(self):
+		duellConfigJSON = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
+		path = haxe_io_Path.join([duellConfigJSON.localLibraryPath, ("haxelib_" + HxOverrides.stringOrNull(self.name))])
+		if sys_FileSystem.exists(path):
+			raise _HxException((("Invalid state, folder named haxelib_" + HxOverrides.stringOrNull(self.name)) + " already exists"))
+		duell_helpers_PathHelper.mkdir(path)
+		versionSplit = None
+		_this = self.version
+		versionSplit = _this.split(" ")
+		def _hx_local_0(s):
+			return ((s is not None) and ((s != "")))
+		versionSplit = list(filter(_hx_local_0,versionSplit))
+		if (len(versionSplit) < 2):
+			raise _HxException((((("Invalid version string \"" + HxOverrides.stringOrNull(self.version)) + "\" on haxelib \"") + HxOverrides.stringOrNull(self.name)) + "\". Please specify something like \"git <url> <branch> <subfolder>\""))
+		url = (versionSplit[0] if 0 < len(versionSplit) else None)
+		duell_helpers_GitHelper.clone(url,path)
 
 	def toString(self):
 		return ((("haxelib " + HxOverrides.stringOrNull(self.name)) + " version ") + HxOverrides.stringOrNull(self.version))
