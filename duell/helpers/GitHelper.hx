@@ -413,4 +413,38 @@ class GitHelper
 
         return gitProcess.exitCode();
     }
+
+    static public function createTag(destination : String, tagName: String, tagMessage: String): Int
+    {
+        var gitProcess = new DuellProcess(
+        destination,
+        "git",
+        ["tag", "-a", tagName, "-m", tagMessage],
+        {
+            systemCommand : true,
+            loggingPrefix : "[Git]",
+            block : true,
+            shutdownOnError : true,
+            errorMessage: "creating a tag on git"
+        });
+
+        return gitProcess.exitCode();
+    }
+
+    static public function pushTags(destination : String): Int
+    {
+        var gitProcess = new DuellProcess(
+        destination,
+        "git",
+        ["push", "origin", "--tags"],
+        {
+            systemCommand : true,
+            loggingPrefix : "[Git]",
+            block : true,
+            shutdownOnError : true,
+            errorMessage: "pushing a tag on git"
+        });
+
+        return gitProcess.exitCode();
+    }
 }
