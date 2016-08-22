@@ -57,17 +57,12 @@ class GitHelper
 		var folder = pathComponents.pop();
 		path = pathComponents.join("/");
 
-        var gitProcess = new DuellProcess(
+        var gitProcess = runGitCommand(
                                         path,
-                                        "git",
                                         ["clone", gitURL, folder],
                                         {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
                                             errorMessage: "cloning git"
                                         });
-        gitProcess.blockUntilFinished();
 
         return gitProcess.exitCode();
     }
@@ -106,29 +101,17 @@ class GitHelper
             return false;
         }
 
-        var result : String = "";
-
-        var gitProcess = new DuellProcess(
+        runGitCommand(
                                         destination,
-                                        "git",
                                         ["remote", "update"],
                                         {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            shutdownOnError : true,
                                             errorMessage: "checking for update on git"
                                         });
 
-        gitProcess = new DuellProcess(
+        var gitProcess = runGitCommand(
                                         destination,
-                                        "git",
                                         ["status", "-b", "--porcelain"],
                                         {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            shutdownOnError : true,
                                             errorMessage: "checking for update on git"
                                         });
 
@@ -146,15 +129,10 @@ class GitHelper
 
     static public function isRepoWithoutLocalChanges(destination : String) : Bool
     {
-        var gitProcess = new DuellProcess(
+        var gitProcess = runGitCommand(
                                         destination,
-                                        "git",
                                         ["status", "-s", "--porcelain"],
                                         {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            shutdownOnError : true,
                                             errorMessage: "checking for local changes on git"
                                         });
 
@@ -179,30 +157,20 @@ class GitHelper
             return;
         }
 
-        new DuellProcess(
+        runGitCommand(
                             destination,
-                            "git",
                             ["fetch", "--tags", "--prune"],
                             {
-                                systemCommand : true,
-                                loggingPrefix : "[Git]",
-                                block : true,
-                                shutdownOnError : true,
                                 errorMessage: "fetching git"
                             });
     }
 
     static public function getCurrentBranch(destination : String) : String
     {
-        var gitProcess = new DuellProcess(
+        var gitProcess = runGitCommand(
                                         destination,
-                                        "git",
                                         ["rev-parse", "--verify", "--abbrev-ref", "HEAD"],
                                         {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            shutdownOnError : true,
                                             errorMessage: "getting current branch on git"
                                         });
 
@@ -213,15 +181,10 @@ class GitHelper
 
     static public function getCurrentCommit(destination : String) : String
     {
-        var gitProcess = new DuellProcess(
+        var gitProcess = runGitCommand(
                                         destination,
-                                        "git",
                                         ["rev-parse", "--verify", "HEAD"],
                                         {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            shutdownOnError : true,
                                             errorMessage: "getting current commit on git"
                                         });
 
@@ -232,15 +195,10 @@ class GitHelper
 
     static public function getCurrentTags(destination : String) : Array<String>
     {
-        var gitProcess = new DuellProcess(
+        var gitProcess = runGitCommand(
                                         destination,
-                                        "git",
                                         ["tag", "--contains", "HEAD"],
                                         {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            shutdownOnError : true,
                                             errorMessage: "getting current tags on git"
                                         });
 
@@ -251,15 +209,10 @@ class GitHelper
 
     static public function getCommitForTag(destination : String, tag : String) : String
     {
-        var gitProcess = new DuellProcess(
+        var gitProcess = runGitCommand(
                                         destination,
-                                        "git",
                                         ["rev-parse", tag + "~0"],
                                         {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            shutdownOnError : true,
                                             errorMessage: "getting commit for tag on git"
                                         });
 
@@ -270,15 +223,10 @@ class GitHelper
 
     static public function listRemotes(destination: String): Map<String, String>
     {
-        var gitProcess = new DuellProcess(
+        var gitProcess = runGitCommand(
                                         destination,
-                                        "git",
                                         ["remote", "-v"],
                                         {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            shutdownOnError : true,
                                             errorMessage: "listing remotes on git"
                                         });
 
@@ -313,15 +261,10 @@ class GitHelper
 
     static public function listBranches(destination : String) : Array<String>
     {
-        var gitProcess = new DuellProcess(
+        var gitProcess = runGitCommand(
                                         destination,
-                                        "git",
                                         ["branch", "-a"],
                                         {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            shutdownOnError : true,
                                             errorMessage: "listing branches on git"
                                         });
 
@@ -363,15 +306,10 @@ class GitHelper
 
     static public function listTags(destination : String) : Array<String>
     {
-        var gitProcess = new DuellProcess(
+        var gitProcess = runGitCommand(
                                         destination,
-                                        "git",
                                         ["tag"],
                                         {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            shutdownOnError : true,
                                             errorMessage: "listing tags on git"
                                         });
 
@@ -382,15 +320,10 @@ class GitHelper
 
     static public function checkoutBranch(destination : String, branch : String) : Int
     {
-        var gitProcess = new DuellProcess(
+        var gitProcess = runGitCommand(
                                         destination,
-                                        "git",
                                         ["checkout", branch],
                                         {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            shutdownOnError : true,
                                             errorMessage: "checking out branch on git"
                                         });
 
@@ -399,15 +332,10 @@ class GitHelper
 
     static public function checkoutCommit(destination : String, commit : String) : Int
     {
-        var gitProcess = new DuellProcess(
+        var gitProcess = runGitCommand(
                                         destination,
-                                        "git",
                                         ["checkout", commit],
                                         {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            shutdownOnError : true,
                                             errorMessage: "checking out commit on git"
                                         });
 
@@ -446,5 +374,40 @@ class GitHelper
         });
 
         return gitProcess.exitCode();
+	}
+
+    /**
+        Number of retries for remote git commands. Set to 0 to disable it.
+    **/
+    private static inline var MAX_COMMAND_RETRIES: Int = 2;
+
+    static private function runGitCommand(path: String, args: Array<String>, options: ProcessOptions): DuellProcess
+    {
+        var retry: Int = 0;
+
+        options.systemCommand = true;
+        options.loggingPrefix = "[Git]";
+        options.block = true;
+        options.shutdownOnError = true;
+
+        while (true)
+        {
+            try
+            {
+                return new DuellProcess(path, "git", args, options);
+            }
+            catch (e: Dynamic)
+            {
+                if (MAX_COMMAND_RETRIES > 0 && ++retry <= MAX_COMMAND_RETRIES)
+                {
+                    LogHelper.warn('$e. Retrying #$retry...');
+                }
+                else
+                {
+                    throw e;
+                }
+            }
+        }
+        return null;
     }
 }

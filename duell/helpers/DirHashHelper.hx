@@ -55,6 +55,16 @@ class DirHashHelper
 				errorMessage: "hashing folder structure"
 			});
 		}
+		else if (PlatformHelper.hostPlatform == Platform.LINUX)
+		{
+			process = new DuellProcess(null, "ls", ["-onp", "--time-style=full-iso", path],
+			{
+				systemCommand : true,
+				block : true,
+				shutdownOnError : true,
+				errorMessage: "hashing folder structure"
+			});
+		}
 		else
 		{
 			process = new DuellProcess(null, "ls", ["-onpT", path],
