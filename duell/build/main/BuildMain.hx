@@ -131,11 +131,11 @@ class BuildMain
             if (!Arguments.isSet("-noprebuild"))
             {
                 build.prepareBuild();
+                pluginHelper.preBuild();
             }
 
             if (!Arguments.isSet("-nobuild"))
             {
-                pluginHelper.preBuild();
                 build.build();
                 pluginHelper.postBuild();
             }
