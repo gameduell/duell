@@ -34,16 +34,7 @@ class GitHelper
 {
 	static public function setRemoteURL(path : String, remoteName : String, url : String) : Int
 	{
-        var gitProcess = new DuellProcess(
-                                        path,
-                                        "git",
-                                        ["remote", "set-url", remoteName, url],
-                                        {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            errorMessage: "setting git remote url"
-                                        });
+        var gitProcess = runGitCommand(path, ["remote", "set-url", remoteName, url], "setting git remote url");
         gitProcess.blockUntilFinished();
 
 		return gitProcess.exitCode();
@@ -57,12 +48,7 @@ class GitHelper
 		var folder = pathComponents.pop();
 		path = pathComponents.join("/");
 
-        var gitProcess = runGitCommand(
-                                        path,
-                                        ["clone", gitURL, folder],
-                                        {
-                                            errorMessage: "cloning git"
-                                        });
+        var gitProcess = runGitCommand(path, ["clone", gitURL, folder], "cloning git", true);
 
         return gitProcess.exitCode();
     }
@@ -79,16 +65,7 @@ class GitHelper
 			parameters = [];
 		}
 
-        var gitProcess = new DuellProcess(
-                                        destination,
-                                        "git",
-                                        ["pull"].concat(parameters),
-                                        {
-                                            systemCommand : true,
-                                            loggingPrefix : "[Git]",
-                                            block : true,
-                                            errorMessage: "pulling git"
-                                        });
+        var gitProcess = runGitCommand(destination, ["pull"].concat(parameters), "pulling git");
         gitProcess.blockUntilFinished();
 
         return gitProcess.exitCode();
@@ -101,19 +78,10 @@ class GitHelper
             return false;
         }
 
-        runGitCommand(
-                                        destination,
-                                        ["remote", "update"],
-                                        {
-                                            errorMessage: "checking for update on git"
-                                        });
+        runGitCommand(destination, ["remote", "update"], "checking for update on git", true);
 
-        var gitProcess = runGitCommand(
-                                        destination,
-                                        ["status", "-b", "--porcelain"],
-                                        {
-                                            errorMessage: "checking for update on git"
-                                        });
+        var gitProcess = runGitCommand(destination, ["status", "-b", "--porcelain"],
+                                        "checking for update on git", true);
 
         var output = gitProcess.getCompleteStdout().toString();
 
@@ -129,12 +97,8 @@ class GitHelper
 
     static public function isRepoWithoutLocalChanges(destination : String) : Bool
     {
-        var gitProcess = runGitCommand(
-                                        destination,
-                                        ["status", "-s", "--porcelain"],
-                                        {
-                                            errorMessage: "checking for local changes on git"
-                                        });
+        var gitProcess = runGitCommand(destination, ["status", "-s", "--porcelain"],
+                                        "checking for local changes on git", true);
 
         var output = gitProcess.getCompleteStdout().toString();
 
@@ -157,22 +121,13 @@ class GitHelper
             return;
         }
 
-        runGitCommand(
-                            destination,
-                            ["fetch", "--tags", "--prune"],
-                            {
-                                errorMessage: "fetching git"
-                            });
+        runGitCommand(destination, ["fetch", "--tags", "--prune"], "fetching git", true);
     }
 
     static public function getCurrentBranch(destination : String) : String
     {
-        var gitProcess = runGitCommand(
-                                        destination,
-                                        ["rev-parse", "--verify", "--abbrev-ref", "HEAD"],
-                                        {
-                                            errorMessage: "getting current branch on git"
-                                        });
+        var gitProcess = runGitCommand(destination, ["rev-parse", "--verify", "--abbrev-ref", "HEAD"],
+                                        "getting current branch on git", true);
 
         var output = gitProcess.getCompleteStdout().toString();
 
@@ -181,12 +136,8 @@ class GitHelper
 
     static public function getCurrentCommit(destination : String) : String
     {
-        var gitProcess = runGitCommand(
-                                        destination,
-                                        ["rev-parse", "--verify", "HEAD"],
-                                        {
-                                            errorMessage: "getting current commit on git"
-                                        });
+        var gitProcess = runGitCommand(destination, ["rev-parse", "--verify", "HEAD"],
+                                        "getting current commit on git", true);
 
         var output = gitProcess.getCompleteStdout().toString();
 
@@ -195,12 +146,7 @@ class GitHelper
 
     static public function getCurrentTags(destination : String) : Array<String>
     {
-        var gitProcess = runGitCommand(
-                                        destination,
-                                        ["tag", "--contains", "HEAD"],
-                                        {
-                                            errorMessage: "getting current tags on git"
-                                        });
+        var gitProcess = runGitCommand(destination, ["tag", "--contains", "HEAD"], "getting current tags on git", true);
 
         var output = gitProcess.getCompleteStdout().toString();
 
@@ -209,12 +155,7 @@ class GitHelper
 
     static public function getCommitForTag(destination : String, tag : String) : String
     {
-        var gitProcess = runGitCommand(
-                                        destination,
-                                        ["rev-parse", tag + "~0"],
-                                        {
-                                            errorMessage: "getting commit for tag on git"
-                                        });
+        var gitProcess = runGitCommand(destination, ["rev-parse", tag + "~0"], "getting commit for tag on git", true);
 
         var output = gitProcess.getCompleteStdout().toString();
 
@@ -223,12 +164,7 @@ class GitHelper
 
     static public function listRemotes(destination: String): Map<String, String>
     {
-        var gitProcess = runGitCommand(
-                                        destination,
-                                        ["remote", "-v"],
-                                        {
-                                            errorMessage: "listing remotes on git"
-                                        });
+        var gitProcess = runGitCommand(destination, ["remote", "-v"], "listing remotes on git", true);
 
         var allRemotes: String = gitProcess.getCompleteStdout().toString();
 
@@ -261,12 +197,7 @@ class GitHelper
 
     static public function listBranches(destination : String) : Array<String>
     {
-        var gitProcess = runGitCommand(
-                                        destination,
-                                        ["branch", "-a"],
-                                        {
-                                            errorMessage: "listing branches on git"
-                                        });
+        var gitProcess = runGitCommand(destination, ["branch", "-a"], "listing branches on git", true);
 
         var outputAllBranches = gitProcess.getCompleteStdout().toString();
 
@@ -306,12 +237,7 @@ class GitHelper
 
     static public function listTags(destination : String) : Array<String>
     {
-        var gitProcess = runGitCommand(
-                                        destination,
-                                        ["tag"],
-                                        {
-                                            errorMessage: "listing tags on git"
-                                        });
+        var gitProcess = runGitCommand(destination, ["tag"], "listing tags on git", true);
 
         var output = gitProcess.getCompleteStdout().toString();
 
@@ -320,60 +246,81 @@ class GitHelper
 
     static public function checkoutBranch(destination : String, branch : String) : Int
     {
-        var gitProcess = runGitCommand(
-                                        destination,
-                                        ["checkout", branch],
-                                        {
-                                            errorMessage: "checking out branch on git"
-                                        });
+        var gitProcess = runGitCommand(destination, ["checkout", branch], "checking out branch on git", true);
 
         return gitProcess.exitCode();
     }
 
     static public function checkoutCommit(destination : String, commit : String) : Int
     {
-        var gitProcess = runGitCommand(
-                                        destination,
-                                        ["checkout", commit],
-                                        {
-                                            errorMessage: "checking out commit on git"
-                                        });
+        var gitProcess = runGitCommand(destination, ["checkout", commit], "checking out commit on git", true);
 
         return gitProcess.exitCode();
     }
+
+    static public function createTag(destination : String, tagName: String, tagMessage: String): Int
+    {
+        var gitProcess = runGitCommand(destination, ["tag", "-a", tagName, "-m", tagMessage], "creating a tag on git");
+
+        return gitProcess.exitCode();
+    }
+
+    static public function pushTags(destination : String): Int
+    {
+        var gitProcess = runGitCommand(destination, ["push", "origin", "--tags"], "pushing a tag on git", true);
+
+        return gitProcess.exitCode();
+	}
 
     /**
         Number of retries for remote git commands. Set to 0 to disable it.
     **/
     private static inline var MAX_COMMAND_RETRIES: Int = 2;
 
-    static private function runGitCommand(path: String, args: Array<String>, options: ProcessOptions): DuellProcess
+    /**
+        Macro function for executing Git commands as Duell processes.
+        @param retryOnError If set to true it will retry for the number of times assuming that the error could be a
+        connection issue. Default value is false.
+    **/
+    static private function runGitCommand(path: String, args: Array<String>, errorMessage: String,
+                                          retryOnError: Bool = false): DuellProcess
     {
-        var retry: Int = 0;
+        var options: ProcessOptions = {
+            systemCommand:      true,
+            loggingPrefix:      "[Git]",
+            block:              true,
+            errorMessage:       errorMessage
+        };
 
-        options.systemCommand = true;
-        options.loggingPrefix = "[Git]";
-        options.block = true;
-        options.shutdownOnError = true;
-
-        while (true)
+        if (retryOnError)
         {
-            try
+            options.shutdownOnError = true;
+
+            var retry: Int = 0;
+            while (true)
             {
-                return new DuellProcess(path, "git", args, options);
-            }
-            catch (e: Dynamic)
-            {
-                if (MAX_COMMAND_RETRIES > 0 && ++retry <= MAX_COMMAND_RETRIES)
+                try
                 {
-                    LogHelper.warn('$e. Retrying #$retry...');
+                    return new DuellProcess(path, "git", args, options);
                 }
-                else
+                catch (e: Dynamic)
                 {
-                    throw e;
+                    if (MAX_COMMAND_RETRIES > 0 && ++retry <= MAX_COMMAND_RETRIES)
+                    {
+                        LogHelper.warn('$e. Retrying #$retry...');
+                    }
+                    else
+                    {
+                        throw e;
+                    }
                 }
             }
+            return null;
         }
-        return null;
+        else
+        {
+            return new DuellProcess(path, "git", args, options);
+        }
     }
+
 }

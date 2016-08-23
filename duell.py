@@ -3532,11 +3532,11 @@ _hx_classes["duell.helpers.FileHelper"] = duell_helpers_FileHelper
 
 class duell_helpers_GitHelper:
 	_hx_class_name = "duell.helpers.GitHelper"
-	_hx_statics = ["setRemoteURL", "clone", "pull", "updateNeeded", "isRepoWithoutLocalChanges", "fetch", "getCurrentBranch", "getCurrentCommit", "getCurrentTags", "getCommitForTag", "listRemotes", "listBranches", "listTags", "checkoutBranch", "checkoutCommit", "MAX_COMMAND_RETRIES", "runGitCommand"]
+	_hx_statics = ["setRemoteURL", "clone", "pull", "updateNeeded", "isRepoWithoutLocalChanges", "fetch", "getCurrentBranch", "getCurrentCommit", "getCurrentTags", "getCommitForTag", "listRemotes", "listBranches", "listTags", "checkoutBranch", "checkoutCommit", "createTag", "pushTags", "MAX_COMMAND_RETRIES", "runGitCommand"]
 
 	@staticmethod
 	def setRemoteURL(path,remoteName,url):
-		gitProcess = duell_objects_DuellProcess(path, "git", ["remote", "set-url", remoteName, url], _hx_AnonObject({'systemCommand': True, 'loggingPrefix': "[Git]", 'block': True, 'errorMessage': "setting git remote url"}))
+		gitProcess = duell_helpers_GitHelper.runGitCommand(path,["remote", "set-url", remoteName, url],"setting git remote url")
 		gitProcess.blockUntilFinished()
 		return gitProcess.exitCode()
 
@@ -3547,7 +3547,7 @@ class duell_helpers_GitHelper:
 		folder = None
 		folder = (None if ((len(pathComponents) == 0)) else pathComponents.pop())
 		path = "/".join([python_Boot.toString1(x1,'') for x1 in pathComponents])
-		gitProcess = duell_helpers_GitHelper.runGitCommand(path,["clone", gitURL, folder],_hx_AnonObject({'errorMessage': "cloning git"}))
+		gitProcess = duell_helpers_GitHelper.runGitCommand(path,["clone", gitURL, folder],"cloning git",True)
 		return gitProcess.exitCode()
 
 	@staticmethod
@@ -3556,7 +3556,7 @@ class duell_helpers_GitHelper:
 			return 0
 		if (parameters is None):
 			parameters = []
-		gitProcess = duell_objects_DuellProcess(destination, "git", (["pull"] + parameters), _hx_AnonObject({'systemCommand': True, 'loggingPrefix': "[Git]", 'block': True, 'errorMessage': "pulling git"}))
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,(["pull"] + parameters),"pulling git")
 		gitProcess.blockUntilFinished()
 		return gitProcess.exitCode()
 
@@ -3564,8 +3564,8 @@ class duell_helpers_GitHelper:
 	def updateNeeded(destination):
 		if (not duell_helpers_ConnectionHelper.isOnline()):
 			return False
-		duell_helpers_GitHelper.runGitCommand(destination,["remote", "update"],_hx_AnonObject({'errorMessage': "checking for update on git"}))
-		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["status", "-b", "--porcelain"],_hx_AnonObject({'errorMessage': "checking for update on git"}))
+		duell_helpers_GitHelper.runGitCommand(destination,["remote", "update"],"checking for update on git",True)
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["status", "-b", "--porcelain"],"checking for update on git",True)
 		output = gitProcess.getCompleteStdout().toString()
 		if (output.find("[behind") != -1):
 			return True
@@ -3574,7 +3574,7 @@ class duell_helpers_GitHelper:
 
 	@staticmethod
 	def isRepoWithoutLocalChanges(destination):
-		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["status", "-s", "--porcelain"],_hx_AnonObject({'errorMessage': "checking for local changes on git"}))
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["status", "-s", "--porcelain"],"checking for local changes on git",True)
 		output = gitProcess.getCompleteStdout().toString()
 		changesListStrings = output.split("\n")
 		def _hx_local_0(_hx_str):
@@ -3592,35 +3592,35 @@ class duell_helpers_GitHelper:
 	def fetch(destination):
 		if (not duell_helpers_ConnectionHelper.isOnline()):
 			return
-		duell_helpers_GitHelper.runGitCommand(destination,["fetch", "--tags", "--prune"],_hx_AnonObject({'errorMessage': "fetching git"}))
+		duell_helpers_GitHelper.runGitCommand(destination,["fetch", "--tags", "--prune"],"fetching git",True)
 
 	@staticmethod
 	def getCurrentBranch(destination):
-		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["rev-parse", "--verify", "--abbrev-ref", "HEAD"],_hx_AnonObject({'errorMessage': "getting current branch on git"}))
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["rev-parse", "--verify", "--abbrev-ref", "HEAD"],"getting current branch on git",True)
 		output = gitProcess.getCompleteStdout().toString()
 		return HxOverrides.arrayGet(output.split("\n"), 0)
 
 	@staticmethod
 	def getCurrentCommit(destination):
-		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["rev-parse", "--verify", "HEAD"],_hx_AnonObject({'errorMessage': "getting current commit on git"}))
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["rev-parse", "--verify", "HEAD"],"getting current commit on git",True)
 		output = gitProcess.getCompleteStdout().toString()
 		return HxOverrides.arrayGet(output.split("\n"), 0)
 
 	@staticmethod
 	def getCurrentTags(destination):
-		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["tag", "--contains", "HEAD"],_hx_AnonObject({'errorMessage': "getting current tags on git"}))
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["tag", "--contains", "HEAD"],"getting current tags on git",True)
 		output = gitProcess.getCompleteStdout().toString()
 		return output.split("\n")
 
 	@staticmethod
 	def getCommitForTag(destination,tag):
-		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["rev-parse", (("null" if tag is None else tag) + "~0")],_hx_AnonObject({'errorMessage': "getting commit for tag on git"}))
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["rev-parse", (("null" if tag is None else tag) + "~0")],"getting commit for tag on git",True)
 		output = gitProcess.getCompleteStdout().toString()
 		return HxOverrides.arrayGet(output.split("\n"), 0)
 
 	@staticmethod
 	def listRemotes(destination):
-		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["remote", "-v"],_hx_AnonObject({'errorMessage': "listing remotes on git"}))
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["remote", "-v"],"listing remotes on git",True)
 		allRemotes = gitProcess.getCompleteStdout().toString()
 		allRemoteList = allRemotes.split("\n")
 		returnedMap = haxe_ds_StringMap()
@@ -3643,7 +3643,7 @@ class duell_helpers_GitHelper:
 
 	@staticmethod
 	def listBranches(destination):
-		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["branch", "-a"],_hx_AnonObject({'errorMessage': "listing branches on git"}))
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["branch", "-a"],"listing branches on git",True)
 		outputAllBranches = gitProcess.getCompleteStdout().toString()
 		outputList = outputAllBranches.split("\n")
 		returnedList = []
@@ -3671,42 +3671,55 @@ class duell_helpers_GitHelper:
 
 	@staticmethod
 	def listTags(destination):
-		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["tag"],_hx_AnonObject({'errorMessage': "listing tags on git"}))
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["tag"],"listing tags on git",True)
 		output = gitProcess.getCompleteStdout().toString()
 		return output.split("\n")
 
 	@staticmethod
 	def checkoutBranch(destination,branch):
-		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["checkout", branch],_hx_AnonObject({'errorMessage': "checking out branch on git"}))
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["checkout", branch],"checking out branch on git",True)
 		return gitProcess.exitCode()
 
 	@staticmethod
 	def checkoutCommit(destination,commit):
-		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["checkout", commit],_hx_AnonObject({'errorMessage': "checking out commit on git"}))
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["checkout", commit],"checking out commit on git",True)
 		return gitProcess.exitCode()
 
 	@staticmethod
-	def runGitCommand(path,args,options):
-		retry = 0
-		Reflect.setField(options,"systemCommand",True)
-		Reflect.setField(options,"loggingPrefix","[Git]")
-		Reflect.setField(options,"block",True)
-		Reflect.setField(options,"shutdownOnError",True)
-		while True:
-			def _hx_local_1():
-				nonlocal retry
-				retry = (retry + 1)
-				return retry
-			try:
-				return duell_objects_DuellProcess(path, "git", args, options)
-			except Exception as _hx_e:
-				_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
-				e = _hx_e1
-				if (_hx_local_1() <= 2):
-					duell_helpers_LogHelper.warn((((("" + Std.string(e)) + ". Retrying #") + Std.string(retry)) + "..."))
-				else:
-					raise _HxException(e)
-		return None
+	def createTag(destination,tagName,tagMessage):
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["tag", "-a", tagName, "-m", tagMessage],"creating a tag on git")
+		return gitProcess.exitCode()
+
+	@staticmethod
+	def pushTags(destination):
+		gitProcess = duell_helpers_GitHelper.runGitCommand(destination,["push", "origin", "--tags"],"pushing a tag on git",True)
+		return gitProcess.exitCode()
+
+	@staticmethod
+	def runGitCommand(path,args,errorMessage,retryOnError = False):
+		if (retryOnError is None):
+			retryOnError = False
+		options = _hx_AnonObject({'systemCommand': True, 'loggingPrefix': "[Git]", 'block': True, 'errorMessage': errorMessage})
+		if retryOnError:
+			Reflect.setField(options,"shutdownOnError",True)
+			retry = 0
+			while True:
+				def _hx_local_1():
+					nonlocal retry
+					retry = (retry + 1)
+					return retry
+				try:
+					return duell_objects_DuellProcess(path, "git", args, options)
+				except Exception as _hx_e:
+					_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
+					e = _hx_e1
+					if (_hx_local_1() <= 2):
+						duell_helpers_LogHelper.warn((((("" + Std.string(e)) + ". Retrying #") + Std.string(retry)) + "..."))
+					else:
+						raise _HxException(e)
+			return None
+		else:
+			return duell_objects_DuellProcess(path, "git", args, options)
 duell_helpers_GitHelper._hx_class = duell_helpers_GitHelper
 _hx_classes["duell.helpers.GitHelper"] = duell_helpers_GitHelper
 
@@ -4839,8 +4852,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_head
 					nonlocal _g_val
+					nonlocal _g_head
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -4890,8 +4903,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
