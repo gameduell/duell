@@ -304,6 +304,7 @@ class LibraryPluginHelper
             var parseFunction : Dynamic = Reflect.field(element, "clean");
             if (parseFunction != null)
             {
+                LogHelper.info('Calling plugin clean function ${(Type.getClassName(Type.getClass(element)))}.clean()');
                 Reflect.callMethod(element, parseFunction, []);
             }
         }
