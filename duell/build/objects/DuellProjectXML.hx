@@ -456,7 +456,19 @@ class DuellProjectXML
 			duelllib: function(_, s) return DuellLib.getDuellLib(s).getPath(),
 			haxelib: function(_, s) return Haxelib.getHaxelib(s).getPath(),
             define: function(_, s) return Arguments.getDefine(s),
-			defineArray: function(_, s, idx) return Arguments.getDefine(s).split(",")[Std.parseInt(idx)],
+			defineArray: function(_, s, idx)
+			{
+				var define: String = Arguments.getDefine(s);
+
+				if (define != null)
+				{
+					return define.split(",")[Std.parseInt(idx)];
+				}
+				else
+				{
+					return null;
+				}
+			},
             call0: function(_, className: String, methodName: String)
             {
                 className = className.trim();
