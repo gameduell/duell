@@ -144,17 +144,21 @@ class Duell
     private static function setLocalJavaDistributionHome(): Void
     {
         var duellLibPath: String = DuellLib.getDuellLib("duell").getPath();
+        var javaHome: String = Sys.getEnv("JAVA_HOME");
 
-        var javaHome: String = switch (PlatformHelper.hostPlatform)
+        if (javaHome == null || javaHome == "")
         {
-            case Platform.MAC: Path.join([duellLibPath, "bin", "mac", "jdk1.8.0_102"]);
-            case Platform.WINDOWS: Path.join([duellLibPath, "bin", "win", "jdk1.8.0_102"]);
-            case _: null;
-        }
+            javaHome = switch (PlatformHelper.hostPlatform)
+            {
+                case Platform.MAC: Path.join([duellLibPath, "bin", "mac", "jdk1.8.0_102"]);
+                case Platform.WINDOWS: Path.join([duellLibPath, "bin", "win", "jdk1.8.0_102"]);
+                case _: null;
+            }
 
-        if (javaHome != null)
-        {
-            Sys.putEnv("JAVA_HOME", javaHome);
+            if (javaHome != null)
+            {
+                Sys.putEnv("JAVA_HOME", javaHome);
+            }
         }
     }
 }
