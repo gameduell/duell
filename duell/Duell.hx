@@ -147,7 +147,7 @@ class Duell
 
         var javaHome: String = switch (PlatformHelper.hostPlatform)
         {
-            case Platform.MAC: Path.join([duellLibPath, "bin", "mac", "jdk1.7.0_71"]);
+            case Platform.MAC: Path.join([duellLibPath, "bin", "mac", "jdk1.8.0_102"]);
             case Platform.WINDOWS: Path.join([duellLibPath, "bin", "win", "jdk1.8.0_102"]);
             case _: null;
         }

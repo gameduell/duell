@@ -1259,9 +1259,9 @@ class duell_Duell:
 		javaHome = None
 		_g = duell_helpers_PlatformHelper.get_hostPlatform()
 		if ((_g.index) == 7):
-			javaHome = haxe_io_Path.join([duellLibPath, "bin", "mac", "jdk1.7.0_71"])
+			javaHome = haxe_io_Path.join([duellLibPath, "bin", "mac", "jdk1.8.0_102"])
 		elif ((_g.index) == 9):
-			javaHome = haxe_io_Path.join([duellLibPath, "bin", "win", "jdk1.7.0_79"])
+			javaHome = haxe_io_Path.join([duellLibPath, "bin", "win", "jdk1.8.0_102"])
 		else:
 			javaHome = None
 		if (javaHome is not None):
