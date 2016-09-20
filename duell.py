@@ -3123,7 +3123,7 @@ class duell_helpers_CommandHelper:
 		javaBinaryPath = None
 		_g = duell_helpers_PlatformHelper.get_hostPlatform()
 		if ((_g.index) == 7):
-			javaBinaryPath = haxe_io_Path.join([javaHome, "bin", "java"])
+			javaBinaryPath = (("" + ("null" if javaHome is None else javaHome)) + "/bin/java")
 		elif ((_g.index) == 9):
 			javaBinaryPath = haxe_io_Path.join([javaHome, "bin", "java.exe"])
 		else:

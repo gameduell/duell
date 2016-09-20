@@ -283,7 +283,7 @@ class CommandHelper
 
         var javaBinaryPath: String = switch (PlatformHelper.hostPlatform)
         {
-            case Platform.MAC: Path.join([javaHome, "bin", "java"]);
+            case Platform.MAC: '$javaHome/bin/java';
             case Platform.WINDOWS: Path.join([javaHome, "bin", "java.exe"]);
             case _: "java";
         };
