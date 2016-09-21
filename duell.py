@@ -1257,7 +1257,7 @@ class duell_Duell:
 	def setLocalJavaDistributionHome():
 		duellLibPath = duell_objects_DuellLib.getDuellLib("duell").getPath()
 		javaHome = Sys.getEnv("JAVA_HOME")
-		if ((javaHome is None) or ((javaHome == ""))):
+		if (((javaHome is None) or ((javaHome == ""))) or (not sys_FileSystem.exists(javaHome))):
 			_g = duell_helpers_PlatformHelper.get_hostPlatform()
 			if ((_g.index) == 7):
 				javaHome = haxe_io_Path.join([duellLibPath, "bin", "mac", "jdk1.8.0_102"])

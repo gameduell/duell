@@ -26,6 +26,8 @@
 
 package duell;
 
+import sys.FileSystem;
+
 import haxe.io.Path;
 import duell.helpers.PlatformHelper;
 import duell.helpers.LogHelper;
@@ -146,7 +148,7 @@ class Duell
         var duellLibPath: String = DuellLib.getDuellLib("duell").getPath();
         var javaHome: String = Sys.getEnv("JAVA_HOME");
 
-        if (javaHome == null || javaHome == "")
+        if (javaHome == null || javaHome == "" || !FileSystem.exists(javaHome))
         {
             javaHome = switch (PlatformHelper.hostPlatform)
             {
