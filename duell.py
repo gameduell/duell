@@ -1256,7 +1256,7 @@ class duell_Duell:
 	@staticmethod
 	def setLocalJavaDistributionHome():
 		duellLibPath = duell_objects_DuellLib.getDuellLib("duell").getPath()
-		javaHome = Sys.getEnv("JAVA_HOME")
+		javaHome = Sys.getEnv("DUELL_JAVA_HOME")
 		if (((javaHome is None) or ((javaHome == ""))) or (not sys_FileSystem.exists(javaHome))):
 			_g = duell_helpers_PlatformHelper.get_hostPlatform()
 			if ((_g.index) == 7):
@@ -1265,8 +1265,8 @@ class duell_Duell:
 				javaHome = haxe_io_Path.join([duellLibPath, "bin", "win", "jdk1.8.0_102"])
 			else:
 				javaHome = None
-			if (javaHome is not None):
-				Sys.putEnv("JAVA_HOME",javaHome)
+		if (javaHome is not None):
+			Sys.putEnv("JAVA_HOME",javaHome)
 
 	@staticmethod
 	def _hx_empty_init(_hx_o):		pass

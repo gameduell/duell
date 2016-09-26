@@ -146,7 +146,7 @@ class Duell
     private static function setLocalJavaDistributionHome(): Void
     {
         var duellLibPath: String = DuellLib.getDuellLib("duell").getPath();
-        var javaHome: String = Sys.getEnv("JAVA_HOME");
+        var javaHome: String = Sys.getEnv("DUELL_JAVA_HOME");
 
         if (javaHome == null || javaHome == "" || !FileSystem.exists(javaHome))
         {
@@ -157,10 +157,11 @@ class Duell
                 case _: null;
             }
 
-            if (javaHome != null)
-            {
-                Sys.putEnv("JAVA_HOME", javaHome);
-            }
+        }
+
+        if (javaHome != null)
+        {
+            Sys.putEnv("JAVA_HOME", javaHome);
         }
     }
 }
