@@ -5806,7 +5806,7 @@ _hx_classes["duell.objects.DuellLibReference"] = duell_objects_DuellLibReference
 
 class duell_objects_DuellProcess:
 	_hx_class_name = "duell.objects.DuellProcess"
-	_hx_fields = ["stdin", "stdoutLineBuffer", "stdout", "totalStdout", "stdoutMutex", "stderr", "totalStderr", "stderrMutex", "stderrLineBuffer", "waitingOnStderrMutex", "waitingOnStdoutMutex", "timeoutTicker", "exitCodeMutex", "exitCodeCache", "finished", "killed", "closed", "timedout", "stdoutFinished", "stderrFinished", "process", "systemCommand", "loggingPrefix", "logOnlyIfVerbose", "timeout", "block", "mute", "shutdownOnError", "errorMessage", "command", "path", "args", "argString"]
+	_hx_fields = ["stdin", "stdoutLineBuffer", "stdout", "totalStdout", "stdoutMutex", "stderr", "totalStderr", "stderrMutex", "stderrLineBuffer", "waitingOnStderrMutex", "waitingOnStdoutMutex", "timeoutTicker", "exitCodeMutex", "exitCodeCache", "finished", "killed", "closed", "timedout", "stdoutFinished", "stderrFinished", "process", "systemCommand", "loggingPrefix", "logOnlyIfVerbose", "timeout", "block", "mute", "shutdownOnError", "errorMessage", "command", "path", "args", "argString", "lastLine"]
 	_hx_methods = ["log", "startStdOutListener", "startStdErrListener", "startTimeoutListener", "blockUntilFinished", "kill", "hasFinished", "readCurrentStdout", "readCurrentStderr", "getCompleteStdout", "getCompleteStderr", "exitCode", "exitCodeBlocking", "isTimedout"]
 
 	def __init__(self,path,comm,args,options = None):
@@ -5843,6 +5843,8 @@ class duell_objects_DuellProcess:
 		self.path = None
 		self.args = None
 		self.argString = None
+		self.lastLine = None
+		self.lastLine = ""
 		self.stderrFinished = False
 		self.stdoutFinished = False
 		self.timedout = False
@@ -5966,6 +5968,7 @@ class duell_objects_DuellProcess:
 						_g.stdoutLineBuffer.writeString(_hx_str)
 						line = _g.stdoutLineBuffer.getBytes().toString()
 						_g.log(line)
+						_g.lastLine = line
 						_g.stdoutLineBuffer = haxe_io_BytesOutput()
 					else:
 						_g.stdoutLineBuffer.writeString(_hx_str)
@@ -6012,6 +6015,7 @@ class duell_objects_DuellProcess:
 						_g.stderrLineBuffer.writeString(_hx_str)
 						line = _g.stderrLineBuffer.getBytes().toString()
 						_g.log(line)
+						_g.lastLine = line
 						_g.stderrLineBuffer = haxe_io_BytesOutput()
 					else:
 						_g.stderrLineBuffer.writeString(_hx_str)
@@ -6178,6 +6182,7 @@ class duell_objects_DuellProcess:
 		_hx_o.path = None
 		_hx_o.args = None
 		_hx_o.argString = None
+		_hx_o.lastLine = None
 duell_objects_DuellProcess._hx_class = duell_objects_DuellProcess
 _hx_classes["duell.objects.DuellProcess"] = duell_objects_DuellProcess
 

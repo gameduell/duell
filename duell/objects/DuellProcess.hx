@@ -98,6 +98,8 @@ class DuellProcess
 	private var args : Array<String>;
 	private var argString : String;
 
+	public var lastLine: String = "";
+
 	public function new(path : String, comm : String, args : Array<String>, options : ProcessOptions = null)
 	{
 		/// PROCESS ARGUMENTS
@@ -195,8 +197,6 @@ class DuellProcess
 		}
 	}
 
-
-
 	private function startStdOutListener()
 	{
 		stdout = new BytesOutput();
@@ -225,6 +225,7 @@ class DuellProcess
 										stdoutLineBuffer.writeString(str);
 										var line = stdoutLineBuffer.getBytes().toString();
 										log(line);
+										lastLine = line;
 										stdoutLineBuffer = new BytesOutput();
 									}
 									else
@@ -283,6 +284,7 @@ class DuellProcess
 										stderrLineBuffer.writeString(str);
 										var line = stderrLineBuffer.getBytes().toString();
 										log(line);
+										lastLine = line;
 										stderrLineBuffer = new BytesOutput();
 									}
 									else
