@@ -1492,9 +1492,12 @@ class duell_commands_BuildCommand:
 			raise _HxException("Could not find a previous execution for this platform in order to run it fast.")
 		s = sys_io_File.getContent(outputRunArguments)
 		runArguments = haxe_Unserializer(s).unserialize()
+		runArguments.append("-fast")
+		print(("norun: " + Std.string(duell_objects_Arguments.isSet("-norun"))))
+		if duell_objects_Arguments.isSet("-norun"):
+			runArguments.append("-norun")
 		duell_helpers_LogHelper.info("Running fast with arguments:")
 		duell_helpers_LogHelper.info(" ".join([python_Boot.toString1(x1,'') for x1 in runArguments]))
-		runArguments.append("-fast")
 		Sys.putEnv("HAXELIB_RUN","0")
 		result = duell_helpers_CommandHelper.runCommand("",Reflect.field(python_lib_Sys,"executable"),runArguments,_hx_AnonObject({'errorMessage': "running the plugin", 'exitOnError': False}))
 		if (result != 0):
@@ -4853,8 +4856,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_val
 					nonlocal _g_head
+					nonlocal _g_val
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -4904,8 +4907,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
