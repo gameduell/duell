@@ -385,12 +385,19 @@ class BuildCommand implements IGDCommand
         }
 
         var s = File.getContent(outputRunArguments);
-
         var runArguments: Array<String> = new Unserializer(s).unserialize();
+
+        runArguments.push("-fast");
+        trace('norun: ${Arguments.isSet("-norun")}');
+        if (Arguments.isSet("-norun"))
+        {
+            runArguments.push("-norun");
+        }
+
+
         LogHelper.info("Running fast with arguments:");
         LogHelper.info(runArguments.join(" "));
 
-        runArguments.push("-fast");
 
         /// won't be anymore with fast.
         Sys.putEnv("HAXELIB_RUN", "0");
