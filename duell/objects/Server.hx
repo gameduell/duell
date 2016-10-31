@@ -54,11 +54,12 @@ class Server
     private var path: String;
 
 	private var timeout: Int;
+	private var address: String;
 	private var port: Int;
 	private var block: Bool;
 	private var thread: Dynamic;
 
-	public function new(path: String, timeout: Int = 60, port: Int = 3000, block: Bool = false): Void
+	public function new(path: String, timeout: Int = 60, port: Int = 3000, block: Bool = false, address: String = "127.0.0.1"): Void
 	{
 		if (PathHelper.isPathRooted(path))
 		{
@@ -75,6 +76,7 @@ class Server
 		}
 
 		this.timeout = timeout;
+		this.address = address;
 		this.port = port;
 		this.block = block;
 	}
@@ -84,7 +86,7 @@ class Server
 		if (app != null)
 		{
 			try {
-				python.urllib.Request.urlopen("http://localhost:" + port + "/killserver");
+				python.urllib.Request.urlopen('http://${address}:${port}/killserver');
 			}
 			catch (e: Dynamic) {}
 		}
@@ -174,7 +176,7 @@ class Server
 		            try {
 						if (app != null)
 						{
-		                	python.urllib.Request.urlopen("http://localhost:" + port + "/killserver");
+		                	python.urllib.Request.urlopen('http://${address}:${port}/killserver');
 						}
 		            }
 		            catch (error: Dynamic) {
@@ -185,7 +187,7 @@ class Server
 			}
 
 			if (timeoutChecker != null) timeoutChecker.start();
-	        app.run(port);
+	        app.run(address, port);
 			app = null;
 	        if (timeoutChecker != null) timeoutChecker.finish();
 		});
