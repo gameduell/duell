@@ -42,7 +42,8 @@ typedef ConfigurationData = {
 
 	DEPENDENCIES : {
 		DUELLLIBS : Array<{name : String, version : String}>,
-		HAXELIBS : Array<{name : String, version : String}>
+		HAXELIBS : Array<{name : String, version : String}>,
+		SOURCELIBS :  Array<{name : String, path : String}>
 	},
 
 	OUTPUT : String,
@@ -103,7 +104,8 @@ class Configuration
 
 					DEPENDENCIES : {
 						DUELLLIBS : [],
-						HAXELIBS : []
+						HAXELIBS : [],
+						SOURCELIBS : []
 					},
 
 

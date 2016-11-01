@@ -1284,7 +1284,7 @@ _hx_classes["duell.commands.IGDCommand"] = duell_commands_IGDCommand
 class duell_commands_BuildCommand:
 	_hx_class_name = "duell.commands.BuildCommand"
 	_hx_fields = ["libList", "buildLib", "buildGitVers", "platformName", "duellConfig", "currentXMLPath"]
-	_hx_methods = ["execute", "checkIfItIsAProjectFolder", "determinePlatformToBuildFromArguments", "checkUpdateTime", "suggestUpdate", "determineAndValidateDependenciesAndDefines", "buildNewExecutableWithBuildLibAndDependencies", "runFast", "parseDuellLibWithName", "parseXML", "handleDuellLibParsed", "resolvePath"]
+	_hx_methods = ["execute", "checkIfItIsAProjectFolder", "determinePlatformToBuildFromArguments", "checkUpdateTime", "suggestUpdate", "determineAndValidateDependenciesAndDefines", "buildNewExecutableWithBuildLibAndDependencies", "runFast", "parseDuellLib", "parseXML", "handleDuellLibParsed", "resolvePath"]
 	_hx_statics = ["HOURS_TO_REQUEST_UPDATE", "validateSchemaIfNamespaceSet"]
 	_hx_interfaces = [duell_commands_IGDCommand]
 
@@ -1404,7 +1404,7 @@ class duell_commands_BuildCommand:
 				lib = (filtered[_g] if _g >= 0 and _g < len(filtered) else None)
 				_g = (_g + 1)
 				lib.parsed = True
-				self.parseDuellLibWithName(lib.lib.name)
+				self.parseDuellLib(lib.lib)
 
 	def buildNewExecutableWithBuildLibAndDependencies(self):
 		outputFolder = haxe_io_Path.join([duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"])
@@ -1432,32 +1432,32 @@ class duell_commands_BuildCommand:
 		while (_g < len(_g1)):
 			l = (_g1[_g] if _g >= 0 and _g < len(_g1) else None)
 			_g = (_g + 1)
+			refPath = l.lib.getPath()
 			buildArguments.append("-cp")
-			x3 = duell_helpers_DuellLibHelper.getPath(l.lib.name)
-			buildArguments.append(x3)
-			if sys_FileSystem.exists(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath(l.lib.name), "duell", "build", "plugin", "library", l.lib.name, "LibraryXMLParser.hx"])):
+			buildArguments.append(refPath)
+			if sys_FileSystem.exists(haxe_io_Path.join([refPath, "duell", "build", "plugin", "library", l.lib.name, "LibraryXMLParser.hx"])):
 				buildArguments.append((("duell.build.plugin.library." + HxOverrides.stringOrNull(l.lib.name)) + ".LibraryXMLParser"))
-			if sys_FileSystem.exists(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath(l.lib.name), "duell", "build", "plugin", "library", l.lib.name, "LibraryBuild.hx"])):
+			if sys_FileSystem.exists(haxe_io_Path.join([refPath, "duell", "build", "plugin", "library", l.lib.name, "LibraryBuild.hx"])):
 				buildArguments.append((("duell.build.plugin.library." + HxOverrides.stringOrNull(l.lib.name)) + ".LibraryBuild"))
-			pyLibPath1 = haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath(l.lib.name), "pylib"])
+			pyLibPath1 = haxe_io_Path.join([refPath, "pylib"])
 			if sys_FileSystem.exists(pyLibPath1):
 				pythonLibPathsToBootstrap.append(pyLibPath1)
 		buildArguments.append("-D")
 		buildArguments.append(("platform_" + HxOverrides.stringOrNull(self.platformName)))
 		buildArguments.append("-D")
-		x4 = None
+		x3 = None
 		def _hx_local_1():
 			_this = None
 			e = duell_helpers_PlatformHelper.get_hostPlatform()
 			_this = e.tag
 			return _this.lower()
-		x4 = ("host_" + HxOverrides.stringOrNull(_hx_local_1()))
-		buildArguments.append(x4)
+		x3 = ("host_" + HxOverrides.stringOrNull(_hx_local_1()))
+		buildArguments.append(x3)
 		buildArguments.append("-D")
 		buildArguments.append(("duell_api_level=" + Std.string(duell_defines_DuellDefines.DUELL_API_LEVEL)))
 		buildArguments.append("-resource")
-		x5 = (HxOverrides.stringOrNull(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath("duell"), "config.xml"])) + "@generalArguments")
-		buildArguments.append(x5)
+		x4 = (HxOverrides.stringOrNull(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath("duell"), "config.xml"])) + "@generalArguments")
+		buildArguments.append(x4)
 		duell_helpers_PathHelper.mkdir(outputFolder)
 		duell_helpers_CommandHelper.runHaxe("",buildArguments,_hx_AnonObject({'errorMessage': "building the plugin"}))
 		runArguments = [outputRun]
@@ -1503,11 +1503,12 @@ class duell_commands_BuildCommand:
 		if (result != 0):
 			Sys.exit(result)
 
-	def parseDuellLibWithName(self,name):
-		if (not sys_FileSystem.exists(((HxOverrides.stringOrNull(duell_helpers_DuellLibHelper.getPath(name)) + "/") + HxOverrides.stringOrNull(duell_defines_DuellDefines.LIB_CONFIG_FILENAME)))):
+	def parseDuellLib(self,lib):
+		name = lib.name
+		if (not sys_FileSystem.exists(((HxOverrides.stringOrNull(lib.getPath()) + "/") + HxOverrides.stringOrNull(duell_defines_DuellDefines.LIB_CONFIG_FILENAME)))):
 			duell_helpers_LogHelper.println(((("" + ("null" if name is None else name)) + " does not have a ") + HxOverrides.stringOrNull(duell_defines_DuellDefines.LIB_CONFIG_FILENAME)))
 		else:
-			path = ((HxOverrides.stringOrNull(duell_helpers_DuellLibHelper.getPath(name)) + "/") + HxOverrides.stringOrNull(duell_defines_DuellDefines.LIB_CONFIG_FILENAME))
+			path = ((HxOverrides.stringOrNull(lib.getPath()) + "/") + HxOverrides.stringOrNull(duell_defines_DuellDefines.LIB_CONFIG_FILENAME))
 			self.parseXML(path)
 
 	def parseXML(self,path):
@@ -1520,7 +1521,13 @@ class duell_commands_BuildCommand:
 			element = _hx_local_1.next()
 			_g = element.get_name()
 			_hx_local_0 = len(_g)
-			if (_hx_local_0 == 7):
+			if (_hx_local_0 == 9):
+				if (_g == "sourcelib"):
+					if (element.has.resolve("path") and element.has.resolve("name")):
+						includePath1 = self.resolvePath(element.att.resolve("path"))
+						newSourceLib = duell_objects_SourceLib(element.att.resolve("name"), includePath1)
+						self.handleDuellLibParsed(newSourceLib)
+			elif (_hx_local_0 == 7):
 				if (_g == "include"):
 					if element.has.resolve("path"):
 						includePath = self.resolvePath(element.att.resolve("path"))
@@ -2299,8 +2306,8 @@ _hx_classes["duell.commands.VersionState"] = duell_commands_VersionState
 
 class duell_commands_UpdateCommand:
 	_hx_class_name = "duell.commands.UpdateCommand"
-	_hx_fields = ["finalLibList", "finalPluginList", "finalToolList", "haxelibVersions", "duellLibVersions", "pluginVersions", "buildLib", "platformName", "duellToolGitVers", "duellToolRequestedVersion", "isDifferentDuellToolVersion", "targetPlatform", "currentXMLPath"]
-	_hx_methods = ["execute", "validateArguments", "synchronizeRemotes", "useVersionFileToRecreateSpecificVersions", "recreateDuellLib", "determineAndValidateDependenciesAndDefines", "parseDuellUserFile", "parseProjectFile", "iterateDuellLibVersionsUntilEverythingIsParsedAndVersioned", "checkVersionsOfPlugins", "checkDuellToolVersion", "checkHaxeVersion", "printFinalResult", "printVersionDiffs", "logVersions", "createFinalLibLists", "sortDuellLibsByName", "sortHaxeLibsByName", "createSchemaXml", "saveUpdateExecution", "lockBuildVersion", "parseDuellLibWithName", "parseXML", "checkDuelllibPreConditions", "handleDuellLibParsed", "handleHaxelibParsed", "handlePluginParsed", "resolvePath"]
+	_hx_fields = ["finalLibList", "finalPluginList", "finalToolList", "haxelibVersions", "duellLibVersions", "sourceLibVersions", "pluginVersions", "buildLib", "platformName", "duellToolGitVers", "duellToolRequestedVersion", "isDifferentDuellToolVersion", "targetPlatform", "currentXMLPath"]
+	_hx_methods = ["execute", "validateArguments", "synchronizeRemotes", "useVersionFileToRecreateSpecificVersions", "recreateDuellLib", "determineAndValidateDependenciesAndDefines", "parseDuellUserFile", "parseProjectFile", "iterateDuellLibVersionsUntilEverythingIsParsedAndVersioned", "checkVersionsOfPlugins", "checkDuellToolVersion", "checkHaxeVersion", "printFinalResult", "printVersionDiffs", "logVersions", "createFinalLibLists", "sortDuellLibsByName", "sortSourceLibsByName", "sortHaxeLibsByName", "createSchemaXml", "saveUpdateExecution", "lockBuildVersion", "parseSourceLib", "parseDuellLibWithName", "parseXML", "checkDuelllibPreConditions", "handleSourceLibParsed", "handleDuellLibParsed", "handleHaxelibParsed", "handlePluginParsed", "resolvePath"]
 	_hx_statics = ["duellFileHasDuellNamespace", "userFileHasDuellNamespace", "validateSchemaXml", "validateUserSchemaXml"]
 	_hx_interfaces = [duell_commands_IGDCommand]
 
@@ -2310,6 +2317,7 @@ class duell_commands_UpdateCommand:
 		self.finalToolList = None
 		self.haxelibVersions = None
 		self.duellLibVersions = None
+		self.sourceLibVersions = None
 		self.pluginVersions = None
 		self.buildLib = None
 		self.platformName = None
@@ -2324,11 +2332,12 @@ class duell_commands_UpdateCommand:
 		self.duellToolRequestedVersion = None
 		self.buildLib = None
 		self.pluginVersions = haxe_ds_StringMap()
+		self.sourceLibVersions = haxe_ds_StringMap()
 		self.duellLibVersions = haxe_ds_StringMap()
 		self.haxelibVersions = haxe_ds_StringMap()
 		self.finalToolList = []
 		self.finalPluginList = []
-		self.finalLibList = _hx_AnonObject({'duellLibs': [], 'haxelibs': []})
+		self.finalLibList = _hx_AnonObject({'duellLibs': [], 'sourceLibs': [], 'haxelibs': []})
 
 	def execute(self):
 		self.validateArguments()
@@ -2345,7 +2354,7 @@ class duell_commands_UpdateCommand:
 		self.determineAndValidateDependenciesAndDefines()
 		duell_helpers_LogHelper.info(("\x1B[2m" + "------"))
 		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Resulting dependencies update and resolution"),None,"\x1B[2m")
-		self.printFinalResult(self.finalLibList.duellLibs,self.finalLibList.haxelibs,self.finalPluginList)
+		self.printFinalResult(self.finalLibList.duellLibs,self.finalLibList.sourceLibs,self.finalLibList.haxelibs,self.finalPluginList)
 		if duell_objects_Arguments.isSet("-log"):
 			self.logVersions()
 			self.printVersionDiffs()
@@ -2395,6 +2404,7 @@ class duell_commands_UpdateCommand:
 		path = duell_objects_Arguments.get("-logFile")
 		lockedVersions = duell_versioning_locking_LockedVersionsHelper.getLastLockedVersion(path)
 		dLibs = lockedVersions.duelllibs
+		sLibs = list()
 		hLibs = lockedVersions.haxelibs
 		plugins = lockedVersions.plugins
 		if ((len(dLibs) == 0) and ((len(hLibs) == 0))):
@@ -2419,9 +2429,10 @@ class duell_commands_UpdateCommand:
 			_g2 = (_g2 + 1)
 			self.recreateDuellLib(p)
 		dLibs.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
+		sLibs.sort(key= python_lib_Functools.cmp_to_key(self.sortSourceLibsByName))
 		hLibs.sort(key= python_lib_Functools.cmp_to_key(self.sortHaxeLibsByName))
 		plugins.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
-		self.printFinalResult(dLibs,hLibs,plugins)
+		self.printFinalResult(dLibs,sLibs,hLibs,plugins)
 
 	def recreateDuellLib(self,lib):
 		self.checkDuelllibPreConditions(lib)
@@ -2464,16 +2475,16 @@ class duell_commands_UpdateCommand:
 	def iterateDuellLibVersionsUntilEverythingIsParsedAndVersioned(self):
 		while True:
 			foundSomethingNotParsed = False
-			libClone = None
+			duelllibClone = None
 			_g = []
 			_hx_local_0 = self.duellLibVersions.iterator()
 			while _hx_local_0.hasNext():
 				l = _hx_local_0.next()
 				_g.append(l)
-			libClone = _g
+			duelllibClone = _g
 			_g1 = 0
-			while (_g1 < len(libClone)):
-				duellLibVersion = (libClone[_g1] if _g1 >= 0 and _g1 < len(libClone) else None)
+			while (_g1 < len(duelllibClone)):
+				duellLibVersion = (duelllibClone[_g1] if _g1 >= 0 and _g1 < len(duelllibClone) else None)
 				_g1 = (_g1 + 1)
 				_g2 = duellLibVersion.versionState
 				if ((_g2.index) == 0):
@@ -2499,6 +2510,31 @@ class duell_commands_UpdateCommand:
 							duell_helpers_LogHelper.info(((("     reparsing: " + "\x1B[1m") + HxOverrides.stringOrNull(duellLibVersion.name)) + "\x1B[0m"))
 							self.parseDuellLibWithName(duellLibVersion.name)
 				elif ((_g2.index) == 1):
+					pass
+				else:
+					pass
+			sourcelibClone = None
+			_g11 = []
+			_hx_local_2 = self.sourceLibVersions.iterator()
+			while _hx_local_2.hasNext():
+				l1 = _hx_local_2.next()
+				_g11.append(l1)
+			sourcelibClone = _g11
+			_g21 = 0
+			while (_g21 < len(sourcelibClone)):
+				sourceLibVersion = (sourcelibClone[_g21] if _g21 >= 0 and _g21 < len(sourcelibClone) else None)
+				_g21 = (_g21 + 1)
+				_g3 = sourceLibVersion.versionState
+				if ((_g3.index) == 0):
+					duell_helpers_LogHelper.info("\n")
+					sourceLibVersion.versionState = duell_commands_VersionState.ParsedVersionUnchanged
+					foundSomethingNotParsed = True
+					duell_helpers_LogHelper.info(((("     parsing " + "\x1B[1m") + HxOverrides.stringOrNull(sourceLibVersion.name)) + "\x1B[0m"))
+					workLib = duell_objects_SourceLib(sourceLibVersion.name, sourceLibVersion.path)
+					self.parseSourceLib(workLib)
+				elif ((_g3.index) == 2):
+					pass
+				elif ((_g3.index) == 1):
 					pass
 				else:
 					pass
@@ -2559,7 +2595,7 @@ class duell_commands_UpdateCommand:
 		_this1 = self.finalToolList
 		_this1.append(_hx_AnonObject({'name': "haxe", 'version': versionString}))
 
-	def printFinalResult(self,duellLibs,haxelibs,plugins):
+	def printFinalResult(self,duellLibs,sourceLibs,haxelibs,plugins):
 		duell_helpers_LogHelper.info((("\x1B[1m" + "DuellLibs:") + "\x1B[0m"))
 		duell_helpers_LogHelper.info("\n")
 		_g = 0
@@ -2568,31 +2604,48 @@ class duell_commands_UpdateCommand:
 			_g = (_g + 1)
 			duell_helpers_LogHelper.info(((("   " + HxOverrides.stringOrNull(lib.name)) + " - ") + HxOverrides.stringOrNull(lib.version)))
 		duell_helpers_LogHelper.info("\n")
-		duell_helpers_LogHelper.info((("\x1B[1m" + "HaxeLibs:") + "\x1B[0m"))
+		duell_helpers_LogHelper.info((("\x1B[1m" + "SourceLibs:") + "\x1B[0m"))
 		duell_helpers_LogHelper.info("\n")
 		_g1 = 0
-		while (_g1 < len(haxelibs)):
-			lib1 = (haxelibs[_g1] if _g1 >= 0 and _g1 < len(haxelibs) else None)
+		while (_g1 < len(sourceLibs)):
+			lib1 = (sourceLibs[_g1] if _g1 >= 0 and _g1 < len(sourceLibs) else None)
 			_g1 = (_g1 + 1)
-			duell_helpers_LogHelper.info(((("   " + HxOverrides.stringOrNull(lib1.name)) + " - ") + HxOverrides.stringOrNull(lib1.version)))
+			negativePath = haxe_io_Path.join([duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation(), "lib"])
+			parentPath = None
+			_this = None
+			_this1 = lib1.getPath()
+			if (negativePath == ""):
+				_this = list(_this1)
+			else:
+				_this = _this1.split(negativePath)
+			parentPath = (None if ((len(_this) == 0)) else _this.pop())
+			duell_helpers_LogHelper.info(((("   " + HxOverrides.stringOrNull(lib1.name)) + " - ") + ("null" if parentPath is None else parentPath)))
+		duell_helpers_LogHelper.info("\n")
+		duell_helpers_LogHelper.info((("\x1B[1m" + "HaxeLibs:") + "\x1B[0m"))
+		duell_helpers_LogHelper.info("\n")
+		_g2 = 0
+		while (_g2 < len(haxelibs)):
+			lib2 = (haxelibs[_g2] if _g2 >= 0 and _g2 < len(haxelibs) else None)
+			_g2 = (_g2 + 1)
+			duell_helpers_LogHelper.info(((("   " + HxOverrides.stringOrNull(lib2.name)) + " - ") + HxOverrides.stringOrNull(lib2.version)))
 		if (len(plugins) > 0):
 			duell_helpers_LogHelper.info("\n")
 			duell_helpers_LogHelper.info((("\x1B[1m" + "Build Plugins:") + "\x1B[0m"))
 			duell_helpers_LogHelper.info("\n")
-			_g2 = 0
-			while (_g2 < len(plugins)):
-				lib2 = (plugins[_g2] if _g2 >= 0 and _g2 < len(plugins) else None)
-				_g2 = (_g2 + 1)
-				duell_helpers_LogHelper.info(((("   " + HxOverrides.stringOrNull(lib2.name)) + " - ") + HxOverrides.stringOrNull(lib2.version)))
+			_g3 = 0
+			while (_g3 < len(plugins)):
+				lib3 = (plugins[_g3] if _g3 >= 0 and _g3 < len(plugins) else None)
+				_g3 = (_g3 + 1)
+				duell_helpers_LogHelper.info(((("   " + HxOverrides.stringOrNull(lib3.name)) + " - ") + HxOverrides.stringOrNull(lib3.version)))
 		if (len(self.finalToolList) > 0):
 			duell_helpers_LogHelper.info("\n")
 			duell_helpers_LogHelper.info((("\x1B[1m" + "Tools:") + "\x1B[0m"))
 			duell_helpers_LogHelper.info("\n")
-			_g3 = 0
+			_g4 = 0
 			_g11 = self.finalToolList
-			while (_g3 < len(_g11)):
-				tool = (_g11[_g3] if _g3 >= 0 and _g3 < len(_g11) else None)
-				_g3 = (_g3 + 1)
+			while (_g4 < len(_g11)):
+				tool = (_g11[_g4] if _g4 >= 0 and _g4 < len(_g11) else None)
+				_g4 = (_g4 + 1)
 				duell_helpers_LogHelper.info(((("   " + HxOverrides.stringOrNull(tool.name)) + " - ") + HxOverrides.stringOrNull(tool.version)))
 
 	def printVersionDiffs(self):
@@ -2635,23 +2688,36 @@ class duell_commands_UpdateCommand:
 			_this = self.finalLibList.duellLibs
 			x = duell_objects_DuellLib.getDuellLib(duellLibVersion.name,duellLibVersion.gitVers.currentVersion)
 			_this.append(x)
-		self.finalLibList.duellLibs.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
-		self.finalLibList.haxelibs = []
-		_hx_local_1 = self.haxelibVersions.iterator()
+		_hx_local_1 = self.sourceLibVersions.iterator()
 		while _hx_local_1.hasNext():
-			haxelibVersion = _hx_local_1.next()
-			_this1 = self.finalLibList.haxelibs
-			_this1.append(haxelibVersion)
-		self.finalLibList.haxelibs.sort(key= python_lib_Functools.cmp_to_key(self.sortHaxeLibsByName))
-		_hx_local_2 = self.pluginVersions.keys()
+			sourceLibVersion = _hx_local_1.next()
+			_this1 = self.finalLibList.sourceLibs
+			x1 = duell_objects_SourceLib(sourceLibVersion.name, sourceLibVersion.path)
+			_this1.append(x1)
+		self.finalLibList.duellLibs.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
+		self.finalLibList.sourceLibs.sort(key= python_lib_Functools.cmp_to_key(self.sortSourceLibsByName))
+		self.finalLibList.haxelibs = []
+		_hx_local_2 = self.haxelibVersions.iterator()
 		while _hx_local_2.hasNext():
-			plugin = _hx_local_2.next()
-			_this2 = self.finalPluginList
-			x1 = duell_objects_DuellLib.getDuellLib(self.pluginVersions.h.get(plugin,None).lib.name,self.pluginVersions.h.get(plugin,None).gitVers.currentVersion)
-			_this2.append(x1)
+			haxelibVersion = _hx_local_2.next()
+			_this2 = self.finalLibList.haxelibs
+			_this2.append(haxelibVersion)
+		self.finalLibList.haxelibs.sort(key= python_lib_Functools.cmp_to_key(self.sortHaxeLibsByName))
+		_hx_local_3 = self.pluginVersions.keys()
+		while _hx_local_3.hasNext():
+			plugin = _hx_local_3.next()
+			_this3 = self.finalPluginList
+			x2 = duell_objects_DuellLib.getDuellLib(self.pluginVersions.h.get(plugin,None).lib.name,self.pluginVersions.h.get(plugin,None).gitVers.currentVersion)
+			_this3.append(x2)
 		self.finalPluginList.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
 
 	def sortDuellLibsByName(self,a,b):
+		if (a.name > b.name):
+			return 1
+		else:
+			return -1
+
+	def sortSourceLibsByName(self,a,b):
 		if (a.name > b.name):
 			return 1
 		else:
@@ -2682,7 +2748,16 @@ class duell_commands_UpdateCommand:
 				_g21 = (_g21 + 1)
 				_g11.append(p.name)
 			return _g11
-		duell_helpers_SchemaHelper.createSchemaXml(_hx_local_0(),_hx_local_2())
+		def _hx_local_4():
+			_g22 = []
+			_g31 = 0
+			_g4 = self.finalLibList.sourceLibs
+			while (_g31 < len(_g4)):
+				l1 = (_g4[_g31] if _g31 >= 0 and _g31 < len(_g4) else None)
+				_g31 = (_g31 + 1)
+				_g22.append(l1)
+			return _g22
+		duell_helpers_SchemaHelper.createSchemaXml(_hx_local_0(),_hx_local_2(),_hx_local_4())
 
 	def saveUpdateExecution(self):
 		duellConfig = duell_objects_DuellConfigJSON.getConfig(duell_helpers_DuellConfigHelper.getDuellConfigFileLocation())
@@ -2692,6 +2767,14 @@ class duell_commands_UpdateCommand:
 
 	def lockBuildVersion(self):
 		pass
+
+	def parseSourceLib(self,lib):
+		name = lib.name
+		if (not sys_FileSystem.exists(((HxOverrides.stringOrNull(lib.getPath()) + "/") + HxOverrides.stringOrNull(duell_defines_DuellDefines.LIB_CONFIG_FILENAME)))):
+			duell_helpers_LogHelper.println(((("" + ("null" if name is None else name)) + " does not have a ") + HxOverrides.stringOrNull(duell_defines_DuellDefines.LIB_CONFIG_FILENAME)))
+		else:
+			path = ((HxOverrides.stringOrNull(lib.getPath()) + "/") + HxOverrides.stringOrNull(duell_defines_DuellDefines.LIB_CONFIG_FILENAME))
+			self.parseXML(path,name)
 
 	def parseDuellLibWithName(self,name):
 		if (not sys_FileSystem.exists(((HxOverrides.stringOrNull(duell_helpers_DuellLibHelper.getPath(name)) + "/") + HxOverrides.stringOrNull(duell_defines_DuellDefines.LIB_CONFIG_FILENAME)))):
@@ -2733,6 +2816,12 @@ class duell_commands_UpdateCommand:
 							self.handlePluginParsed(buildLib,sourceLibrary)
 						else:
 							pass
+			elif (_hx_local_0 == 9):
+				if (_g == "sourcelib"):
+					if (element.has.resolve("path") and element.has.resolve("name")):
+						includePath1 = self.resolvePath(element.att.resolve("path"))
+						newSourceLib = duell_objects_SourceLib(element.att.resolve("name"), includePath1)
+						self.handleSourceLibParsed(newSourceLib)
 			elif (_hx_local_0 == 7):
 				if (_g == "haxelib"):
 					name = element.att.resolve("name")
@@ -2790,14 +2879,27 @@ class duell_commands_UpdateCommand:
 			_this1.pop()
 
 	def checkDuelllibPreConditions(self,duellLib):
-		if (not duell_helpers_DuellLibHelper.isInstalled(duellLib.name)):
+		if (not duellLib.isInstalled()):
 			answer = duell_helpers_AskHelper.askYesOrNo((("DuellLib " + HxOverrides.stringOrNull(duellLib.name)) + " is missing, would you like to install it?"))
 			if answer:
-				duell_helpers_DuellLibHelper.install(duellLib.name)
+				duellLib.install()
 			else:
 				raise _HxException("Cannot continue with an uninstalled lib.")
-		if (not duell_helpers_DuellLibHelper.isPathValid(duellLib.name)):
-			raise _HxException((((("DuellLib " + HxOverrides.stringOrNull(duellLib.name)) + " has an invalid path - ") + HxOverrides.stringOrNull(duell_helpers_DuellLibHelper.getPath(duellLib.name))) + " - check your \"haxelib list\""))
+		if (not duellLib.isPathValid()):
+			raise _HxException((((("DuellLib " + HxOverrides.stringOrNull(duellLib.name)) + " has an invalid path - ") + HxOverrides.stringOrNull(duellLib.getPath())) + " - check your \"haxelib list\""))
+
+	def handleSourceLibParsed(self,newSourceLib):
+		_hx_local_0 = self.sourceLibVersions.keys()
+		while _hx_local_0.hasNext():
+			sourceLibName = _hx_local_0.next()
+			if (sourceLibName != newSourceLib.name):
+				continue
+			sourceLibVersion = self.sourceLibVersions.h.get(newSourceLib.name,None)
+			sourceLibVersion.versionState = duell_commands_VersionState.ParsedVersionUnchanged
+			return
+		v = _hx_AnonObject({'name': newSourceLib.name, 'path': newSourceLib.getPath(), 'versionState': duell_commands_VersionState.Unparsed})
+		self.sourceLibVersions.h[newSourceLib.name] = v
+		v
 
 	def handleDuellLibParsed(self,newDuellLib,sourceLibrary):
 		self.checkDuelllibPreConditions(newDuellLib)
@@ -2909,6 +3011,7 @@ class duell_commands_UpdateCommand:
 		_hx_o.finalToolList = None
 		_hx_o.haxelibVersions = None
 		_hx_o.duellLibVersions = None
+		_hx_o.sourceLibVersions = None
 		_hx_o.pluginVersions = None
 		_hx_o.buildLib = None
 		_hx_o.platformName = None
@@ -4210,7 +4313,7 @@ class duell_helpers_SchemaHelper:
 		duell_helpers_CommandHelper.runJava(toolPath,["-jar", "schema_validator.jar", schemaPath, pathXml],_hx_AnonObject({'errorMessage': ("Failed to validate schema for file: " + ("null" if pathXml is None else pathXml))}))
 
 	@staticmethod
-	def createSchemaXml(duelllibs,plugins):
+	def createSchemaXml(duelllibs,plugins,sourcelibs = None):
 		duellPath = duell_helpers_DuellLibHelper.getPath("duell")
 		schemaPath = haxe_io_Path.join([duellPath, "schema", "duell_schema.xsd"])
 		librariesWithSchema = []
@@ -4227,10 +4330,20 @@ class duell_helpers_SchemaHelper:
 				librariesWithSchema.append(_hx_AnonObject({'name': duelllib, 'path': duellLibSchemaPath}))
 			else:
 				librariesWithoutSchema.append(duelllib)
-		_g1 = 0
-		while (_g1 < len(plugins)):
-			plugin = (plugins[_g1] if _g1 >= 0 and _g1 < len(plugins) else None)
-			_g1 = (_g1 + 1)
+		if (sourcelibs is not None):
+			_g1 = 0
+			while (_g1 < len(sourcelibs)):
+				sourcelib = (sourcelibs[_g1] if _g1 >= 0 and _g1 < len(sourcelibs) else None)
+				_g1 = (_g1 + 1)
+				sourceLibSchemaPath = haxe_io_Path.join([sourcelib.getPath(), "schema.xsd"])
+				if sys_FileSystem.exists(sourceLibSchemaPath):
+					librariesWithSchema.append(_hx_AnonObject({'name': sourcelib.name, 'path': sourceLibSchemaPath}))
+				else:
+					librariesWithoutSchema.append(sourcelib.name)
+		_g2 = 0
+		while (_g2 < len(plugins)):
+			plugin = (plugins[_g2] if _g2 >= 0 and _g2 < len(plugins) else None)
+			_g2 = (_g2 + 1)
 			duellLibPath1 = duell_helpers_DuellLibHelper.getPath(plugin)
 			duellLibSchemaPath1 = haxe_io_Path.join([duellLibPath1, "schema.xsd"])
 			rawPluginName = HxString.substr(plugin,10,None)
@@ -4907,8 +5020,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -6697,6 +6810,45 @@ class duell_objects_SemVer:
 		_hx_o.rc = None
 duell_objects_SemVer._hx_class = duell_objects_SemVer
 _hx_classes["duell.objects.SemVer"] = duell_objects_SemVer
+
+
+class duell_objects_SourceLib(duell_objects_DuellLib):
+	_hx_class_name = "duell.objects.SourceLib"
+	_hx_fields = ["sourcePath"]
+	_hx_methods = ["isInstalled", "isPathValid", "getPath", "updateNeeded", "update", "install"]
+	_hx_statics = []
+	_hx_interfaces = []
+	_hx_super = duell_objects_DuellLib
+
+
+	def __init__(self,name,path):
+		self.sourcePath = None
+		super().__init__(name,"Source")
+		self.sourcePath = path
+
+	def isInstalled(self):
+		return True
+
+	def isPathValid(self):
+		return True
+
+	def getPath(self):
+		return self.sourcePath
+
+	def updateNeeded(self):
+		return False
+
+	def update(self):
+		pass
+
+	def install(self):
+		pass
+
+	@staticmethod
+	def _hx_empty_init(_hx_o):
+		_hx_o.sourcePath = None
+duell_objects_SourceLib._hx_class = duell_objects_SourceLib
+_hx_classes["duell.objects.SourceLib"] = duell_objects_SourceLib
 
 
 class duell_objects_dependencies_DependencyConfigFile:

@@ -26,6 +26,7 @@
 
 package duell.commands;
 
+import duell.objects.SourceLib;
 import duell.helpers.ConnectionHelper;
 import duell.helpers.SchemaHelper;
 import duell.helpers.DuellConfigHelper;
@@ -250,7 +251,7 @@ class BuildCommand implements IGDCommand
             for (lib in filtered)
             {
                 lib.parsed = true;
-                parseDuellLibWithName(lib.lib.name);
+                parseDuellLib(lib.lib);
             }
         }
     }
@@ -303,20 +304,21 @@ class BuildCommand implements IGDCommand
 
         for (l in libList)
         {
+            var refPath = l.lib.getPath();
             buildArguments.push("-cp");
-            buildArguments.push(DuellLibHelper.getPath(l.lib.name));
+            buildArguments.push(refPath);
 
-            if (FileSystem.exists(haxe.io.Path.join([DuellLibHelper.getPath(l.lib.name), "duell", "build", "plugin", "library", l.lib.name, "LibraryXMLParser.hx"])))
+            if (FileSystem.exists(haxe.io.Path.join([refPath, "duell", "build", "plugin", "library", l.lib.name, "LibraryXMLParser.hx"])))
             {
                 buildArguments.push('duell.build.plugin.library.${l.lib.name}.LibraryXMLParser');
             }
 
-            if (FileSystem.exists(haxe.io.Path.join([DuellLibHelper.getPath(l.lib.name), "duell", "build", "plugin", "library", l.lib.name, "LibraryBuild.hx"])))
+            if (FileSystem.exists(haxe.io.Path.join([refPath, "duell", "build", "plugin", "library", l.lib.name, "LibraryBuild.hx"])))
             {
                 buildArguments.push('duell.build.plugin.library.${l.lib.name}.LibraryBuild');
             }
 
-            var pyLibPath = haxe.io.Path.join([DuellLibHelper.getPath(l.lib.name), "pylib"]);
+            var pyLibPath = haxe.io.Path.join([refPath, "pylib"]);
             if (FileSystem.exists(pyLibPath))
             {
                 pythonLibPathsToBootstrap.push(pyLibPath);
@@ -411,16 +413,16 @@ class BuildCommand implements IGDCommand
     /// HELPERS
     /// -------
 
-    private function parseDuellLibWithName(name: String)
+    private function parseDuellLib(lib: DuellLib)
     {
-        if (!FileSystem.exists(DuellLibHelper.getPath(name) + '/' + DuellDefines.LIB_CONFIG_FILENAME))
+        var name = lib.name;
+        if (!FileSystem.exists(lib.getPath() + '/' + DuellDefines.LIB_CONFIG_FILENAME))
         {
             LogHelper.println('$name does not have a ${DuellDefines.LIB_CONFIG_FILENAME}');
         }
         else
         {
-            var path = DuellLibHelper.getPath(name) + '/' + DuellDefines.LIB_CONFIG_FILENAME;
-
+            var path = lib.getPath() + '/' + DuellDefines.LIB_CONFIG_FILENAME;
             parseXML(path);
         }
     }
@@ -464,6 +466,16 @@ class BuildCommand implements IGDCommand
                         parseXML(includePath);
                     }
 
+                case 'sourcelib':
+                    {
+                        if (element.has.path && element.has.name)
+                        {
+                            var includePath = resolvePath(element.att.path);
+                            var newSourceLib = new SourceLib(element.att.name, includePath);
+
+                            handleDuellLibParsed(newSourceLib);
+                        }
+                    }
             }
         }
 

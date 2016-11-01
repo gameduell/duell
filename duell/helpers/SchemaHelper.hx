@@ -26,6 +26,7 @@
 
 package duell.helpers;
 
+import duell.objects.SourceLib;
 import sys.io.File;
 import sys.FileSystem;
 import haxe.io.Path;
@@ -66,7 +67,7 @@ class SchemaHelper
         });
     }
 
-    public static function createSchemaXml(duelllibs: Array<String>, plugins: Array<String>): Void
+    public static function createSchemaXml(duelllibs: Array<String>, plugins: Array<String>, ?sourcelibs: Array<SourceLib> = null): Void
     {
         var duellPath: String = DuellLibHelper.getPath("duell");
         var schemaPath: String = Path.join([duellPath, SCHEMA_FOLDER, TEMPLATED_SCHEMA_FILE]);
@@ -89,6 +90,23 @@ class SchemaHelper
             else
             {
                 librariesWithoutSchema.push(duelllib);
+            }
+        }
+
+        if (sourcelibs != null)
+        {
+            for (sourcelib in sourcelibs)
+            {
+                var sourceLibSchemaPath: String = Path.join([sourcelib.getPath(), SCHEMA_FILE]);
+
+                if (FileSystem.exists(sourceLibSchemaPath))
+                {
+                    librariesWithSchema.push({name: sourcelib.name, path: sourceLibSchemaPath});
+                }
+                else
+                {
+                    librariesWithoutSchema.push(sourcelib.name);
+                }
             }
         }
 

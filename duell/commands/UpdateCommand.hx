@@ -26,6 +26,7 @@
 
 package duell.commands;
 
+import duell.objects.SourceLib;
 import duell.helpers.GitHelper;
 import duell.objects.DuellLibReference;
 import duell.helpers.DuellLibListHelper;
@@ -66,7 +67,7 @@ import duell.objects.Arguments;
 
 using StringTools;
 
-typedef LibList = { duellLibs: Array<DuellLib>, haxelibs: Array<Haxelib> }
+typedef LibList = { duellLibs: Array<DuellLib>, sourceLibs: Array<SourceLib>, haxelibs: Array<Haxelib> }
 
 enum VersionState
 {
@@ -77,6 +78,8 @@ enum VersionState
 
 typedef DuellLibVersion = { name: String, gitVers: GitVers, versionRequested: String, /*helper var*/ versionState: VersionState, dependTo:String };
 
+typedef SourceLibVersion = { name: String, path: String, versionState: VersionState};
+
 typedef PluginVersion = { lib: DuellLib, gitVers: GitVers, dependTo:String };
 
 typedef DuellToolVersion = { version:String, dependTo:String };
@@ -85,12 +88,13 @@ typedef ToolVersion = { name: String, version: String};
 
 class UpdateCommand implements IGDCommand
 {
-	var finalLibList: LibList = { duellLibs : [], haxelibs : [] };
+	var finalLibList: LibList = { duellLibs : [], sourceLibs : [], haxelibs : [] };
 	var finalPluginList: Array<DuellLib> = [];
     var finalToolList: Array<ToolVersion> = [];
 
 	var haxelibVersions: Map<String, Haxelib> = new Map();
 	var duellLibVersions: Map<String, DuellLibVersion> = new Map();
+	var sourceLibVersions: Map<String, SourceLibVersion> = new Map();
 	var pluginVersions: Map<String, PluginVersion> = new Map();
 
 	var buildLib: DuellLib = null;
@@ -130,7 +134,7 @@ class UpdateCommand implements IGDCommand
 		
 		LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Resulting dependencies update and resolution", null, LogHelper.DARK_GREEN);
     	
-    	printFinalResult( finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList );
+    	printFinalResult( finalLibList.duellLibs, finalLibList.sourceLibs, finalLibList.haxelibs, finalPluginList );
 
     	if(Arguments.isSet('-log')){
     		logVersions();
@@ -217,6 +221,7 @@ class UpdateCommand implements IGDCommand
     	var path = Arguments.get('-logFile');
     	var lockedVersions = LockedVersionsHelper.getLastLockedVersion( path );
     	var dLibs = lockedVersions.duelllibs;
+		var sLibs = new Array<SourceLib>();
     	var hLibs = lockedVersions.haxelibs;
     	var plugins = lockedVersions.plugins;
 
@@ -230,6 +235,8 @@ class UpdateCommand implements IGDCommand
     	{
     		recreateDuellLib( d );
     	}
+
+		// Source libs are recreated with the parenting duell lib
 
 		LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Recreating Haxelibs", null, LogHelper.DARK_GREEN);
     	for( h in hLibs )
@@ -246,10 +253,11 @@ class UpdateCommand implements IGDCommand
     	}
 
     	dLibs.sort( sortDuellLibsByName );
+		sLibs.sort( sortSourceLibsByName );
     	hLibs.sort( sortHaxeLibsByName );
     	plugins.sort( sortDuellLibsByName );
 
-    	printFinalResult( dLibs, hLibs, plugins );
+    	printFinalResult( dLibs, sLibs, hLibs, plugins );
     }
 
     private function recreateDuellLib( lib:DuellLib )
@@ -327,8 +335,10 @@ class UpdateCommand implements IGDCommand
 		while(true)
 		{
 			var foundSomethingNotParsed = false;
-			var libClone = [for (l in duellLibVersions) l]; /// because the duellLibVersions will change
-			for (duellLibVersion in libClone)
+
+			var duelllibClone = [for (l in duellLibVersions) l]; /// because the duellLibVersions will change
+
+			for (duellLibVersion in duelllibClone)
 			{
 				switch (duellLibVersion.versionState)
 				{
@@ -374,6 +384,31 @@ class UpdateCommand implements IGDCommand
 					}
 					case VersionState.ParsedVersionUnchanged:
 						///nothing happens
+				}
+			}
+
+			var sourcelibClone = [for (l in sourceLibVersions) l]; /// Maybe new libs would be added in recursive calls
+
+			for (sourceLibVersion in sourcelibClone)
+			{
+				switch (sourceLibVersion.versionState)
+				{
+					case VersionState.Unparsed:
+						{
+							LogHelper.info("\n");
+							sourceLibVersion.versionState = VersionState.ParsedVersionUnchanged;
+
+							foundSomethingNotParsed = true;
+
+							LogHelper.info("     parsing " + LogHelper.BOLD + sourceLibVersion.name + LogHelper.NORMAL);
+							var workLib = new SourceLib(sourceLibVersion.name, sourceLibVersion.path);
+							parseSourceLib(workLib);
+						}
+
+					case VersionState.ParsedVersionChanged:
+						///nothing happens because source libs have no versions
+					case VersionState.ParsedVersionUnchanged:
+					///nothing happens
 				}
 			}
 
@@ -472,7 +507,7 @@ class UpdateCommand implements IGDCommand
         finalToolList.push({name: "haxe", version: versionString});
 	}
 
-	private function printFinalResult( duellLibs:Array<DuellLib>, haxelibs:Array<Haxelib>, plugins:Array<DuellLib> ): Void
+	private function printFinalResult( duellLibs:Array<DuellLib>, sourceLibs:Array<SourceLib>, haxelibs:Array<Haxelib>, plugins:Array<DuellLib> ): Void
 	{
     	LogHelper.info(LogHelper.BOLD + "DuellLibs:" + LogHelper.NORMAL);
     	LogHelper.info("\n");
@@ -481,6 +516,18 @@ class UpdateCommand implements IGDCommand
     	{
     		LogHelper.info("   " + lib.name + " - " + lib.version);
     	}
+
+		LogHelper.info("\n");
+		LogHelper.info(LogHelper.BOLD + "SourceLibs:" + LogHelper.NORMAL);
+		LogHelper.info("\n");
+
+		for (lib in sourceLibs)
+		{
+			var negativePath = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), "lib"]);
+			var parentPath = lib.getPath().split(negativePath).pop();
+
+			LogHelper.info("   " + lib.name + " - " + parentPath);
+		}
 
     	LogHelper.info("\n");
     	LogHelper.info(LogHelper.BOLD + "HaxeLibs:" + LogHelper.NORMAL);
@@ -566,7 +613,13 @@ class UpdateCommand implements IGDCommand
 			finalLibList.duellLibs.push(DuellLib.getDuellLib(duellLibVersion.name, duellLibVersion.gitVers.currentVersion));
 		}
 
+		for (sourceLibVersion in sourceLibVersions)
+		{
+			finalLibList.sourceLibs.push(new SourceLib(sourceLibVersion.name, sourceLibVersion.path));
+		}
+
 		finalLibList.duellLibs.sort( sortDuellLibsByName );
+		finalLibList.sourceLibs.sort( sortSourceLibsByName );
 
 		finalLibList.haxelibs = [];
 		for (haxelibVersion in haxelibVersions)
@@ -589,6 +642,11 @@ class UpdateCommand implements IGDCommand
 		return a.name > b.name ? 1 : -1;
 	}
 
+	private function sortSourceLibsByName( a:SourceLib, b:SourceLib ) : Int
+	{
+		return a.name > b.name ? 1 : -1;
+	}
+
 	private function sortHaxeLibsByName( a:Haxelib, b:Haxelib ) : Int
 	{
 		return a.name > b.name ? 1 : -1;
@@ -596,7 +654,7 @@ class UpdateCommand implements IGDCommand
 
     private function createSchemaXml()
     {
-        SchemaHelper.createSchemaXml([for (l in finalLibList.duellLibs) l.name], [for (p in finalPluginList) p.name]);
+        SchemaHelper.createSchemaXml([for (l in finalLibList.duellLibs) l.name], [for (p in finalPluginList) p.name], [for (l in finalLibList.sourceLibs) l]);
     }
 
     private function saveUpdateExecution()
@@ -615,6 +673,20 @@ class UpdateCommand implements IGDCommand
 	/// -------
 	/// HELPERS
 	/// -------
+
+	private function parseSourceLib(lib: SourceLib)
+	{
+		var name = lib.name;
+		if (!FileSystem.exists(lib.getPath() + '/' + DuellDefines.LIB_CONFIG_FILENAME))
+		{
+			LogHelper.println('$name does not have a ${DuellDefines.LIB_CONFIG_FILENAME}');
+		}
+		else
+		{
+			var path = lib.getPath() + '/' + DuellDefines.LIB_CONFIG_FILENAME;
+			parseXML(path, name);
+		}
+	}
 
 	private function parseDuellLibWithName(name: String)
 	{
@@ -748,6 +820,17 @@ class UpdateCommand implements IGDCommand
 
 						parseXML(includePath);
 					}
+
+				case 'sourcelib':
+					{
+						if (element.has.path && element.has.name)
+						{
+							var includePath = resolvePath(element.att.path);
+							var newSourceLib = new SourceLib(element.att.name, includePath);
+
+							handleSourceLibParsed(newSourceLib);
+						}
+					}
 			}
 		}
 
@@ -756,20 +839,36 @@ class UpdateCommand implements IGDCommand
 
 	private function checkDuelllibPreConditions( duellLib:DuellLib )
 	{
-		if (!DuellLibHelper.isInstalled( duellLib.name ))
+		if (!duellLib.isInstalled())
 		{
 			var answer = AskHelper.askYesOrNo('DuellLib ${duellLib.name} is missing, would you like to install it?');
 
 			if (answer)
-				DuellLibHelper.install( duellLib.name );
+				duellLib.install();
 			else
 				throw 'Cannot continue with an uninstalled lib.';
 		}
 
-		if (!DuellLibHelper.isPathValid( duellLib.name ))
+		if (!duellLib.isPathValid())
 		{
-			throw 'DuellLib ${duellLib.name} has an invalid path - ${DuellLibHelper.getPath(duellLib.name)} - check your "haxelib list"';
+			throw 'DuellLib ${duellLib.name} has an invalid path - ${duellLib.getPath()} - check your "haxelib list"';
 		}
+	}
+
+	private function handleSourceLibParsed(newSourceLib: SourceLib)
+	{
+		for (sourceLibName in sourceLibVersions.keys())
+		{
+			if(sourceLibName != newSourceLib.name)
+				continue;
+
+			var sourceLibVersion = sourceLibVersions[newSourceLib.name];
+			sourceLibVersion.versionState = VersionState.ParsedVersionUnchanged;
+
+			return;
+		}
+
+		sourceLibVersions[newSourceLib.name] = {name: newSourceLib.name, path: newSourceLib.getPath(), versionState:VersionState.Unparsed};
 	}
 
 	private function handleDuellLibParsed(newDuellLib: DuellLib, sourceLibrary:String)

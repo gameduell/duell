@@ -26,6 +26,7 @@
 
 package duell.build.objects;
 
+import duell.objects.SourceLib;
 import duell.helpers.BuildTagHelper;
 import duell.objects.Arguments;
 import duell.helpers.DuellConfigHelper;
@@ -97,7 +98,7 @@ class DuellProjectXML
 
 		parseFile(Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]));
 
-		parseDuellLibs();
+		parseDuellAndSourceLibs();
 	}
 
 	private function parseFile(file : String)
@@ -148,6 +149,9 @@ class DuellProjectXML
 				case 'duelllib':
 					parseDuellLibElement(element);
 
+				case 'sourcelib':
+					parseSourceLibElement(element);
+
 				case 'ndll':
 					parseNDLLElement(element);
 
@@ -160,10 +164,11 @@ class DuellProjectXML
 	}
 
 	private var libsAlreadyParsed = new Array<{name : String, version : String}>();
-	private function parseDuellLibs()
+	private var sourcelibsAlreadyParsed = new Array<{name : String, path : String}>();
+	private function parseDuellAndSourceLibs()
 	{
 		/// BFS
-		while (libsAlreadyParsed.length != Configuration.getData().DEPENDENCIES.DUELLLIBS.length)
+		while ((libsAlreadyParsed.length != Configuration.getData().DEPENDENCIES.DUELLLIBS.length) || (sourcelibsAlreadyParsed.length != Configuration.getData().DEPENDENCIES.SOURCELIBS.length))
 		{
 			var duellLibsToParse = Configuration.getData().DEPENDENCIES.DUELLLIBS.copy();
 
@@ -189,8 +194,32 @@ class DuellProjectXML
 					parseFile(xmlPath);
 				}
 			}
+
+			var sourceLibsToParse = Configuration.getData().DEPENDENCIES.SOURCELIBS.copy();
+
+			for (sourceLibDef in sourceLibsToParse)
+			{
+				if (sourcelibsAlreadyParsed.indexOf(sourceLibDef) != -1)
+					continue;
+
+				sourcelibsAlreadyParsed.push(sourceLibDef);
+
+				var sourceLib = new SourceLib(sourceLibDef.name, sourceLibDef.path);
+
+				var xmlPath = sourceLib.getPath() + '/' + DuellDefines.LIB_CONFIG_FILENAME;
+
+				if (!FileSystem.exists(xmlPath))
+				{
+					LogHelper.println('${sourceLib.name} does not have a ${DuellDefines.LIB_CONFIG_FILENAME}');
+				}
+				else
+				{
+					parseFile(xmlPath);
+				}
+			}
 		}
 	}
+
 
 	/// ---------------
 	/// SECTION PARSERS
@@ -229,6 +258,41 @@ class DuellProjectXML
 			if (!found)
 			{
 				Configuration.getData().DEPENDENCIES.HAXELIBS.push({name : name, version : version});
+			}
+		}
+	}
+
+	private function parseSourceLibElement(lib : Fast)
+	{
+		var name = null;
+		var path = null;
+
+		if(lib.has.name)
+		{
+			name = lib.att.name;
+		}
+
+		if(lib.has.path)
+		{
+			path = lib.att.path;
+		}
+
+		if (name != null && name != '' && path != null && path != '')
+		{
+			var found = false;
+			for (sourceLibDef in Configuration.getData().DEPENDENCIES.SOURCELIBS)
+			{
+				if (sourceLibDef.name == name) /// only check the name, because validation was already done in the build command
+				{
+					found = true;
+					break;
+				}
+			}
+
+			if (!found)
+			{
+				var resolvedPath = resolvePath(path);
+				Configuration.getData().DEPENDENCIES.SOURCELIBS.push({name : name, path : resolvedPath});
 			}
 		}
 	}

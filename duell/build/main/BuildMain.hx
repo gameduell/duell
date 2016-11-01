@@ -214,7 +214,18 @@ class LibraryPluginHelper
         for (duellLibDef in Configuration.getData().DEPENDENCIES.DUELLLIBS)
         {
             var name : String = duellLibDef.name;
+            var parserClass = Type.resolveClass('duell.build.plugin.library.$name.LibraryBuild');
 
+            if (parserClass != null)
+            {
+                var libraryPlugin : Dynamic = Type.createInstance(parserClass, []);
+                pluginArray.push(libraryPlugin);
+            }
+        }
+
+        for (sourceLibDef in Configuration.getData().DEPENDENCIES.SOURCELIBS)
+        {
+            var name : String = sourceLibDef.name;
             var parserClass = Type.resolveClass('duell.build.plugin.library.$name.LibraryBuild');
 
             if (parserClass != null)
