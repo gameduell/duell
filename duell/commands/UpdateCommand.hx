@@ -119,8 +119,11 @@ class UpdateCommand implements IGDCommand
 
         if(Arguments.isSet('-logFile'))
         {
-        	useVersionFileToRecreateSpecificVersions();
+        	var libs = useVersionFileToRecreateSpecificVersions();
 			saveUpdateExecution();
+
+            createSchemaXml( libs.duelllibs, libs.plugins );
+
         	return 'success';
         }
         
@@ -212,7 +215,7 @@ class UpdateCommand implements IGDCommand
         }
     }
 
-    private function useVersionFileToRecreateSpecificVersions()
+    private function useVersionFileToRecreateSpecificVersions():LockedLibraries
     {
     	var path = Arguments.get('-logFile');
     	var lockedVersions = LockedVersionsHelper.getLastLockedVersion( path );
@@ -250,6 +253,8 @@ class UpdateCommand implements IGDCommand
     	plugins.sort( sortDuellLibsByName );
 
     	printFinalResult( dLibs, hLibs, plugins );
+
+        return { duelllibs:dLibs, haxelibs:hLibs, plugins:plugins };
     }
 
     private function recreateDuellLib( lib:DuellLib )
@@ -293,7 +298,7 @@ class UpdateCommand implements IGDCommand
 
 		createFinalLibLists();
 
-        createSchemaXml();
+        createSchemaXml( finalLibList.duellLibs, finalPluginList );
 	}
 
 	private function parseDuellUserFile()
@@ -594,9 +599,9 @@ class UpdateCommand implements IGDCommand
 		return a.name > b.name ? 1 : -1;
 	}
 
-    private function createSchemaXml()
+    private function createSchemaXml( duellLibList:Array<DuellLib>, pluginLibList:Array<DuellLib> )
     {
-        SchemaHelper.createSchemaXml([for (l in finalLibList.duellLibs) l.name], [for (p in finalPluginList) p.name]);
+        SchemaHelper.createSchemaXml([for (l in duellLibList) l.name], [for (p in pluginLibList) p.name]);
     }
 
     private function saveUpdateExecution()

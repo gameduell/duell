@@ -2339,8 +2339,9 @@ class duell_commands_UpdateCommand:
 		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Update Dependencies"),None,"\x1B[2m")
 		self.synchronizeRemotes()
 		if duell_objects_Arguments.isSet("-logFile"):
-			self.useVersionFileToRecreateSpecificVersions()
+			libs = self.useVersionFileToRecreateSpecificVersions()
 			self.saveUpdateExecution()
+			self.createSchemaXml(libs.duelllibs,libs.plugins)
 			return "success"
 		self.determineAndValidateDependenciesAndDefines()
 		duell_helpers_LogHelper.info(("\x1B[2m" + "------"))
@@ -2422,6 +2423,7 @@ class duell_commands_UpdateCommand:
 		hLibs.sort(key= python_lib_Functools.cmp_to_key(self.sortHaxeLibsByName))
 		plugins.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
 		self.printFinalResult(dLibs,hLibs,plugins)
+		return _hx_AnonObject({'duelllibs': dLibs, 'haxelibs': hLibs, 'plugins': plugins})
 
 	def recreateDuellLib(self,lib):
 		self.checkDuelllibPreConditions(lib)
@@ -2445,7 +2447,7 @@ class duell_commands_UpdateCommand:
 		self.checkDuellToolVersion()
 		self.checkHaxeVersion()
 		self.createFinalLibLists()
-		self.createSchemaXml()
+		self.createSchemaXml(self.finalLibList.duellLibs,self.finalPluginList)
 
 	def parseDuellUserFile(self):
 		if sys_FileSystem.exists(duell_helpers_DuellConfigHelper.getDuellUserFileLocation()):
@@ -2663,23 +2665,21 @@ class duell_commands_UpdateCommand:
 		else:
 			return -1
 
-	def createSchemaXml(self):
+	def createSchemaXml(self,duellLibList,pluginLibList):
 		def _hx_local_0():
 			_g = []
 			_g1 = 0
-			_g2 = self.finalLibList.duellLibs
-			while (_g1 < len(_g2)):
-				l = (_g2[_g1] if _g1 >= 0 and _g1 < len(_g2) else None)
+			while (_g1 < len(duellLibList)):
+				l = (duellLibList[_g1] if _g1 >= 0 and _g1 < len(duellLibList) else None)
 				_g1 = (_g1 + 1)
 				_g.append(l.name)
 			return _g
 		def _hx_local_2():
 			_g11 = []
-			_g21 = 0
-			_g3 = self.finalPluginList
-			while (_g21 < len(_g3)):
-				p = (_g3[_g21] if _g21 >= 0 and _g21 < len(_g3) else None)
-				_g21 = (_g21 + 1)
+			_g2 = 0
+			while (_g2 < len(pluginLibList)):
+				p = (pluginLibList[_g2] if _g2 >= 0 and _g2 < len(pluginLibList) else None)
+				_g2 = (_g2 + 1)
 				_g11.append(p.name)
 			return _g11
 		duell_helpers_SchemaHelper.createSchemaXml(_hx_local_0(),_hx_local_2())
@@ -4856,8 +4856,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_head
 					nonlocal _g_val
+					nonlocal _g_head
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -4907,8 +4907,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
