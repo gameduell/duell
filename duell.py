@@ -2005,7 +2005,7 @@ _hx_classes["duell.commands.RepoConfigCommand"] = duell_commands_RepoConfigComma
 
 class duell_commands_RunCommand:
 	_hx_class_name = "duell.commands.RunCommand"
-	_hx_fields = ["runLib", "buildGitVers", "pluginName", "duellConfig"]
+	_hx_fields = ["runLib", "buildGitVers", "pluginName", "pluginSourceLibPath", "duellConfig"]
 	_hx_methods = ["execute", "determinePluginToRunFromArguments", "checkPluginVersion", "buildNewRunExecutableWithRunLib"]
 	_hx_interfaces = [duell_commands_IGDCommand]
 
@@ -2013,7 +2013,9 @@ class duell_commands_RunCommand:
 		self.runLib = None
 		self.buildGitVers = None
 		self.pluginName = None
+		self.pluginSourceLibPath = None
 		self.duellConfig = None
+		self.pluginSourceLibPath = None
 		self.buildGitVers = None
 		self.runLib = None
 
@@ -2025,6 +2027,7 @@ class duell_commands_RunCommand:
 
 	def determinePluginToRunFromArguments(self):
 		self.pluginName = duell_objects_Arguments.getSelectedPlugin()
+		self.pluginSourceLibPath = duell_objects_Arguments.getSelectedPluginSrcLibPath()
 		pluginNameCorrectnessCheck = EReg("^[A-Za-z0-9]+$", "")
 		def _hx_local_0():
 			pluginNameCorrectnessCheck.matchObj = python_lib_Re.search(pluginNameCorrectnessCheck.pattern,self.pluginName)
@@ -2052,6 +2055,9 @@ class duell_commands_RunCommand:
 		outputFolder = haxe_io_Path.join([duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation(), ".tmp"])
 		outputRun = haxe_io_Path.join([("" + ("null" if outputFolder is None else outputFolder)), (("run_" + HxOverrides.stringOrNull(self.pluginName)) + ".py")])
 		buildArguments = list()
+		duellLibPath = duell_helpers_DuellLibHelper.getPath(self.pluginName)
+		combinedPath = list(self.pluginSourceLibPath)
+		combinedPath.insert(0, duellLibPath)
 		buildArguments.append("-main")
 		buildArguments.append("duell.run.main.RunMain")
 		buildArguments.append("-python")
@@ -2060,7 +2066,7 @@ class duell_commands_RunCommand:
 		x = duell_helpers_DuellLibHelper.getPath("duell")
 		buildArguments.append(x)
 		buildArguments.append("-cp")
-		x1 = duell_helpers_DuellLibHelper.getPath(self.runLib.name)
+		x1 = haxe_io_Path.join(combinedPath)
 		buildArguments.append(x1)
 		buildArguments.append("-D")
 		buildArguments.append(("run_plugin_" + HxOverrides.stringOrNull(self.pluginName)))
@@ -2070,7 +2076,8 @@ class duell_commands_RunCommand:
 		x2 = (HxOverrides.stringOrNull(haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath("duell"), "config.xml"])) + "@generalArguments")
 		buildArguments.append(x2)
 		duell_helpers_CommandHelper.runHaxe("",buildArguments,_hx_AnonObject({'errorMessage': "building the plugin"}))
-		pyLibPath = haxe_io_Path.join([duell_helpers_DuellLibHelper.getPath(self.pluginName), "pylib"])
+		combinedPath.append("pylib")
+		pyLibPath = haxe_io_Path.join(combinedPath)
 		if sys_FileSystem.exists(pyLibPath):
 			file = sys_io_File.getBytes(outputRun)
 			fileOutput = sys_io_File.write(outputRun,True)
@@ -2086,6 +2093,7 @@ class duell_commands_RunCommand:
 		_hx_o.runLib = None
 		_hx_o.buildGitVers = None
 		_hx_o.pluginName = None
+		_hx_o.pluginSourceLibPath = None
 		_hx_o.duellConfig = None
 duell_commands_RunCommand._hx_class = duell_commands_RunCommand
 _hx_classes["duell.commands.RunCommand"] = duell_commands_RunCommand
@@ -2348,8 +2356,9 @@ class duell_commands_UpdateCommand:
 		duell_helpers_LogHelper.wrapInfo(("\x1B[2m" + "Update Dependencies"),None,"\x1B[2m")
 		self.synchronizeRemotes()
 		if duell_objects_Arguments.isSet("-logFile"):
-			self.useVersionFileToRecreateSpecificVersions()
+			libs = self.useVersionFileToRecreateSpecificVersions()
 			self.saveUpdateExecution()
+			self.createSchemaXml(libs.duelllibs,libs.plugins,[])
 			return "success"
 		self.determineAndValidateDependenciesAndDefines()
 		duell_helpers_LogHelper.info(("\x1B[2m" + "------"))
@@ -2433,6 +2442,7 @@ class duell_commands_UpdateCommand:
 		hLibs.sort(key= python_lib_Functools.cmp_to_key(self.sortHaxeLibsByName))
 		plugins.sort(key= python_lib_Functools.cmp_to_key(self.sortDuellLibsByName))
 		self.printFinalResult(dLibs,sLibs,hLibs,plugins)
+		return _hx_AnonObject({'duelllibs': dLibs, 'haxelibs': hLibs, 'plugins': plugins})
 
 	def recreateDuellLib(self,lib):
 		self.checkDuelllibPreConditions(lib)
@@ -2456,7 +2466,7 @@ class duell_commands_UpdateCommand:
 		self.checkDuellToolVersion()
 		self.checkHaxeVersion()
 		self.createFinalLibLists()
-		self.createSchemaXml()
+		self.createSchemaXml(self.finalLibList.duellLibs,self.finalPluginList,self.finalLibList.sourceLibs)
 
 	def parseDuellUserFile(self):
 		if sys_FileSystem.exists(duell_helpers_DuellConfigHelper.getDuellUserFileLocation()):
@@ -2729,34 +2739,31 @@ class duell_commands_UpdateCommand:
 		else:
 			return -1
 
-	def createSchemaXml(self):
+	def createSchemaXml(self,duellLibList,pluginLibList,sourceLibList):
 		def _hx_local_0():
 			_g = []
 			_g1 = 0
-			_g2 = self.finalLibList.duellLibs
-			while (_g1 < len(_g2)):
-				l = (_g2[_g1] if _g1 >= 0 and _g1 < len(_g2) else None)
+			while (_g1 < len(duellLibList)):
+				l = (duellLibList[_g1] if _g1 >= 0 and _g1 < len(duellLibList) else None)
 				_g1 = (_g1 + 1)
 				_g.append(l.name)
 			return _g
 		def _hx_local_2():
 			_g11 = []
-			_g21 = 0
-			_g3 = self.finalPluginList
-			while (_g21 < len(_g3)):
-				p = (_g3[_g21] if _g21 >= 0 and _g21 < len(_g3) else None)
-				_g21 = (_g21 + 1)
+			_g2 = 0
+			while (_g2 < len(pluginLibList)):
+				p = (pluginLibList[_g2] if _g2 >= 0 and _g2 < len(pluginLibList) else None)
+				_g2 = (_g2 + 1)
 				_g11.append(p.name)
 			return _g11
 		def _hx_local_4():
-			_g22 = []
-			_g31 = 0
-			_g4 = self.finalLibList.sourceLibs
-			while (_g31 < len(_g4)):
-				l1 = (_g4[_g31] if _g31 >= 0 and _g31 < len(_g4) else None)
-				_g31 = (_g31 + 1)
-				_g22.append(l1)
-			return _g22
+			_g21 = []
+			_g3 = 0
+			while (_g3 < len(sourceLibList)):
+				s = (sourceLibList[_g3] if _g3 >= 0 and _g3 < len(sourceLibList) else None)
+				_g3 = (_g3 + 1)
+				_g21.append(s)
+			return _g21
 		duell_helpers_SchemaHelper.createSchemaXml(_hx_local_0(),_hx_local_2(),_hx_local_4())
 
 	def saveUpdateExecution(self):
@@ -5020,8 +5027,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -5354,7 +5361,7 @@ _hx_classes["duell.objects.CommandSpec"] = duell_objects_CommandSpec
 
 class duell_objects_Arguments:
 	_hx_class_name = "duell.objects.Arguments"
-	_hx_statics = ["PLUGIN_XML_FILE", "CONFIG_XML_FILE", "generalArgumentSpecs", "commandSpecs", "selectedCommand", "plugin", "pluginDocumentation", "pluginArgumentSpecs", "pluginConfigurationDocumentation", "generalDocumentation", "pluginAcceptsAnyArgument", "defines", "rawArgs", "validateArguments", "parseDefine", "parseConfig", "parsePlugin", "parseCommandSpec", "parseArgumentSpec", "isSet", "get", "isGeneralArgument", "isDefineSet", "getDefine", "getSelectedCommand", "getSelectedPlugin", "getRawArguments", "printGeneralHelp", "printCommandHelp", "printPluginHelp", "printArgument", "printDocumentationConfiguration"]
+	_hx_statics = ["PLUGIN_XML_FILE", "CONFIG_XML_FILE", "generalArgumentSpecs", "commandSpecs", "selectedCommand", "plugin", "pluginSourceLibPath", "pluginDocumentation", "pluginArgumentSpecs", "pluginConfigurationDocumentation", "generalDocumentation", "pluginAcceptsAnyArgument", "defines", "rawArgs", "validateArguments", "parseDefine", "parseConfig", "parsePlugin", "parseCommandSpec", "parseArgumentSpec", "isSet", "get", "isGeneralArgument", "isDefineSet", "getDefine", "getSelectedCommand", "getSelectedPlugin", "getSelectedPluginSrcLibPath", "getRawArguments", "printGeneralHelp", "printCommandHelp", "printPluginHelp", "printArgument", "printDocumentationConfiguration"]
 	rawArgs = None
 
 	@staticmethod
@@ -5394,13 +5401,22 @@ class duell_objects_Arguments:
 			duell_objects_Arguments.plugin = (args[index] if index >= 0 and index < len(args) else None)
 			index = 2
 			duellLibName = ""
+			sourceLibPath = []
 			if (duell_objects_Arguments.selectedCommand.name == "run"):
-				duellLibName = duell_objects_Arguments.plugin
+				completePath = None
+				_this2 = duell_objects_Arguments.plugin
+				completePath = _this2.split("/")
+				duellLibName = (None if ((len(completePath) == 0)) else completePath.pop(0))
+				duell_objects_Arguments.plugin = duellLibName
+				sourceLibPath = completePath
+				duell_objects_Arguments.pluginSourceLibPath = list(sourceLibPath)
 			else:
 				duellLibName = (("duell" + HxOverrides.stringOrNull(duell_objects_Arguments.selectedCommand.name)) + HxOverrides.stringOrNull(duell_objects_Arguments.plugin))
 			if duell_helpers_DuellLibHelper.isInstalled(duellLibName):
 				path = duell_helpers_DuellLibHelper.getPath(duellLibName)
-				path = haxe_io_Path.join([path, "plugin.xml"])
+				sourceLibPath.insert(0, path)
+				sourceLibPath.append("plugin.xml")
+				path = haxe_io_Path.join(sourceLibPath)
 				if sys_FileSystem.exists(path):
 					duell_objects_Arguments.parsePlugin(sys_io_File.getContent(path))
 		if ((args[index] if index >= 0 and index < len(args) else None) == "-help"):
@@ -5639,6 +5655,10 @@ class duell_objects_Arguments:
 	@staticmethod
 	def getSelectedPlugin():
 		return duell_objects_Arguments.plugin
+
+	@staticmethod
+	def getSelectedPluginSrcLibPath():
+		return duell_objects_Arguments.pluginSourceLibPath
 
 	@staticmethod
 	def getRawArguments():
@@ -11907,6 +11927,7 @@ duell_objects_Arguments.generalArgumentSpecs = haxe_ds_StringMap()
 duell_objects_Arguments.commandSpecs = haxe_ds_StringMap()
 duell_objects_Arguments.selectedCommand = None
 duell_objects_Arguments.plugin = None
+duell_objects_Arguments.pluginSourceLibPath = None
 duell_objects_Arguments.pluginDocumentation = None
 duell_objects_Arguments.pluginArgumentSpecs = None
 duell_objects_Arguments.pluginConfigurationDocumentation = None

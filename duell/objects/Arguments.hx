@@ -100,6 +100,7 @@ class Arguments
 
 	private static var selectedCommand: CommandSpec = null;
 	private static var plugin: String = null;
+	private static var pluginSourceLibPath: Array<String> = null;
 	private static var pluginDocumentation: String = null;
 	private static var pluginArgumentSpecs: Map<String, AnyArgumentSpec> = null;
 	private static var pluginConfigurationDocumentation: Map<String, String> = null;
@@ -173,10 +174,16 @@ class Arguments
 
 			/// check if plugin is installed and parse its arguments
             var duellLibName = "";
+			var sourceLibPath: Array<String> = [];
 
             if (selectedCommand.name == "run")
             {
-                duellLibName = plugin;
+				var completePath = plugin.split('/');
+
+                duellLibName = completePath.shift();
+				plugin = duellLibName;
+				sourceLibPath = completePath;
+				pluginSourceLibPath = sourceLibPath.copy();
             }
             else
             {
@@ -186,7 +193,9 @@ class Arguments
 			if (DuellLibHelper.isInstalled(duellLibName))
 			{
 				var path = DuellLibHelper.getPath(duellLibName);
-				path = Path.join([path, PLUGIN_XML_FILE]);
+				sourceLibPath.unshift(path);
+				sourceLibPath.push(PLUGIN_XML_FILE);
+				path = Path.join(sourceLibPath);
 				if (sys.FileSystem.exists(path))
 					parsePlugin(File.getContent(path));
 			}
@@ -470,6 +479,11 @@ class Arguments
 	public static function getSelectedPlugin()
 	{
 		return plugin;
+	}
+
+	public static function getSelectedPluginSrcLibPath(): Array<String>
+	{
+		return pluginSourceLibPath;
 	}
 
 	public static function getRawArguments()

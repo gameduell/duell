@@ -64,6 +64,7 @@ class RunCommand implements IGDCommand
 
     var buildGitVers: GitVers = null;
     var pluginName : String;
+    var pluginSourceLibPath: Array<String> = null;
 
     var duellConfig: DuellConfigJSON;
 
@@ -82,6 +83,7 @@ class RunCommand implements IGDCommand
     private function determinePluginToRunFromArguments()
     {
         pluginName = Arguments.getSelectedPlugin();
+        pluginSourceLibPath = Arguments.getSelectedPluginSrcLibPath();
 
         var pluginNameCorrectnessCheck = ~/^[A-Za-z0-9]+$/;
 
@@ -129,6 +131,10 @@ class RunCommand implements IGDCommand
         var outputRun = haxe.io.Path.join(['$outputFolder', 'run_' + pluginName + '.py']);
 
         var buildArguments = new Array<String>();
+        var duellLibPath = DuellLibHelper.getPath(pluginName);
+
+        var combinedPath: Array<String> = pluginSourceLibPath.copy();
+        combinedPath.unshift(duellLibPath);
 
         buildArguments.push("-main");
         buildArguments.push("duell.run.main.RunMain");
@@ -140,7 +146,7 @@ class RunCommand implements IGDCommand
         buildArguments.push(DuellLibHelper.getPath("duell"));
 
         buildArguments.push("-cp");
-        buildArguments.push(DuellLibHelper.getPath(runLib.name));
+        buildArguments.push(haxe.io.Path.join(combinedPath));
 
         buildArguments.push("-D");
         buildArguments.push("run_plugin_" + pluginName);
@@ -154,7 +160,8 @@ class RunCommand implements IGDCommand
         CommandHelper.runHaxe("", buildArguments, {errorMessage: "building the plugin"});
 
         /// bootstrap python libs
-        var pyLibPath = haxe.io.Path.join([DuellLibHelper.getPath(pluginName), "pylib"]);
+        combinedPath.push("pylib");
+        var pyLibPath = haxe.io.Path.join(combinedPath);
         if (FileSystem.exists(pyLibPath))
         {
             var file = File.getBytes(outputRun);
