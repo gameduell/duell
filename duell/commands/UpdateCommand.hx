@@ -126,7 +126,7 @@ class UpdateCommand implements IGDCommand
         	var libs = useVersionFileToRecreateSpecificVersions();
 			saveUpdateExecution();
 
-            createSchemaXml( libs.duelllibs, libs.plugins, [] );
+            createSchemaXml( libs.duelllibs, libs.plugins, libs.sourcelibs );
 
         	return 'success';
         }
@@ -224,7 +224,7 @@ class UpdateCommand implements IGDCommand
     	var path = Arguments.get('-logFile');
     	var lockedVersions = LockedVersionsHelper.getLastLockedVersion( path );
     	var dLibs = lockedVersions.duelllibs;
-		var sLibs = new Array<SourceLib>();
+		var sLibs = lockedVersions.sourcelibs;
     	var hLibs = lockedVersions.haxelibs;
     	var plugins = lockedVersions.plugins;
 
@@ -240,6 +240,11 @@ class UpdateCommand implements IGDCommand
     	}
 
 		// Source libs are recreated with the parenting duell lib
+		LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Recreating Sourcelibs", null, LogHelper.DARK_GREEN);
+		for ( s in sLibs )
+		{
+			checkSourceLib( s );
+		}
 
 		LogHelper.wrapInfo(LogHelper.DARK_GREEN + "Recreating Haxelibs", null, LogHelper.DARK_GREEN);
     	for( h in hLibs )
@@ -262,7 +267,7 @@ class UpdateCommand implements IGDCommand
 
     	printFinalResult( dLibs, sLibs, hLibs, plugins );
 
-        return { duelllibs:dLibs, haxelibs:hLibs, plugins:plugins };
+        return { duelllibs:dLibs, haxelibs:hLibs, plugins:plugins, sourcelibs:sLibs };
     }
 
     private function recreateDuellLib( lib:DuellLib )
@@ -281,6 +286,17 @@ class UpdateCommand implements IGDCommand
     		GitHelper.checkoutCommit( lib.getPath(), lib.commit );	
    		}
     }
+
+	private function checkSourceLib(lib: SourceLib)
+	{
+		// As the parenting duelllib of this sourcelib should have been created before this step
+		// we check here if the current path exists for validation
+
+		if (!FileSystem.exists(lib.getPath()))
+		{
+			throw 'Couldnt find parenting path sourcelib name: ' + lib.name + ' path: '+ lib.getPath();
+		}
+	}
 
 	private function determineAndValidateDependenciesAndDefines()
 	{
@@ -608,7 +624,7 @@ class UpdateCommand implements IGDCommand
 
 	private function logVersions()
 	{
-		LockedVersionsHelper.addLockedVersion( finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList);
+		LockedVersionsHelper.addLockedVersion( finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList, finalLibList.sourceLibs);
 	}
 
 	private function createFinalLibLists()

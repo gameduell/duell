@@ -1,5 +1,7 @@
 package duell.versioning.locking;
 
+import duell.helpers.DuellConfigHelper;
+import duell.objects.SourceLib;
 import sys.FileSystem;
 import sys.io.File;
 import haxe.io.Path;
@@ -15,7 +17,8 @@ import duell.versioning.locking.file.LockingFileXMLParser;
 typedef LockedLibraries = {
 	duelllibs : Array<DuellLib>,
 	haxelibs : Array<Haxelib>,
-	plugins : Array<DuellLib>
+	plugins : Array<DuellLib>,
+    sourcelibs : Array<SourceLib>
 }
 
 typedef LibraryDiff = {
@@ -63,11 +66,11 @@ class LockedVersionsHelper
 		return versionMap.get( path );
 	}
 
-	public static function addLockedVersion( duelllibs:Array<DuellLib>, haxelibs:Array<Haxelib>, plugins:Array<DuellLib> )
+	public static function addLockedVersion( duelllibs:Array<DuellLib>, haxelibs:Array<Haxelib>, plugins:Array<DuellLib>, sourcelibs:Array<SourceLib> )
 	{
 		var versions = getVersions('');
 
-		versions.addLibraries( duelllibs, haxelibs, plugins );
+		versions.addLibraries( duelllibs, haxelibs, plugins, sourcelibs);
 	}
 }
 
@@ -128,7 +131,7 @@ class LockedVersions
 		return version;
 	}
 
-	public function addLibraries( duell:Array<DuellLib>, haxe:Array<Haxelib>, plugins:Array<DuellLib> )
+	public function addLibraries( duell:Array<DuellLib>, haxe:Array<Haxelib>, plugins:Array<DuellLib>, sourcelibs:Array<SourceLib>)
 	{
 		var now = Date.now().toString();
 		var currentVersion = new LockedVersion( now );
@@ -154,6 +157,14 @@ class LockedVersions
 			currentVersion.addPlugin( lockedLib );		
 		}
 
+		for ( s in sourcelibs)
+		{
+			var negativePath = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), "lib"]);
+			var relativePath = s.getPath().split(negativePath).pop();
+			var lockedLib = {name:s.name, type:'sourcelib', version:relativePath, commitHash:''};
+			currentVersion.addUsedLib( lockedLib );
+		}
+
 		var lastLockedVersion = getLastLockedVersion();
 		lockedVersions.push( currentVersion );
 
@@ -173,6 +184,7 @@ class LockedVersions
 		var dLibs = new Array<DuellLib>();
     	var hLibs = new Array<Haxelib>();
     	var plugins = new Array<DuellLib>();
+		var sLibs = new Array<SourceLib>();
 
     	for ( key in usedLibraries.keys() )
     	{
@@ -185,11 +197,14 @@ class LockedVersions
     				 hLibs.push(Haxelib.getHaxelib(lockedLib.name, lockedLib.version));
     			case 'plugin':
     				 plugins.push(DuellLib.getDuellLib(lockedLib.name, lockedLib.version, lockedLib.commitHash));
-
+				case 'sourcelib':
+					 var relativePath = lockedLib.version;
+					 var absolutePath = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), "lib", relativePath]);
+					 sLibs.push(new SourceLib(lockedLib.name, absolutePath));
 			}
     	}
 
-    	return { duelllibs:dLibs, haxelibs:hLibs, plugins:plugins };
+    	return { duelllibs:dLibs, haxelibs:hLibs, plugins:plugins, sourcelibs:sLibs };
 	}
 
 	public function getLastVersionDiffs() : Array<LibraryDiff>
