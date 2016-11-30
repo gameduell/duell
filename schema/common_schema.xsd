@@ -61,6 +61,15 @@
         </xs:complexContent>
     </xs:complexType>
 
+    <xs:complexType name="PathName">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+                <xs:attribute name="path" type="xs:anyURI" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
     <xs:complexType name="HaxelibVersionName">
         <xs:complexContent>
             <xs:extension base="d:Conditional">
