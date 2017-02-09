@@ -36,7 +36,7 @@ class DuellDefines
 	public static var DEFAULT_HXCPP_VERSION = "3.2.193";
     @:deprecated('use duell_api_level define instead')
 	public static var HAXE_VERSION = "3.2.0";
-    public static var ALLOWED_HAXE_VERSIONS = "3.2.0,3.2.1";
+    public static var ALLOWED_HAXE_VERSIONS = "3.2.0,3.2.1,3.4.0";
     /**
      * Incremental value unrelated to the git tag version.
      * It is added as a define -D duell_api_level=value for the build of the build plugins.
