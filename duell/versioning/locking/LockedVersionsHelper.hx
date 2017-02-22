@@ -1,5 +1,6 @@
 package duell.versioning.locking;
 
+import python.sys.Path;
 import duell.helpers.DuellConfigHelper;
 import duell.objects.SourceLib;
 import sys.FileSystem;
@@ -92,8 +93,8 @@ class LockedVersions
 
 	public function setupFileSystem()
 	{
-		var dir = Path.directory( path );
-		if(!FileSystem.exists( dir ))
+		var dir: String = Path.directory( path );
+		if(dir.length > 0 && !FileSystem.exists( dir ))
 		{
 			FileSystem.createDirectory( dir );
 		}
