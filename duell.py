@@ -7375,7 +7375,7 @@ class duell_versioning_locking_LockedVersions:
 
 	def setupFileSystem(self):
 		dir = haxe_io_Path.directory(self.path)
-		if (not sys_FileSystem.exists(dir)):
+		if ((len(dir) > 0) and (not sys_FileSystem.exists(dir))):
 			sys_FileSystem.createDirectory(dir)
 
 	def loadAndParseFile(self):
