@@ -67,11 +67,11 @@ class LockedVersionsHelper
 		return versionMap.get( path );
 	}
 
-	public static function addLockedVersion( duelllibs:Array<DuellLib>, haxelibs:Array<Haxelib>, plugins:Array<DuellLib>, sourcelibs:Array<SourceLib> )
+	public static function addLockedVersion(projectCommitHash: String, duelllibs:Array<DuellLib>, haxelibs:Array<Haxelib>, plugins:Array<DuellLib>, sourcelibs:Array<SourceLib> )
 	{
 		var versions = getVersions('');
 
-		versions.addLibraries( duelllibs, haxelibs, plugins, sourcelibs);
+		versions.addLibraries(projectCommitHash, duelllibs, haxelibs, plugins, sourcelibs);
 	}
 }
 
@@ -132,11 +132,11 @@ class LockedVersions
 		return version;
 	}
 
-	public function addLibraries( duell:Array<DuellLib>, haxe:Array<Haxelib>, plugins:Array<DuellLib>, sourcelibs:Array<SourceLib>)
+	public function addLibraries(projectCommitHash: String, duell:Array<DuellLib>, haxe:Array<Haxelib>, plugins:Array<DuellLib>, sourcelibs:Array<SourceLib>)
 	{
 		var now = Date.now().toString();
 		var currentVersion = new LockedVersion( now );
-
+		currentVersion.projectCommitHash = projectCommitHash;
 		//create used libs
 		for ( dLib in duell )
 		{

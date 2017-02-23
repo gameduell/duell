@@ -62,9 +62,10 @@ class LockedVersion
 		return null;
 	}
 
-	public var ts(default, null) : String;
-	public var usedLibs(default, null) : Map<String, LockedLib>;
-	public var updates(default, null) : Map<String, Array<Update>>;
+	public var ts(default, null): String;
+	public var projectCommitHash: String;
+	public var usedLibs(default, null): Map<String, LockedLib>;
+	public var updates(default, null): Map<String, Array<Update>>;
 
 	public function new( time:String )
 	{
