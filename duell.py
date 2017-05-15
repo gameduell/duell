@@ -4373,7 +4373,8 @@ class duell_helpers_SchemaHelper:
 			else:
 				pluginsWithoutSchema.append(rawPluginName)
 		outPath = haxe_io_Path.join([duell_helpers_DuellConfigHelper.getDuellConfigFolderLocation(), "schema.xsd"])
-		template = _hx_AnonObject({'NS': "duell", 'COMMON_FILE': "https://raw.githubusercontent.com/gameduell/duell/master/schema/common_schema.xsd", 'LIBRARIES_WITH_SCHEMA': librariesWithSchema, 'PLUGINS_WITH_SCHEMA': pluginsWithSchema, 'LIBRARIES_WITHOUT_SCHEMA': librariesWithoutSchema, 'PLUGINS_WITHOUT_SCHEMA': pluginsWithoutSchema})
+		commonSchema = haxe_io_Path.join([duellPath, "schema", "common_schema.xsd"])
+		template = _hx_AnonObject({'NS': "duell", 'COMMON_FILE': commonSchema, 'LIBRARIES_WITH_SCHEMA': librariesWithSchema, 'PLUGINS_WITH_SCHEMA': pluginsWithSchema, 'LIBRARIES_WITHOUT_SCHEMA': librariesWithoutSchema, 'PLUGINS_WITHOUT_SCHEMA': pluginsWithoutSchema})
 		duell_helpers_TemplateHelper.copyTemplateFile(schemaPath,outPath,template,None)
 duell_helpers_SchemaHelper._hx_class = duell_helpers_SchemaHelper
 _hx_classes["duell.helpers.SchemaHelper"] = duell_helpers_SchemaHelper
@@ -5041,8 +5042,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
@@ -11956,7 +11957,7 @@ duell_helpers_SchemaHelper.DUELL_NS = "duell"
 duell_helpers_SchemaHelper.SCHEMA_FILE = "schema.xsd"
 duell_helpers_SchemaHelper.SCHEMA_FOLDER = "schema"
 duell_helpers_SchemaHelper.TEMPLATED_SCHEMA_FILE = "duell_schema.xsd"
-duell_helpers_SchemaHelper.COMMON_SCHEMA_FILE = "https://raw.githubusercontent.com/gameduell/duell/master/schema/common_schema.xsd"
+duell_helpers_SchemaHelper.COMMON_SCHEMA_FILE = "common_schema.xsd"
 duell_helpers_StringHelper.seedNumber = 0
 duell_helpers_StringHelper.usedFlatNames = haxe_ds_StringMap()
 duell_helpers_StringHelper.uuidChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"

@@ -4,11 +4,7 @@
            targetNamespace="::NS::"
            elementFormDefault="qualified">
 
-    ::if (LIBRARIES_WITH_SCHEMA.length == 0)::
-    ::if (PLUGINS_WITH_SCHEMA.length == 0)::
-    <xs:include schemaLocation="::COMMON_FILE::"/>
-    ::end::
-    ::end::
+    <xs:include schemaLocation="file://::COMMON_FILE::"/>
 
     ::foreach LIBRARIES_WITH_SCHEMA::
     <xs:include schemaLocation="file://::path::" />::end::
