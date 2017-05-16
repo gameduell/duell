@@ -24,6 +24,7 @@ from socket import socket as python_lib_net_Socket
 from os import path as python_lib_os_Path
 from subprocess import Popen as python_lib_subprocess_Popen
 import urllib.parse as python_lib_urllib_Parse
+from multiprocessing import Process as python_multiprocessing_Process
 from sys import path as python_sys_Path
 from urllib import request as python_urllib_Request
 
@@ -3991,6 +3992,76 @@ duell_helpers_LogHelper._hx_class = duell_helpers_LogHelper
 _hx_classes["duell.helpers.LogHelper"] = duell_helpers_LogHelper
 
 
+class duell_helpers_ParallelProcessHelper:
+	_hx_class_name = "duell.helpers.ParallelProcessHelper"
+	_hx_fields = ["processList"]
+	_hx_methods = ["run", "getLogicalKernels"]
+
+	def __init__(self):
+		self.processList = None
+
+	def run(self,jobs):
+		if (jobs is None):
+			return
+		numberKernels = self.getLogicalKernels()
+		self.processList = list()
+		duell_helpers_LogHelper.info("",(("Running jobs on " + Std.string(numberKernels)) + " Kernels ... "))
+		_g1 = 0
+		_g = len(jobs)
+		while (_g1 < _g):
+			i = _g1
+			_g1 = (_g1 + 1)
+			job = (jobs[i] if i >= 0 and i < len(jobs) else None)
+			args = None
+			if hasattr(job,(("_hx_" + "args") if ("args" in python_Boot.keywords) else (("_hx_" + "args") if (((((len("args") > 2) and ((ord("args"[0]) == 95))) and ((ord("args"[1]) == 95))) and ((ord("args"[(len("args") - 1)]) != 95)))) else "args"))):
+				args = tuple(Reflect.field(job,"args"))
+			else:
+				args = None
+			p = python_multiprocessing_Process(Reflect.field(job,"group"), job.job, Reflect.field(job,"name"), args)
+			_this = self.processList
+			_this.append(p)
+			p.start()
+			if ((numberKernels == len(self.processList)) or ((i == ((len(jobs) - 1))))):
+				_g2 = 0
+				_g3 = self.processList
+				while (_g2 < len(_g3)):
+					proc = (_g3[_g2] if _g2 >= 0 and _g2 < len(_g3) else None)
+					_g2 = (_g2 + 1)
+					proc.join()
+				self.processList = []
+
+	def getLogicalKernels(self):
+		numberKernelsString = ""
+		numberKernels = 0
+		if (duell_helpers_PlatformHelper.get_hostPlatform() == duell_helpers_Platform.WINDOWS):
+			dp = duell_objects_DuellProcess("", "wmlc", ["cpu", "get", "NumberOfLogicalProcessors"], _hx_AnonObject({'block': True, 'systemCommand': True, 'errorMessage': "grabbing number of kernels"}))
+			dpOutput = dp.getCompleteStdout().toString()
+			rows = dpOutput.split("\n")
+			if (len(rows) > 1):
+				numberKernelsString = StringTools.trim((rows[1] if 1 < len(rows) else None))
+			else:
+				numberKernelsString = ""
+		else:
+			dp1 = duell_objects_DuellProcess("", "sysctl", ["-n", "hw.logicalcpu_max"], _hx_AnonObject({'block': True, 'systemCommand': True, 'errorMessage': "grabbing number of kernels"}))
+			numberKernelsString = dp1.getCompleteStdout().toString()
+		try:
+			numberKernels = Std.parseInt(numberKernelsString)
+		except Exception as _hx_e:
+			_hx_e1 = _hx_e.val if isinstance(_hx_e, _HxException) else _hx_e
+			e = _hx_e1
+			duell_helpers_LogHelper.warn(("Error grabbing number of kernels! " + Std.string(e)))
+		if ((numberKernels != 0) and ((numberKernels is not None))):
+			return numberKernels
+		else:
+			return 1
+
+	@staticmethod
+	def _hx_empty_init(_hx_o):
+		_hx_o.processList = None
+duell_helpers_ParallelProcessHelper._hx_class = duell_helpers_ParallelProcessHelper
+_hx_classes["duell.helpers.ParallelProcessHelper"] = duell_helpers_ParallelProcessHelper
+
+
 class duell_helpers_PathHelper:
 	_hx_class_name = "duell.helpers.PathHelper"
 	_hx_statics = ["mkdir", "unescape", "escape", "expand", "stripQuotes", "isLink", "removeDirectory", "getRecursiveFileListUnderFolder", "getRecursiveFolderListUnderFolder", "getFolderListUnderFolder", "getHomeFolder", "isPathRooted"]
@@ -4990,8 +5061,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_head
 					nonlocal _g_val
+					nonlocal _g_head
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -5041,8 +5112,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_head1
 					nonlocal _g_val1
+					nonlocal _g_head1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1

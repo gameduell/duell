@@ -39,6 +39,7 @@ import duell.objects.DuellConfigJSON;
 import duell.helpers.AskHelper;
 import duell.helpers.DuellLibHelper;
 import duell.objects.DuellLib;
+import duell.helpers.ParallelProcessHelper;
 
 import duell.commands.RunCommand;
 import duell.commands.BuildCommand;
