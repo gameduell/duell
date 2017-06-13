@@ -53,13 +53,13 @@ class PathHelper
 		}
 		else
 		{
-            if(PlatformHelper.hostPlatform != Platform.WINDOWS)
-			    total = "/";
+			if(PlatformHelper.hostPlatform != Platform.WINDOWS)
+				total = "/";
 		}
 
 
-        var parts;
-        parts = directory.split("/");
+		var parts;
+		parts = directory.split("/");
 
 		if (PlatformHelper.hostPlatform != Platform.WINDOWS && parts[0] == "~")
 		{
@@ -170,23 +170,23 @@ class PathHelper
 			if (PlatformHelper.hostPlatform == Platform.WINDOWS)
 			{
 				python.Syntax.pythonCode("
-                import os
-                import stat
+				import os
+				import stat
 
-                for root, dirs, files in os.walk(directory, topdown=False):
-                    for name in files:
-                        filename = os.path.join(root, name)
-                        os.chmod(filename, stat.S_IWUSR)
-                        os.remove(filename)
-                    for name in dirs:
-                        os.rmdir(os.path.join(root, name))
-                os.rmdir(directory)");
+				for root, dirs, files in os.walk(directory, topdown=False):
+					for name in files:
+						filename = os.path.join(root, name)
+						os.chmod(filename, stat.S_IWUSR)
+						os.remove(filename)
+					for name in dirs:
+						os.rmdir(os.path.join(root, name))
+				os.rmdir(directory)");
 			}
 			else
 			{
 				python.Syntax.pythonCode("
-                import shutil
-                shutil.rmtree(directory)");
+				import shutil
+				shutil.rmtree(directory)");
 			}
 		}
 	}
@@ -226,72 +226,72 @@ class PathHelper
 		return gatheredFileList;
 	}
 
-    public static function getRecursiveFolderListUnderFolder(folder : String, gatheredFolderList : Array<String> = null, prefix : String = "") : Array<String>
-    {
-        if (gatheredFolderList == null)
-        {
-            gatheredFolderList = [];
-        }
+	public static function getRecursiveFolderListUnderFolder(folder : String, gatheredFolderList : Array<String> = null, prefix : String = "") : Array<String>
+	{
+		if (gatheredFolderList == null)
+		{
+			gatheredFolderList = [];
+		}
 
-        var files = [];
-        try
-        {
-            files = FileSystem.readDirectory(folder);
-        }
-        catch (e:Dynamic)
-        {
-            throw "Could not find folder directory \"" + folder + "\"";
-        }
+		var files = [];
+		try
+		{
+			files = FileSystem.readDirectory(folder);
+		}
+		catch (e:Dynamic)
+		{
+			throw "Could not find folder directory \"" + folder + "\"";
+		}
 
-        for (file in files)
-        {
-            if (file.substr(0, 1) != ".") /// hidden file
-            {
-                var fullPath = Path.join([folder, file]);
+		for (file in files)
+		{
+			if (file.substr(0, 1) != ".") /// hidden file
+			{
+				var fullPath = Path.join([folder, file]);
 
-                if (FileSystem.isDirectory(fullPath))
-                {
-                    gatheredFolderList.push(haxe.io.Path.join([prefix, file]));
-                    getRecursiveFolderListUnderFolder(fullPath, gatheredFolderList, haxe.io.Path.join([prefix, file]));
-                }
-            }
-        }
+				if (FileSystem.isDirectory(fullPath))
+				{
+					gatheredFolderList.push(haxe.io.Path.join([prefix, file]));
+					getRecursiveFolderListUnderFolder(fullPath, gatheredFolderList, haxe.io.Path.join([prefix, file]));
+				}
+			}
+		}
 
-        return gatheredFolderList;
-    }
+		return gatheredFolderList;
+	}
 
-    public static function getFolderListUnderFolder(folder : String, gatheredFolderList : Array<String> = null) : Array<String>
-    {
-        if (gatheredFolderList == null)
-        {
-            gatheredFolderList = [];
-        }
+	public static function getFolderListUnderFolder(folder : String, gatheredFolderList : Array<String> = null) : Array<String>
+	{
+		if (gatheredFolderList == null)
+		{
+			gatheredFolderList = [];
+		}
 
-        var files = [];
-        try
-        {
-            files = FileSystem.readDirectory(folder);
-        }
-        catch (e:Dynamic)
-        {
-            throw "Could not find folder directory \"" + folder + "\"";
-        }
+		var files = [];
+		try
+		{
+			files = FileSystem.readDirectory(folder);
+		}
+		catch (e:Dynamic)
+		{
+			throw "Could not find folder directory \"" + folder + "\"";
+		}
 
-        for (file in files)
-        {
-            if (file.substr(0, 1) != ".") /// hidden file
-            {
-                var fullPath = Path.join([folder, file]);
+		for (file in files)
+		{
+			if (file.substr(0, 1) != ".") /// hidden file
+			{
+				var fullPath = Path.join([folder, file]);
 
-                if (FileSystem.isDirectory(fullPath))
-                {
-                    gatheredFolderList.push(haxe.io.Path.join(["", file]));
-                }
-            }
-        }
+				if (FileSystem.isDirectory(fullPath))
+				{
+					gatheredFolderList.push(haxe.io.Path.join(["", file]));
+				}
+			}
+		}
 
-        return gatheredFolderList;
-    }
+		return gatheredFolderList;
+	}
 
 	public static function getHomeFolder() : String
 	{
