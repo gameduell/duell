@@ -99,6 +99,7 @@ class UpdateCommand implements IGDCommand
 
 	var buildLib: DuellLib = null;
 	var platformName: String;
+	var projectDir: String;
 
 	var duellToolGitVers: GitVers;
 	var duellToolRequestedVersion: DuellToolVersion = null;
@@ -337,6 +338,8 @@ class UpdateCommand implements IGDCommand
 	private function parseProjectFile()
 	{
 		LogHelper.info("     parsing configuration file in current directory");
+
+		projectDir = Sys.getCwd();
 
 		var projectFile = Path.join([Sys.getCwd(), DuellDefines.PROJECT_CONFIG_FILENAME]);
 		var libFile = Path.join([Sys.getCwd(), DuellDefines.LIB_CONFIG_FILENAME]);
@@ -624,7 +627,8 @@ class UpdateCommand implements IGDCommand
 
 	private function logVersions()
 	{
-		LockedVersionsHelper.addLockedVersion( finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList, finalLibList.sourceLibs);
+		var commit = GitHelper.getCurrentCommit(projectDir);
+		LockedVersionsHelper.addLockedVersion(commit, finalLibList.duellLibs, finalLibList.haxelibs, finalPluginList, finalLibList.sourceLibs);
 	}
 
 	private function createFinalLibLists()

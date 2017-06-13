@@ -64,7 +64,9 @@ class LockingFileXMLParser implements ILockingFileParser
 	private function parseBuild( element:Fast )
 	{
 		var ts = element.has.date ? element.att.date : '0';
+		var commit = element.has.commit ? element.att.commit : null;
 		var build = new LockedVersion( ts );
+		build.projectCommitHash = commit;
 
 		for ( child in element.elements ){
 			switch( child.name )
@@ -120,7 +122,7 @@ class LockingFileXMLParser implements ILockingFileParser
 			var libs = getLibsContent( b.usedLibs );
 			var changes = getUpdatedContent( b.updates );
 
-			buildResult = '  <build date="' + b.ts + '">\n';
+			buildResult = '  <build date="${b.ts}" commit="${b.projectCommitHash}">\n';
 			buildResult += '    <libs>\n' + libs + '    </libs>\n';
 			buildResult += '    <updates>\n' + changes + '    </updates>\n';
 			buildResult += '  </build>\n';

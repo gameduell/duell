@@ -41,7 +41,7 @@ class SchemaHelper
 
     private static inline var SCHEMA_FOLDER = "schema";
     private static inline var TEMPLATED_SCHEMA_FILE = "duell_schema.xsd";
-    private static inline var COMMON_SCHEMA_FILE = "https://raw.githubusercontent.com/gameduell/duell/master/schema/common_schema.xsd";
+    private static inline var COMMON_SCHEMA_FILE = "common_schema.xsd";
 
     public static function hasDuellNamespace(pathXml: String): Bool
     {
@@ -130,10 +130,12 @@ class SchemaHelper
 
         var outPath: String = Path.join([DuellConfigHelper.getDuellConfigFolderLocation(), SCHEMA_FILE]);
 
+        var commonSchema: String = Path.join([duellPath, SCHEMA_FOLDER, COMMON_SCHEMA_FILE]);
+
         var template =
         {
             NS: DUELL_NS,
-            COMMON_FILE: COMMON_SCHEMA_FILE,
+            COMMON_FILE: commonSchema,
             LIBRARIES_WITH_SCHEMA: librariesWithSchema,
             PLUGINS_WITH_SCHEMA: pluginsWithSchema,
             LIBRARIES_WITHOUT_SCHEMA: librariesWithoutSchema,
