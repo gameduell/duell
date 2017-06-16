@@ -79,6 +79,8 @@ To get a list of possible commands run '$ duell' or '$ duell -help'. To get more
 
 
 ## Release Log
+### 5.0.1
+Removed update suggestion on build command
 ### 4.0.0
 Now running on Python 3 instead of neko
 ### 3.0.2

@@ -101,9 +101,9 @@ class BuildCommand implements IGDCommand
 
             checkIfItIsAProjectFolder();
 
-            LogHelper.println("");
+            // LogHelper.println("");
 
-            checkUpdateTime();
+            // checkUpdateTime();
 
             LogHelper.println("");
 

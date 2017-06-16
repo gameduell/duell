@@ -1313,8 +1313,6 @@ class duell_commands_BuildCommand:
 			duell_helpers_LogHelper.println("")
 			self.checkIfItIsAProjectFolder()
 			duell_helpers_LogHelper.println("")
-			self.checkUpdateTime()
-			duell_helpers_LogHelper.println("")
 			self.determinePlatformToBuildFromArguments()
 			duell_helpers_LogHelper.println("")
 			self.determineAndValidateDependenciesAndDefines()
@@ -5062,8 +5060,8 @@ class duell_helpers_Template:
 			while (_g_head is not None):
 				e3 = None
 				def _hx_local_0():
-					nonlocal _g_val
 					nonlocal _g_head
+					nonlocal _g_val
 					_g_val = (_g_head[0] if 0 < len(_g_head) else None)
 					_g_head = (_g_head[1] if 1 < len(_g_head) else None)
 					return _g_val
@@ -5113,8 +5111,8 @@ class duell_helpers_Template:
 			while (_g_head1 is not None):
 				p = None
 				def _hx_local_3():
-					nonlocal _g_val1
 					nonlocal _g_head1
+					nonlocal _g_val1
 					_g_val1 = (_g_head1[0] if 0 < len(_g_head1) else None)
 					_g_head1 = (_g_head1[1] if 1 < len(_g_head1) else None)
 					return _g_val1
