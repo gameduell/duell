@@ -28,12 +28,15 @@ package duell.helpers;
 
 import duell.objects.DuellProcess;
 
+using StringTools;
+
 @:keepInit
 class BuildTagHelper
 {
     public static function tag( ?customFormat:String ): String
     {
-        var tag = customFormat != null ? DateTools.format(Date.now(), customFormat) : "";
+        customFormat = customFormat != null ? customFormat.trim() : null;
+        var tag      = customFormat != null ? DateTools.format(Date.now(), customFormat) : "";
 
         if( tag == "" ) {
             var timestamp: String = DateTools.format(Date.now(), "%Y-%m-%d_%H-%M-%S");
