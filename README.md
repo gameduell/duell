@@ -79,6 +79,8 @@ To get a list of possible commands run '$ duell' or '$ duell -help'. To get more
 
 
 ## Release Log
+### 5.0.3
+- trim passed custom format in BuildTagHelper
 ### 5.0.2
 - Update for the BuildTagHelper. Added possibility to pass a custom format to that function
 - Update for the DuellProjectXML. Added possibility to pass a parameter to the certain maco function by using 'call1'
