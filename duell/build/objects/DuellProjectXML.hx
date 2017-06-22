@@ -554,6 +554,28 @@ class DuellProjectXML
 
                 return Reflect.callMethod(classInstance, func, []);
             },
+            call1: function(_, className: String, methodName: String, arg:Dynamic)
+            {
+                className = className.trim();
+                methodName = methodName.trim();
+
+                var classInstance: Dynamic = Type.resolveClass(className);
+
+                if (classInstance == null)
+                {
+                    throw 'Class "$className" could not be resolved while parsing call1 macro';
+                }
+
+                var func: Dynamic = Reflect.field(classInstance, methodName);
+
+                if (func == null)
+                {
+                    throw 'Function "$methodName" not found for class "$className" while parsing call1 macro';
+                }
+
+                return Reflect.callMethod(classInstance, func, [arg]);
+            },
+
 			projectpath: function(_, s) return Sys.getCwd()
 		});
 

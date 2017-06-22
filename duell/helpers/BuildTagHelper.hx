@@ -31,23 +31,27 @@ import duell.objects.DuellProcess;
 @:keepInit
 class BuildTagHelper
 {
-    public static function tag(): String
+    public static function tag( ?customFormat:String ): String
     {
-        var timestamp: String = DateTools.format(Date.now(), "%Y-%m-%d_%H-%M-%S");
+        var tag = customFormat != null ? DateTools.format(Date.now(), customFormat) : "";
 
-        var process = new DuellProcess(null,
-            "git",
-            ["log", "--oneline", "--max-count=1"],
-            {
-                systemCommand : true,
-                block : true,
-                shutdownOnError : true,
-                errorMessage: "getting commit hash"
-            });
+        if( tag == "" ) {
+            var timestamp: String = DateTools.format(Date.now(), "%Y-%m-%d_%H-%M-%S");
 
-        var revision: String = process.getCompleteStdout().toString().split(" ")[0];
+            var process = new DuellProcess(null,
+                "git",
+                ["log", "--oneline", "--max-count=1"],
+                {
+                    systemCommand : true,
+                    block : true,
+                    shutdownOnError : true,
+                    errorMessage: "getting commit hash"
+                });
 
-        var tag: String = '${timestamp}__Rev_$revision';
+            var revision: String = process.getCompleteStdout().toString().split(" ")[0];
+
+            tag = '${timestamp}__Rev_$revision';
+        }
 
         return tag;
     }
